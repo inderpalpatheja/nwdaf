@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -91,4 +92,30 @@ public class Nnwdaf_repository implements RowMapper {
 
     public Integer unsubscribeNF(String id)
     { return jdbcTemplate.update("DELETE FROM eventTable WHERE subscriptionID = ?", id); }
+
+
+
+
+
+
+
+    /////Sadaf's Code//////
+
+    public List<analytics> getUser()
+    {
+        //return jdbcTemplate.query("SELECT snssais, load_level_info, eventId from t1;", new UserRowMapper());
+        return jdbcTemplate.query("SELECT snssais, load_level_info, eventId from t2",new analyticsRowMapper());
+    }
+
+
+    public analytics findById(Integer id)
+    {
+        String query = "SELECT * FROM t2 WHERE eventId = ?";
+
+        try
+        { return (analytics) this.jdbcTemplate.queryForObject(query, new Object[] { id }, new analyticsRowMapper()); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
 }
