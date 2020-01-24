@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URISyntaxException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.List;
 import java.util.UUID;
 import java.net.URI;
 import org.springframework.http.HttpHeaders;
@@ -85,6 +86,36 @@ public class Nnwdaf_controller {
         { return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NOT_FOUND); }
 
         return new ResponseEntity<NnwdafEventsSubscription>(user, HttpStatus.OK);
+    }
+
+
+
+
+
+
+
+    ///////Sadaf's Code from here:-////
+
+
+    @GetMapping("/dataSet")
+    // @RequestMapping("value="dataSet/{eventId}",method=RequestMapping.GET)
+    public List<analytics> getAllUsers()
+    {
+        System.out.println("sad");
+        return repository.getUser();
+
+    }
+
+
+    @GetMapping("/dataSet/{id}")
+    public ResponseEntity<?> getUser(@PathVariable("id") Integer id)
+    {
+        analytics analytics = repository.findById(id);
+
+        if(analytics == null)
+        { return new ResponseEntity<String>("No user Found with the ID " + id, HttpStatus.NOT_FOUND); }
+
+        return new ResponseEntity<analytics>(analytics, HttpStatus.OK);
     }
 
 }
