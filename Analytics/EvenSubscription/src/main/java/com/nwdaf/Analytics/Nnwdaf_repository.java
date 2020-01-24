@@ -21,9 +21,9 @@ public class Nnwdaf_repository implements RowMapper {
     JdbcTemplate jdbcTemplate;
 
 
-    public Boolean subscribeNF(NnwdafEventsSubscription user)
+    public Boolean subscribeNF(NnwdafEventsSubscription user, UUID id)
     {
-        String query = "INSERT INTO eventTable VALUES('" + UUID.randomUUID() + "', ?, ?, ?, ?, ?);";
+        String query = "INSERT INTO eventTable VALUES('" + id + "', ?, ?, ?, ?, ?);";
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
