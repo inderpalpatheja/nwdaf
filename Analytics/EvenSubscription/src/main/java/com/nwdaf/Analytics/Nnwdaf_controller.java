@@ -16,6 +16,8 @@ import org.springframework.http.HttpHeaders;
 @RequestMapping("/nnwdaf-eventssubscription/v1")
 public class Nnwdaf_controller {
 
+    final String URI = "http://localhost:8081/nnwdaf-eventssubscription/v1/";
+
     @Autowired
     Nnwdaf_repository repository;
 
@@ -30,15 +32,16 @@ public class Nnwdaf_controller {
        // if(repository.findById(user.getEventID()) != null)
        // { return new ResponseEntity<String>("Duplicate Entry ID." + user.getEventID(), HttpStatus.IM_USED); }
 
-        repository.subscribeNF(user);
+        UUID new_id = UUID.randomUUID();
+        repository.subscribeNF(user, new_id);
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        //return ResponseEntity.status(HttpStatus.CREATED).build();
 
-       // URI location = new URI(user.getNotificationURI());
-       // HttpHeaders responseHeaders = new HttpHeaders();
-       // responseHeaders.setLocation(location);
-       // responseHeaders.set("MyResponseHeader", "MyValue");
-       // return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
+        URI location = new URI(URI + "subscriptions/" + String.valueOf(new_id));
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setLocation(location);
+        //responseHeaders.set("MyResponseHeader", "MyValue");
+        return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
     }
 
 
@@ -73,7 +76,7 @@ public class Nnwdaf_controller {
 
 
 
-    @GetMapping("/{subscriptionID}")
+    @GetMapping("/subscriptions/{subscriptionID}")
     public ResponseEntity<?> getNF(@PathVariable("subscriptionID") String id)
     {
         NnwdafEventsSubscription user = repository.findById(id);
