@@ -1,0 +1,369 @@
+package com.nwdaf.Analytics;
+
+import com.nwdaf.Analytics.Mapper.Events_connectionRowMapper;
+import com.nwdaf.Analytics.Mapper.eventTableMapper;
+import com.nwdaf.Analytics.model.LOAD_LEVEL_INFORMATION;
+import com.nwdaf.Analytics.model.SubscrptionIdModel;
+import com.nwdaf.Analytics.model.analytics;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+
+@Repository
+public class Nnwdaf_repository {
+
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+    Random random = new Random();
+
+    public List<NnwdafEventsSubscription> getAllNFs()
+    { return jdbcTemplate.query("SELECT subscriptionID, eventID, notificationURI, notifMethod, repetitionPeriod, loadLevelThreshold FROM eventTable", new eventTableMapper()); }
+
+
+    public Boolean subscribeNF(NnwdafEventsSubscription user, UUID id)
+    {
+        String query = "INSERT INTO eventTable VALUES('" + id + "', ?, ?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+
+            @Override
+            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+
+                preparedStatement.setInt(1, user.getEventID());
+                preparedStatement.setString(2, user.getNotificationURI());
+                preparedStatement.setInt(3, user.getNotifMethod());
+                preparedStatement.setInt(4, user.getRepetitionPeriod());
+                preparedStatement.setInt(5, user.getLoadLevelThreshold());
+
+                return preparedStatement.execute();
+            }
+        });
+    }
+
+
+    public Integer addEventDataID(int eventDataID, UUID subscriptionID)
+    {
+
+        return jdbcTemplate.update("UPDATE eventTable SET eventDataID = ? WHERE subscriptionID = ?", new Object[] { eventDataID, String.valueOf(subscriptionID) });
+
+    }
+
+
+
+    public NnwdafEventsSubscription findById(String id)
+    {
+        String query = "SELECT * FROM eventTable WHERE subscriptionID = ?";
+
+        try
+        { return (NnwdafEventsSubscription) this.jdbcTemplate.queryForObject(query, new Object[] { id }, new eventTableMapper()); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
+
+
+
+
+
+    public Integer updateNF(NnwdafEventsSubscription user, String id)
+    {
+        String UPDATE_QUERY = "UPDATE eventTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = ?";
+
+        return jdbcTemplate.update(UPDATE_QUERY, user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getLoadLevelThreshold(), id);
+
+        //String query = "UPDATE eventTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = '" + id + "'";
+
+
+        //    Object[] parameters = { user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getLoadLevelThreshold() };
+        //  int[] types = { Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER };
+
+        //  return jdbcTemplate.update(query, parameters, types);
+    }
+
+
+    public Integer unsubscribeNF(String id)
+    {  return jdbcTemplate.update("DELETE FROM eventTable WHERE subscriptionID = ?", id); }
+
+
+
+/* NIKHIL'S CODE JAN 30, 2020
+
+    public List<NnwdafEventsSubscription> getAllNFs() {
+        return jdbcTemplate.query("SELECT subscriptionID, eventID, notificationURI, notifMethod, repetitionPeriod, loadLevelThreshold FROM eventTable", this);
+    }
+
+
+    public Boolean subscribeNF(NnwdafEventsSubscription user, UUID id) {
+        String query = "INSERT INTO eventTable VALUES('" + id + "', ?, ?, ?, ?, ?, null);";
+
+        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+
+            @Override
+            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+
+                preparedStatement.setInt(1, user.getEventID());
+                preparedStatement.setString(2, user.getNotificationURI());
+                preparedStatement.setInt(3, user.getNotifMethod());
+                preparedStatement.setInt(4, user.getRepetitionPeriod());
+                preparedStatement.setInt(5, user.getLoadLevelThreshold());
+
+                return preparedStatement.execute();
+            }
+        });
+    }
+
+
+    public Integer addCorrelationData(UUID subscriptionID, EventID eventID, UUID correlation_id) {
+        return jdbcTemplate.update("UPDATE eventTable SET correlationID = ? WHERE subscriptionID = ?", new Object[]{String.valueOf(correlation_id), String.valueOf(subscriptionID)});
+
+    }
+
+
+    public NnwdafEventsSubscription findById(String id) {
+        String query = "SELECT * FROM eventTable WHERE subscriptionID = ?";
+
+        try {
+            return (NnwdafEventsSubscription) this.jdbcTemplate.queryForObject(query, new Object[]{id}, this);
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
+    }
+
+
+    @Override
+    public Object mapRow(ResultSet resultSet, int i) throws SQLException {
+
+        NnwdafEventsSubscription user = new NnwdafEventsSubscription();
+
+        user.setSubscriptionID(resultSet.getString("subscriptionID"));
+        user.setEventID(resultSet.getInt("eventID"));
+        user.setNotificationURI(resultSet.getString("notificationURI"));
+        user.setNotifMethod(resultSet.getInt("notifMethod"));
+        user.setRepetitionPeriod(resultSet.getInt("repetitionPeriod"));
+        user.setLoadLevelThreshold(resultSet.getInt("loadLevelThreshold"));
+
+        return user;
+    }
+
+
+    public Integer updateNF(NnwdafEventsSubscription user, String id) {
+        String UPDATE_QUERY = "UPDATE eventTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = ?";
+
+        return jdbcTemplate.update(UPDATE_QUERY, user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getLoadLevelThreshold(), id);
+
+        //String query = "UPDATE eventTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = '" + id + "'";
+
+
+        //    Object[] parameters = { user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getLoadLevelThreshold() };
+        //  int[] types = { Types.INTEGER, Types.INTEGER, Types.INTEGER, Types.INTEGER };
+
+        //  return jdbcTemplate.update(query, parameters, types);
+    }
+
+
+    public Integer unsubscribeNF(String id) {
+        return jdbcTemplate.update("DELETE FROM eventTable WHERE subscriptionID = ?", id);
+    }
+
+
+    public UUID getCorrelationID(UUID subscriptionID, EventID eventID) {
+        return UUID.randomUUID();
+    }
+    */
+
+    /////Sadaf's Code//////
+
+    public List<analytics> getUser() {
+        //return jdbcTemplate.query("SELECT snssais, load_level_info, eventId from t1;", new UserRowMapper());
+        return jdbcTemplate.query("SELECT snssais, load_level_info, eventId from t2", new analyticsRowMapper());
+    }
+
+
+    public analytics findById(Integer id) {
+        String query = "SELECT * FROM t2 WHERE eventId = ?";
+
+        try {
+            return (analytics) this.jdbcTemplate.queryForObject(query, new Object[]{id}, new analyticsRowMapper());
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
+    }
+
+
+    public int getLoadLevelInformation(String subId) {
+
+        return jdbcTemplate.update("select load_level_info from load_level_information where subscriptionId = ?", subId);
+
+    }
+
+    public NnwdafEventsSubscription findDataByuSubId(String subId) {
+
+        String query = "SELECT * FROM load_level_information WHERE subscriptionId = ?";
+
+        try {
+            return (NnwdafEventsSubscription) this.jdbcTemplate.queryForObject(query, new Object[]{subId}, new loadLevelMapper());
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
+
+    }
+
+
+    public List<NnwdafEventsSubscription> getALLSubID(int eventID) {
+
+        //return jdbcTemplate.query("select subscriptionID from eventTable where eventId = ?" + eventID,this );
+
+        return (List<NnwdafEventsSubscription>) this.jdbcTemplate.query("SELECT *from eventTable WHERE eventID = ?", new Object[] { eventID }, new eventTableMapper());
+    }
+
+    public Boolean addSubscriptionIdToLoadLevelInfo(NnwdafEventsSubscription nnwdafEventsSubscription, UUID subscriptionID) {
+
+     //   String query = "INSERT INTO load_level_information VALUES(?,?,?,?,?,'" + subscriptionID + "')";
+
+        String query = "INSERT INTO load_level_information (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + subscriptionID + "', " + 199 + ")";
+
+        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+
+            @Override
+            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+
+               // preparedStatement.setInt(1, nnwdafEventsSubscription.getEventID());
+
+                preparedStatement.setString(1, nnwdafEventsSubscription.getSnssais());
+                preparedStatement.setBoolean(2,nnwdafEventsSubscription.isAnySlice());
+
+               /* preparedStatement.setString(2, "");
+                preparedStatement.setBoolean(3, false);
+                preparedStatement.setInt(4,123);
+                preparedStatement.setInt(5,1212);*/
+
+
+                return preparedStatement.execute();
+            }
+        });
+    }
+
+
+
+
+
+
+
+
+
+    ////Sadaf's load_level_information Code/////
+
+
+    //LOAD_LEVEL_INFORMATION
+
+    /*public List<events_connection> getUser()
+       {
+           return jdbctemplate.query("SELECT event_id, snssais, anySlice,id from load_level_information",new Events_connectionRowMapper());
+       }*/
+    public List<events_connection> getData()
+    {
+
+        return jdbcTemplate.query("SELECT event_id, snssais, anySlice,id from load_level_information",new Events_connectionRowMapper());
+    }
+
+    /*public events_connection findById(Integer event_id)
+       {
+           String query = "SELECT * FROM load_level_information WHERE event_id = ?";
+           try
+           { return (events_connection) this.jdbctemplate.queryForObject(query, new Object[] { event_id }, new Events_connectionRowMapper()); }
+           catch(EmptyResultDataAccessException ex)
+           { return null; }
+       }*/
+    public events_connection findById(int id)
+    {
+        String query = "SELECT * FROM load_level_information WHERE id = ?";
+
+        try
+        { return (events_connection) this.jdbcTemplate.queryForObject(query, new Object[] { id }, new Events_connectionRowMapper()); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+
+
+    }
+
+    /*public Boolean saveUser(events_connection c)
+       {
+           String query = "INSERT INTO load_level_information (event_id,snssais,anySlice) VALUES(?,?,?)";
+           return jdbctemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+                   @Override
+                   public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException{
+                   preparedStatement.setInt(1,c.getEvent_id());
+                   preparedStatement.setString(2, c.getSnssais());
+                   preparedStatement.setBoolean(3,c.isAnySlice());
+                   return preparedStatement.execute();
+               }
+           });
+       }*/
+    public Boolean saveData(events_connection c)
+    {
+        String query = "INSERT INTO load_level_information (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + c.getSubscriptionID() + "', " + String.valueOf(30) + ")";
+
+        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+
+            @Override
+            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException{
+                //preparedStatement.setInt(1,c.getEvent_id());
+                preparedStatement.setString(1, c.getSnssais());
+                preparedStatement.setBoolean(2,c.isAnySlice());
+
+
+                return preparedStatement.execute();
+            }
+        });
+    }
+
+
+	     /*public Integer deleteUserById(Integer event_id)
+	      { return jdbctemplate.update("DELETE FROM load_level_information WHERE event_id = ?", event_id); }*/
+
+    public Integer deleteDataById(int id)
+    { return jdbcTemplate.update("DELETE FROM load_level_information WHERE id = ?", id); }
+
+
+    //this update function is not working currently!
+	    /* public Integer updateUser(events_connection c)
+	     {
+	         String query = "UPDATE load_level_information SET snssais = ?, anySlice = ? where event_id=?";
+	         Object[] parameters = {c.getSnssais(), c.isAnySlice()};
+	         int[] types = {Types.VARCHAR(45),Types.BOOLEAN,};
+	         return jdbctemplate.update(query, parameters, types);
+	     }*/
+
+
+
+
+    // END OF LOAD_LEVEL_INFORMATION
+    //
+    public events_connection findBySnssais(String snssais) {
+
+        String query= "SELECT *FROM load_level_information WHERE snssais= ?";
+
+        try
+        {return (events_connection) this.jdbcTemplate.queryForObject(query,new Object[] {snssais},new Events_connectionRowMapper());}
+
+        catch(EmptyResultDataAccessException ex)
+        {return null;}
+
+
+    }
+
+
+
+}

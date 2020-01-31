@@ -1,2 +1,0 @@
-http://localhost:8082/Namf_EventExposure_Subscribe
-http://localhost:8081/Namf_EventExposure_Notify
