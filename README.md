@@ -1,2 +1,0 @@
-# nwdaf
-nwdaf node changes
