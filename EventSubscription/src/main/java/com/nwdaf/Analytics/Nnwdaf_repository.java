@@ -28,12 +28,12 @@ public class Nnwdaf_repository {
     Random random = new Random();
 
     public List<NnwdafEventsSubscription> getAllNFs()
-    { return jdbcTemplate.query("SELECT subscriptionID, eventID, notificationURI, notifMethod, repetitionPeriod, loadLevelThreshold FROM eventTable", new eventTableMapper()); }
+    { return jdbcTemplate.query("SELECT subscriptionID, eventID, notificationURI, notifMethod, repetitionPeriod, loadLevelThreshold FROM nwdafSubscriptionTable", new eventTableMapper()); }
 
 
     public Boolean subscribeNF(NnwdafEventsSubscription user, UUID id)
     {
-        String query = "INSERT INTO eventTable VALUES('" + id + "', ?, ?, ?, ?, ?);";
+        String query = "INSERT INTO nwdafSubscriptionTable VALUES('" + id + "', ?, ?, ?, ?, ?);";
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
@@ -55,7 +55,7 @@ public class Nnwdaf_repository {
     public Integer addEventDataID(int eventDataID, UUID subscriptionID)
     {
 
-        return jdbcTemplate.update("UPDATE eventTable SET eventDataID = ? WHERE subscriptionID = ?", new Object[] { eventDataID, String.valueOf(subscriptionID) });
+        return jdbcTemplate.update("UPDATE nwdafSubscriptionTable SET eventDataID = ? WHERE subscriptionID = ?", new Object[] { eventDataID, String.valueOf(subscriptionID) });
 
     }
 
@@ -63,7 +63,7 @@ public class Nnwdaf_repository {
 
     public NnwdafEventsSubscription findById(String id)
     {
-        String query = "SELECT * FROM eventTable WHERE subscriptionID = ?";
+        String query = "SELECT * FROM nwdafSubscriptionTable WHERE subscriptionID = ?";
 
         try
         { return (NnwdafEventsSubscription) this.jdbcTemplate.queryForObject(query, new Object[] { id }, new eventTableMapper()); }
@@ -78,7 +78,7 @@ public class Nnwdaf_repository {
 
     public Integer updateNF(NnwdafEventsSubscription user, String id)
     {
-        String UPDATE_QUERY = "UPDATE eventTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = ?";
+        String UPDATE_QUERY = "UPDATE nwdafSubscriptionTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = ?";
 
         return jdbcTemplate.update(UPDATE_QUERY, user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getLoadLevelThreshold(), id);
 
@@ -93,7 +93,7 @@ public class Nnwdaf_repository {
 
 
     public Integer unsubscribeNF(String id)
-    {  return jdbcTemplate.update("DELETE FROM eventTable WHERE subscriptionID = ?", id); }
+    {  return jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionID = ?", id); }
 
 
 
@@ -203,13 +203,13 @@ public class Nnwdaf_repository {
 
     public int getLoadLevelInformation(String subId) {
 
-        return jdbcTemplate.update("select load_level_info from load_level_information where subscriptionId = ?", subId);
+        return jdbcTemplate.update("select load_level_info from nwdafLoadLevelInformation where subscriptionId = ?", subId);
 
     }
 
     public NnwdafEventsSubscription findDataByuSubId(String subId) {
 
-        String query = "SELECT * FROM load_level_information WHERE subscriptionId = ?";
+        String query = "SELECT * FROM nwdafLoadLevelInformation WHERE subscriptionId = ?";
 
         try {
             return (NnwdafEventsSubscription) this.jdbcTemplate.queryForObject(query, new Object[]{subId}, new loadLevelMapper());
@@ -224,14 +224,14 @@ public class Nnwdaf_repository {
 
         //return jdbcTemplate.query("select subscriptionID from eventTable where eventId = ?" + eventID,this );
 
-        return (List<NnwdafEventsSubscription>) this.jdbcTemplate.query("SELECT *from eventTable WHERE eventID = ?", new Object[] { eventID }, new eventTableMapper());
+        return (List<NnwdafEventsSubscription>) this.jdbcTemplate.query("SELECT * from nwdafSubscriptionTable WHERE eventID = ?", new Object[] { eventID }, new eventTableMapper());
     }
 
     public Boolean addSubscriptionIdToLoadLevelInfo(NnwdafEventsSubscription nnwdafEventsSubscription, UUID subscriptionID) {
 
      //   String query = "INSERT INTO load_level_information VALUES(?,?,?,?,?,'" + subscriptionID + "')";
 
-        String query = "INSERT INTO load_level_information (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + subscriptionID + "', " + 199 + ")";
+        String query = "INSERT INTO nwdafLoadLevelInformation (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + subscriptionID + "', " + 199 + ")";
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
@@ -274,7 +274,7 @@ public class Nnwdaf_repository {
     public List<events_connection> getData()
     {
 
-        return jdbcTemplate.query("SELECT event_id, snssais, anySlice,id from load_level_information",new Events_connectionRowMapper());
+        return jdbcTemplate.query("SELECT event_id, snssais, anySlice,id from nwdafLoadLevelInformation",new Events_connectionRowMapper());
     }
 
     /*public events_connection findById(Integer event_id)
@@ -287,7 +287,7 @@ public class Nnwdaf_repository {
        }*/
     public events_connection findById(int id)
     {
-        String query = "SELECT * FROM load_level_information WHERE id = ?";
+        String query = "SELECT * FROM nwdafLoadLevelInformation WHERE id = ?";
 
         try
         { return (events_connection) this.jdbcTemplate.queryForObject(query, new Object[] { id }, new Events_connectionRowMapper()); }
@@ -313,7 +313,7 @@ public class Nnwdaf_repository {
        }*/
     public Boolean saveData(events_connection c)
     {
-        String query = "INSERT INTO load_level_information (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + c.getSubscriptionID() + "', " + String.valueOf(30) + ")";
+        String query = "INSERT INTO nwdafLoadLevelInformation (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + c.getSubscriptionID() + "', " + String.valueOf(30) + ")";
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
@@ -334,7 +334,7 @@ public class Nnwdaf_repository {
 	      { return jdbctemplate.update("DELETE FROM load_level_information WHERE event_id = ?", event_id); }*/
 
     public Integer deleteDataById(int id)
-    { return jdbcTemplate.update("DELETE FROM load_level_information WHERE id = ?", id); }
+    { return jdbcTemplate.update("DELETE FROM nwdafLoadLevelInformation WHERE id = ?", id); }
 
 
     //this update function is not working currently!
@@ -353,7 +353,7 @@ public class Nnwdaf_repository {
     //
     public events_connection findBySnssais(String snssais) {
 
-        String query= "SELECT *FROM load_level_information WHERE snssais= ?";
+        String query= "SELECT *FROM nwdafLoadLevelInformation WHERE snssais= ?";
 
         try
         {return (events_connection) this.jdbcTemplate.queryForObject(query,new Object[] {snssais},new Events_connectionRowMapper());}
