@@ -13,11 +13,6 @@ public class Events_connectionRowMapper implements RowMapper  {
 	public Object mapRow(ResultSet resultSet, int i) throws SQLException{
 		
 		  events_connection c = new events_connection();
-
-	      // c.setEvent_id(resultSet.getInt("event_id"));
-	      // c.setSnssais(resultSet.getString("snssais"));
-	      // c.setAnySlice(resultSet.getBoolean("anySlice"));
-	       
 	       return c;
 	}
 	

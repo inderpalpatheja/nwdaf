@@ -31,6 +31,8 @@ import static org.springframework.http.HttpHeaders.USER_AGENT;
 @RestController
 public class Nnwdaf_controller {
 
+    private int subscriptionCounter = 0;
+    private int subscriptionResponse = 0;
 
     public int t_value = 0;
 
@@ -88,14 +90,19 @@ public class Nnwdaf_controller {
 
 
         UUID subID = UUID.randomUUID();
-        // adding data to eventTable
 
+        // adding data to nwdafSubscriptionTable;
         repository.subscribeNF(nnwdafEventsSubscription, subID);
 
+        // increasing subscriptionValue
+        //subscriptionCounter = subscriptionCounter + 1;
 
-        //adding subscription ID to load_level_information Table
+
+        //adding subscription ID to nwdafLoadLevelInformation Table
         repository.addSubscriptionIdToLoadLevelInfo(nnwdafEventsSubscription, subID);
 
+        // adding subsctiptionCounter to nwdafCounterTable;
+       repository.getSubscriptionCount();
 
 
         URI location = new URI(URI + "subscriptions/" + String.valueOf(subID));

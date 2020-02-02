@@ -15,7 +15,6 @@ public class EventIdRowMapper implements RowMapper {
 
         SubscrptionIdModel subscrptionIdModel = new SubscrptionIdModel();
        subscrptionIdModel.setSubsctiptionId(resultSet.getString("subscriptionID"));
-        //subscrptionIdModel.(resultSet.getString("eventID"));
 
         return subscrptionIdModel;
     }

@@ -20,8 +20,8 @@ public class loadLevelMapper implements RowMapper {
        // load_level_information.setSnssais(resultSet.getString("snssai"));
         load_level_information.setAnySlice(resultSet.getBoolean("anySlice"));
        // load_level_information.setEventID(resultSet.getInt("id"));
-        load_level_information.setLoadLevelThreshold(resultSet.getInt("load_level_info"));
-        load_level_information.setSubscriptionID(resultSet.getString("subscriptionId"));
+        load_level_information.setLoadLevelThreshold(resultSet.getInt("currentLoadLevelInfo"));
+        load_level_information.setSubscriptionID(resultSet.getString("subscriptionID"));
 
         return load_level_information;
     }
