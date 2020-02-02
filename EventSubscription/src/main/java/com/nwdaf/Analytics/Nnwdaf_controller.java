@@ -54,7 +54,7 @@ public class Nnwdaf_controller {
     }
 
     public Nnwdaf_controller() {
-        logger.info("In Nnwdaf_controller class!");
+        logger.debug("In Nnwdaf_controller class!");
     }
 
     public Nnwdaf_controller(List<UUID> subIDs) {
