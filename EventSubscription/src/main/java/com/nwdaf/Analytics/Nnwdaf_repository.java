@@ -378,6 +378,11 @@ public class Nnwdaf_repository {
         } else {
             jdbcTemplate.update("select nwdafCounterTable set requestType = 'subscriptionRequest' set requestCount = " + nnwdafEventsSubscriptionList.size() + ")");
         }*/
+
+
+        // in demo2branch
+
+
     }
 
 }
