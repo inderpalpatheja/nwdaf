@@ -60,7 +60,7 @@ public class CollectorRepository {
 
        //INSERT INTO Student (ROLL_NO, NAME, Age) VALUES (‘5′,’PRATIK’,’19’);
         
-       String query = "insert into subTable (subscriptionId, correlationId ) values (?,?);";
+       String query = "insert into nwdafSubTable (subscriptionID, correlationID ) values (?,?);";
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
@@ -94,7 +94,7 @@ public class CollectorRepository {
 
     public int updatesubTableWithunSubCorrealtionId(String response, UUID correlationId) {
 
-        String query = "UPDATE subTable SET unSubCorrelationId = ? WHERE correlationId = ?";
+        String query = "UPDATE nwdafSubTable SET unSubCorrelationID = ? WHERE correlationID = ?";
 
         Object[] parameters = { response,correlationId };
         int[] types = {Types.VARCHAR, Types.VARCHAR };
@@ -106,7 +106,7 @@ public class CollectorRepository {
 
     public void unSubscribeEventViaUnSubCorrelationId(UUID unSubCorrelationId) {
 
-        String query = "delete from subTable where unSubCorrelationId=?";
+        String query = "delete from nwdafSubTable where unSubCorrelationID=?";
         Object[] parameters = { unSubCorrelationId };
         int[] types = {Types.VARCHAR };
         jdbcTemplate.update(query, parameters, types);
