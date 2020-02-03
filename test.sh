@@ -1,2 +1,2 @@
-echo Showing logs for level  $1  
-cat log.out | grep -w $1
+read val
+cat log.out | grep -i $val
