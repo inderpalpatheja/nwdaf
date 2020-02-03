@@ -1,7 +1,6 @@
 package com.nwdaf.Analytics;
 
-import com.nwdaf.Analytics.model.LOAD_LEVEL_INFORMATION;
-import com.nwdaf.Analytics.model.analytics;
+
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

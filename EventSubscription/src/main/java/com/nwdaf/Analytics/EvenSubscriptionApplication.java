@@ -16,8 +16,8 @@ public class EvenSubscriptionApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(EvenSubscriptionApplication.class, args);
-       // log.debug("Hello this is debug message!");
-       // log.info("Hello this is info message");
+
+        /// testing sadaf
 
 
     }
