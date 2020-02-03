@@ -2,10 +2,8 @@ package com.nwdaf.Analytics;
 
 
 import com.nwdaf.Analytics.Repository.CollectorRepository;
-import com.nwdaf.Analytics.model.LOAD_LEVEL_INFORMATION;
 import com.nwdaf.Analytics.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 import com.nwdaf.Analytics.model.analytics;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +24,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpHeaders;
-import sun.rmi.runtime.Log;
 
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 
@@ -53,7 +50,7 @@ public class Nnwdaf_controller {
     }
 
     public Nnwdaf_controller() {
-        logger.debug("In Nnwdaf_controller class!");
+        logger.info("In Nnwdaf_controller class!");
     }
 
     public Nnwdaf_controller(List<UUID> subIDs) {
@@ -96,6 +93,7 @@ public class Nnwdaf_controller {
     public ResponseEntity<String> subscribeNF(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
         logger.info("new Subscriber!");
+        logger.debug(nnwdafEventsSubscription.getEventID() + nnwdafEventsSubscription.getNotificationURI());
 
         UUID subID = UUID.randomUUID();
         logger.info("Subscription ID is generated - " + subID);
@@ -129,6 +127,7 @@ public class Nnwdaf_controller {
 
 
         // Calling Collector Function
+        logger.debug(nnwdafEventsSubscription);
         collectorFuntion(nnwdafEventsSubscription, subID);
         logger.info("Collector Function called! ");
 
@@ -145,7 +144,7 @@ public class Nnwdaf_controller {
 
 //        System.out.println("\n\n--------------------------------------------------------------------------------");
 
-  //      System.out.println("\n Event Id is : " + repository.findById(String.valueOf(subId)).eventID + "\n");
+        //      System.out.println("\n Event Id is : " + repository.findById(String.valueOf(subId)).eventID + "\n");
 
         URL obj = new URL(POST_AMF_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -173,19 +172,7 @@ public class Nnwdaf_controller {
         json.put("unSubCorrelationId", namf_eventExposure_subscribe.getUnSubCorrelationId());
         json.put("notificationTargetAddress", notificationTargetUrl);
 
-
-        // System.out.println(" Data saved in subTable :: " + json.toString());
-       // System.out.println((" [ Subscription Id :: " + subId +
-         //       " || CorrelationId ::  " + correationId +
-           //     " ] Saved into table [subTable] "
-       // ));
-
-      //  System.out.println("\n");
-
-       // System.out.println(" CorrelationId send to SUBSCRIPTION PART in Response - " + correationId);
-
-
-      //  System.out.println("\n");
+        //  System.out.println("\n");
         logger.debug(" Data send by NWDAF to SIMULATOR :: " +
                 " , nfID - " + simulationDataObject.getNfId() +
                 " , notificationTargetAddress " + notificationTargetUrl +
@@ -197,9 +184,6 @@ public class Nnwdaf_controller {
         // Saving values into subTable [correlationId and subId]
         collectorRepository.saveInfo(String.valueOf(subId), correationId);
 
-        // repository.(subId);
-
-       // System.out.println("\n");
 
         // For POST only - START
         con.setDoOutput(true);
@@ -207,7 +191,7 @@ public class Nnwdaf_controller {
         try (OutputStream os = con.getOutputStream()) {
             byte[] input = json.toString().getBytes("utf-8");
 
-         //   System.out.println("\n");
+            //   System.out.println("\n");
 
             os.write(input, 0, input.length);
             os.flush();
@@ -222,7 +206,7 @@ public class Nnwdaf_controller {
 
         logger.debug(" POST Response Code :: " + responseCode);
 
-        logger.debug("Response received!");
+        logger.info("Response received!");
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
             logger.debug("Collector subscription Worked!");
@@ -237,17 +221,17 @@ public class Nnwdaf_controller {
             in.close();
 
             // print result
-           // System.out.println("\n");
+            // System.out.println("\n");
             logger.debug(" unSubCorrelationId [ Response from SIMULATOR ] :: " + response);
-            logger.debug("Response Received [unSubCorrelationID ]");
+            logger.info("Response Received [unSubCorrelationID ]");
 
             // Saving unSubCorrelationId into subTable table
 
             collectorRepository.updatesubTableWithunSubCorrealtionId(response.toString(), correationId);
-            logger.debug("Stored response of collector into nwdafSubTable");
+            logger.info("Stored response of collector into nwdafSubTable");
             // Start Thread
 
-            logger.debug("Starting thread");
+            logger.info("Starting thread");
             startThread();
 
             // checking loadLevelInfoTable if subscription ID not present then adding it.
@@ -258,8 +242,7 @@ public class Nnwdaf_controller {
 
 
         } else {
-          //  System.out.println("\n");
-            logger.debug(" POST request not worked");
+            logger.warn(" POST request not worked");
         }
 
         return String.valueOf(correationId);
@@ -280,6 +263,7 @@ public class Nnwdaf_controller {
         NnwdafEventsSubscription check_user = repository.findById(id);
 
         if (check_user == null) {
+            logger.warn("no Content");
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
         }
 
@@ -315,32 +299,9 @@ public class Nnwdaf_controller {
     }
 
 
-    //Sadaf's Code from here
-
-
-    @GetMapping("/dataSet")
-    public List<analytics> getAllUsers() {
-        return repository.getUser();
-
-    }
-
-
-    @GetMapping("/dataSet/{id}")
-    public ResponseEntity<?> getUser(@PathVariable("id") Integer id) {
-        analytics analytics = repository.findById(id);
-
-        if (analytics == null) {
-            return new ResponseEntity<String>("No user Found with the ID " + id, HttpStatus.NOT_FOUND);
-        }
-
-        return new ResponseEntity<analytics>(analytics, HttpStatus.OK);
-    }
-
     // Accepting Notification.
     @RequestMapping("/Namf_EventExposure_Notify/{CorrelationId}")
     public void acceptingNotification(@PathVariable String CorrelationId) {
-
-
         logger.debug(" Notification Received : " + CorrelationId);
     }
 
@@ -352,26 +313,20 @@ public class Nnwdaf_controller {
         return " Event Deleted";
     }
 
-    @RequestMapping("/t")
+
     public void startThread() {
-
-
+        logger.info("In Start Thread function");
         TestThread testThread = new TestThread();
         testThread.start();
+        logger.info("Thread started.");
 
 
-    }
-
-    @RequestMapping("/th/{eventID}")
-
-    public List<NnwdafEventsSubscription> testingThread(@PathVariable("eventID") int x) {
-
-        EventID eventID = EventID.values()[x];
-        return repository.getALLSubID(eventID.ordinal());
     }
 
 
     public List<UUID> getAllSubIds(List<NnwdafEventsSubscription> nnwdafEventsSubscription) {
+
+        logger.info("fetching all subIDs");
 
         List<UUID> allSubIds = new ArrayList<>();
 
@@ -395,8 +350,9 @@ public class Nnwdaf_controller {
 
             for (int i = 0; i < ids.size(); i++) {
 
-                t_value = repository.findById(String.valueOf(ids.get(i))).getLoadLevelThreshold();
+                //logger.debug(ids.get(i)+ "iteration");
 
+                t_value = repository.findById(String.valueOf(ids.get(i))).getLoadLevelThreshold();
                 logger.debug(" \n Subscription ID [ "
                         + repository.findById(String.valueOf(ids.get(i))).getSubscriptionID() + " ||  Threshold Value  - " + t_value);
 
@@ -413,68 +369,17 @@ public class Nnwdaf_controller {
                         e.printStackTrace();
                     }
                     logger.info("Checking load level in thread!");
-                    System.out.println(" \n Subscription ID [ " +
-                            repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID() + " ] "
+                    logger.debug(" Subscription ID [ " + repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID() + " ] "
                             + "||  Load Level " + repository.findDataByuSubId(String.valueOf(ids.get(i))).getLoadLevelThreshold());
                 }
 
-                System.out.println("\n TH Reached ! Notification Send to :: "
-                        + "http://localhost:8082/"
+                logger.debug("\n TH Reached ! Notification Send to :: "
+                        + repository.findById(repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID()).getNotificationURI() + "/"
                         + repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID());
 
             }
         }
 
-    }
-
-
-    /////Sadaf's load_level_information Code:-/////////////
-
-
-    //working
-    public Object getAllData() {
-
-        System.out.println("angel");
-
-        List<events_connection> c = repository.getData();
-
-        if (c.isEmpty()) {
-            return null;
-        } else {
-
-            System.out.println(c);
-
-            return c;
-        }
-    }
-
-
-    //working
-    public Object getData_byId(int id) {
-        System.out.println("is working");
-        events_connection c = repository.findById(id);
-
-        if (c == null) {
-            return null;
-        }
-
-        return c;
-    }
-
-
-    //working
-    public Object deleteData(int id) {
-        System.out.println("delete");
-
-        events_connection c = repository.findById(id);
-
-        if (c == null) {
-            return null;
-        }
-
-        repository.deleteDataById(id);
-
-        return c;
     }
 
 

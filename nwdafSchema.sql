@@ -1,5 +1,7 @@
 DROP DATABASE IF EXISTS NWDAF;
 CREATE SCHEMA `NWDAF` ;
+USE `NWDAF`
+
 CREATE TABLE `NWDAF`.`nwdafLoadLevelInformation` (
   `snssais` VARCHAR(128) NULL,
   `anySlice` TINYINT NULL,
@@ -27,4 +29,6 @@ CREATE TABLE `NWDAF`.`nwdafLoadLevelInformation` (
 `requestCount` int NOT NULL,
 `responseType` VARCHAR(256) NOT NULL,
 `responseCount` int );
- 
+
+
+

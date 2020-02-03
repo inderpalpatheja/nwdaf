@@ -1,0 +1,459 @@
+2020-02-03 17:04:05 INFO  Nnwdaf_controller:53 - In Nnwdaf_controller class!
+2020-02-03 17:05:09 INFO  Nnwdaf_controller:95 - new Subscriber!
+2020-02-03 17:05:09 DEBUG Nnwdaf_controller:96 - 0http://localhost:8082/notify121
+2020-02-03 17:05:09 INFO  Nnwdaf_controller:99 - Subscription ID is generated - e43f5781-a1d4-43d2-9578-abb41c74b1bb
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:104 - Subscriber data save into nwdafSubscriptionTable [ subscriptionID - e43f5781-a1d4-43d2-9578-abb41c74b1bbeventID - 0 notificationURI - http://localhost:8082/notify121notifMethod - 1 repetitionPeriod - 0loadLevelThreshold - 691
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:118 - Generated subscriptionID save into nwdafLoadLevelInfo
+2020-02-03 17:05:10 DEBUG Nnwdaf_controller:130 - com.nwdaf.Analytics.NnwdafEventsSubscription@1bfd9f92
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:140 - In Collector Function
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:142 - EventID - 0
+2020-02-03 17:05:10 DEBUG Nnwdaf_controller:176 -  Data send by NWDAF to SIMULATOR ::  , nfID - 1234 , notificationTargetAddress http://localhost:8081/Namf_EventExposure_Notify , eventId 1 , correlationId b784e109-f5f2-4fd7-9c25-e0cb697b6bfa
+2020-02-03 17:05:10 DEBUG Nnwdaf_controller:207 -  POST Response Code :: 200
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:209 - Response received!
+2020-02-03 17:05:10 DEBUG Nnwdaf_controller:212 - Collector subscription Worked!
+2020-02-03 17:05:10 DEBUG Nnwdaf_controller:225 -  unSubCorrelationId [ Response from SIMULATOR ] :: 461fd758-fcb0-4dfc-92d5-476e0575ee85
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:226 - Response Received [unSubCorrelationID ]
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:231 - Stored response of collector into nwdafSubTable
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:234 - Starting thread
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:318 - In Start Thread function
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:346 - In Thread!
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:321 - Thread started.
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:329 - fetching all subIDs
+2020-02-03 17:05:10 INFO  Nnwdaf_controller:132 - Collector Function called! 
+2020-02-03 17:05:10 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 4ea99408-bd3e-4bb3-9b4c-70117c747a55 ||  Threshold Value  - 691
+2020-02-03 17:05:10 DEBUG Nnwdaf_controller:376 - 
+ TH Reached ! Notification Send to :: http://localhost:8082/notify121/4ea99408-bd3e-4bb3-9b4c-70117c747a55
+2020-02-03 17:05:10 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ||  Threshold Value  - 691
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:95 - new Subscriber!
+2020-02-03 17:05:12 DEBUG Nnwdaf_controller:96 - 0http://localhost:8082/notify121
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:99 - Subscription ID is generated - e31b29d7-0b5c-4c7e-9868-b044fcd0a3d6
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:104 - Subscriber data save into nwdafSubscriptionTable [ subscriptionID - e31b29d7-0b5c-4c7e-9868-b044fcd0a3d6eventID - 0 notificationURI - http://localhost:8082/notify121notifMethod - 1 repetitionPeriod - 0loadLevelThreshold - 691
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:118 - Generated subscriptionID save into nwdafLoadLevelInfo
+2020-02-03 17:05:12 DEBUG Nnwdaf_controller:130 - com.nwdaf.Analytics.NnwdafEventsSubscription@76838c70
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:140 - In Collector Function
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:142 - EventID - 0
+2020-02-03 17:05:12 DEBUG Nnwdaf_controller:176 -  Data send by NWDAF to SIMULATOR ::  , nfID - 1234 , notificationTargetAddress http://localhost:8081/Namf_EventExposure_Notify , eventId 1 , correlationId 06e23f24-2f0d-4bd8-8f4a-1a8921168867
+2020-02-03 17:05:12 DEBUG Nnwdaf_controller:207 -  POST Response Code :: 200
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:209 - Response received!
+2020-02-03 17:05:12 DEBUG Nnwdaf_controller:212 - Collector subscription Worked!
+2020-02-03 17:05:12 DEBUG Nnwdaf_controller:225 -  unSubCorrelationId [ Response from SIMULATOR ] :: 1cbc445d-c2e0-45c8-bdf0-fb11920fe4ba
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:226 - Response Received [unSubCorrelationID ]
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:231 - Stored response of collector into nwdafSubTable
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:234 - Starting thread
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:318 - In Start Thread function
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:321 - Thread started.
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:346 - In Thread!
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:132 - Collector Function called! 
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:329 - fetching all subIDs
+2020-02-03 17:05:12 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 4ea99408-bd3e-4bb3-9b4c-70117c747a55 ||  Threshold Value  - 691
+2020-02-03 17:05:12 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:12 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:12 DEBUG Nnwdaf_controller:376 - 
+ TH Reached ! Notification Send to :: http://localhost:8082/notify121/4ea99408-bd3e-4bb3-9b4c-70117c747a55
+2020-02-03 17:05:12 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ||  Threshold Value  - 691
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:95 - new Subscriber!
+2020-02-03 17:05:13 DEBUG Nnwdaf_controller:96 - 0http://localhost:8082/notify121
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:99 - Subscription ID is generated - 6b02952a-2c44-4823-821f-0ee2914ca0ba
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:104 - Subscriber data save into nwdafSubscriptionTable [ subscriptionID - 6b02952a-2c44-4823-821f-0ee2914ca0baeventID - 0 notificationURI - http://localhost:8082/notify121notifMethod - 1 repetitionPeriod - 0loadLevelThreshold - 691
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:118 - Generated subscriptionID save into nwdafLoadLevelInfo
+2020-02-03 17:05:13 DEBUG Nnwdaf_controller:130 - com.nwdaf.Analytics.NnwdafEventsSubscription@1ec361f3
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:140 - In Collector Function
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:142 - EventID - 0
+2020-02-03 17:05:13 DEBUG Nnwdaf_controller:176 -  Data send by NWDAF to SIMULATOR ::  , nfID - 1234 , notificationTargetAddress http://localhost:8081/Namf_EventExposure_Notify , eventId 1 , correlationId aa11a145-a019-4737-a9ae-8b9ed235a2be
+2020-02-03 17:05:13 DEBUG Nnwdaf_controller:207 -  POST Response Code :: 200
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:209 - Response received!
+2020-02-03 17:05:13 DEBUG Nnwdaf_controller:212 - Collector subscription Worked!
+2020-02-03 17:05:13 DEBUG Nnwdaf_controller:225 -  unSubCorrelationId [ Response from SIMULATOR ] :: 2ac68dc1-61a8-4eb3-9b75-ea959e940749
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:226 - Response Received [unSubCorrelationID ]
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:231 - Stored response of collector into nwdafSubTable
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:234 - Starting thread
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:318 - In Start Thread function
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:321 - Thread started.
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:346 - In Thread!
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:132 - Collector Function called! 
+2020-02-03 17:05:13 INFO  Nnwdaf_controller:329 - fetching all subIDs
+2020-02-03 17:05:13 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 4ea99408-bd3e-4bb3-9b4c-70117c747a55 ||  Threshold Value  - 691
+2020-02-03 17:05:13 DEBUG Nnwdaf_controller:376 - 
+ TH Reached ! Notification Send to :: http://localhost:8082/notify121/4ea99408-bd3e-4bb3-9b4c-70117c747a55
+2020-02-03 17:05:13 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ||  Threshold Value  - 691
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:95 - new Subscriber!
+2020-02-03 17:05:14 DEBUG Nnwdaf_controller:96 - 0http://localhost:8082/notify121
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:99 - Subscription ID is generated - 9640f16b-60ea-40d3-ae9d-5f0e599eb941
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:104 - Subscriber data save into nwdafSubscriptionTable [ subscriptionID - 9640f16b-60ea-40d3-ae9d-5f0e599eb941eventID - 0 notificationURI - http://localhost:8082/notify121notifMethod - 1 repetitionPeriod - 0loadLevelThreshold - 691
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:118 - Generated subscriptionID save into nwdafLoadLevelInfo
+2020-02-03 17:05:14 DEBUG Nnwdaf_controller:130 - com.nwdaf.Analytics.NnwdafEventsSubscription@57eed115
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:140 - In Collector Function
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:142 - EventID - 0
+2020-02-03 17:05:14 DEBUG Nnwdaf_controller:176 -  Data send by NWDAF to SIMULATOR ::  , nfID - 1234 , notificationTargetAddress http://localhost:8081/Namf_EventExposure_Notify , eventId 1 , correlationId de5c823d-9b53-4591-841c-50d892509304
+2020-02-03 17:05:14 DEBUG Nnwdaf_controller:207 -  POST Response Code :: 200
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:209 - Response received!
+2020-02-03 17:05:14 DEBUG Nnwdaf_controller:212 - Collector subscription Worked!
+2020-02-03 17:05:14 DEBUG Nnwdaf_controller:225 -  unSubCorrelationId [ Response from SIMULATOR ] :: 9ecf46fa-b59c-4d37-8b42-a805e5deaa8d
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:226 - Response Received [unSubCorrelationID ]
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:231 - Stored response of collector into nwdafSubTable
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:234 - Starting thread
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:318 - In Start Thread function
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:321 - Thread started.
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:346 - In Thread!
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:132 - Collector Function called! 
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:329 - fetching all subIDs
+2020-02-03 17:05:14 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 4ea99408-bd3e-4bb3-9b4c-70117c747a55 ||  Threshold Value  - 691
+2020-02-03 17:05:14 DEBUG Nnwdaf_controller:376 - 
+ TH Reached ! Notification Send to :: http://localhost:8082/notify121/4ea99408-bd3e-4bb3-9b4c-70117c747a55
+2020-02-03 17:05:14 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ||  Threshold Value  - 691
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:14 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:14 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:14 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:95 - new Subscriber!
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:96 - 0http://localhost:8082/notify121
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:99 - Subscription ID is generated - f304de4b-0324-4f9d-a615-98d46d9ac844
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:104 - Subscriber data save into nwdafSubscriptionTable [ subscriptionID - f304de4b-0324-4f9d-a615-98d46d9ac844eventID - 0 notificationURI - http://localhost:8082/notify121notifMethod - 1 repetitionPeriod - 0loadLevelThreshold - 691
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:118 - Generated subscriptionID save into nwdafLoadLevelInfo
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:130 - com.nwdaf.Analytics.NnwdafEventsSubscription@3a3c2d62
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:140 - In Collector Function
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:142 - EventID - 0
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:176 -  Data send by NWDAF to SIMULATOR ::  , nfID - 1234 , notificationTargetAddress http://localhost:8081/Namf_EventExposure_Notify , eventId 1 , correlationId 7ca44236-587f-4f1f-9c45-864638b3813e
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:207 -  POST Response Code :: 200
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:209 - Response received!
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:212 - Collector subscription Worked!
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:225 -  unSubCorrelationId [ Response from SIMULATOR ] :: d4cb17a1-2b5a-4529-853c-9859195d0b76
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:226 - Response Received [unSubCorrelationID ]
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:231 - Stored response of collector into nwdafSubTable
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:234 - Starting thread
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:318 - In Start Thread function
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:321 - Thread started.
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:346 - In Thread!
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:329 - fetching all subIDs
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:132 - Collector Function called! 
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 4ea99408-bd3e-4bb3-9b4c-70117c747a55 ||  Threshold Value  - 691
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:376 - 
+ TH Reached ! Notification Send to :: http://localhost:8082/notify121/4ea99408-bd3e-4bb3-9b4c-70117c747a55
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ||  Threshold Value  - 691
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:95 - new Subscriber!
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:96 - 0http://localhost:8082/notify121
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:99 - Subscription ID is generated - c2d9236b-436d-4232-a67c-8faed6264e13
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:104 - Subscriber data save into nwdafSubscriptionTable [ subscriptionID - c2d9236b-436d-4232-a67c-8faed6264e13eventID - 0 notificationURI - http://localhost:8082/notify121notifMethod - 1 repetitionPeriod - 0loadLevelThreshold - 691
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:118 - Generated subscriptionID save into nwdafLoadLevelInfo
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:130 - com.nwdaf.Analytics.NnwdafEventsSubscription@244d667
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:140 - In Collector Function
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:142 - EventID - 0
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:176 -  Data send by NWDAF to SIMULATOR ::  , nfID - 1234 , notificationTargetAddress http://localhost:8081/Namf_EventExposure_Notify , eventId 1 , correlationId 1d1ba9f8-ab6f-4fc1-b3b2-e11f2d7b3d30
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:207 -  POST Response Code :: 200
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:209 - Response received!
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:212 - Collector subscription Worked!
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:225 -  unSubCorrelationId [ Response from SIMULATOR ] :: 8e702818-8688-4f14-b58e-c34691cfb0e6
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:226 - Response Received [unSubCorrelationID ]
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:231 - Stored response of collector into nwdafSubTable
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:234 - Starting thread
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:318 - In Start Thread function
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:321 - Thread started.
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:346 - In Thread!
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:132 - Collector Function called! 
+2020-02-03 17:05:15 INFO  Nnwdaf_controller:329 - fetching all subIDs
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 4ea99408-bd3e-4bb3-9b4c-70117c747a55 ||  Threshold Value  - 691
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:376 - 
+ TH Reached ! Notification Send to :: http://localhost:8082/notify121/4ea99408-bd3e-4bb3-9b4c-70117c747a55
+2020-02-03 17:05:15 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ||  Threshold Value  - 691
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:95 - new Subscriber!
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:96 - 0http://localhost:8082/notify121
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:99 - Subscription ID is generated - daec27fd-c2b5-49cf-9346-5f3d3d4e95c9
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:104 - Subscriber data save into nwdafSubscriptionTable [ subscriptionID - daec27fd-c2b5-49cf-9346-5f3d3d4e95c9eventID - 0 notificationURI - http://localhost:8082/notify121notifMethod - 1 repetitionPeriod - 0loadLevelThreshold - 691
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:118 - Generated subscriptionID save into nwdafLoadLevelInfo
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:130 - com.nwdaf.Analytics.NnwdafEventsSubscription@c210da5
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:140 - In Collector Function
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:142 - EventID - 0
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:176 -  Data send by NWDAF to SIMULATOR ::  , nfID - 1234 , notificationTargetAddress http://localhost:8081/Namf_EventExposure_Notify , eventId 1 , correlationId 40a0eb12-0bd2-46df-9148-4814e57dfe95
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:207 -  POST Response Code :: 200
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:209 - Response received!
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:212 - Collector subscription Worked!
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:225 -  unSubCorrelationId [ Response from SIMULATOR ] :: fb78f111-5a9a-4e2e-b1c3-d99aa7d35761
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:226 - Response Received [unSubCorrelationID ]
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:231 - Stored response of collector into nwdafSubTable
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:234 - Starting thread
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:318 - In Start Thread function
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:321 - Thread started.
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:346 - In Thread!
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:329 - fetching all subIDs
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:132 - Collector Function called! 
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 4ea99408-bd3e-4bb3-9b4c-70117c747a55 ||  Threshold Value  - 691
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:376 - 
+ TH Reached ! Notification Send to :: http://localhost:8082/notify121/4ea99408-bd3e-4bb3-9b4c-70117c747a55
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ||  Threshold Value  - 691
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:16 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:16 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:95 - new Subscriber!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:96 - 0http://localhost:8082/notify121
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:99 - Subscription ID is generated - 133cace8-2766-4f89-be64-2f99968fb382
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:104 - Subscriber data save into nwdafSubscriptionTable [ subscriptionID - 133cace8-2766-4f89-be64-2f99968fb382eventID - 0 notificationURI - http://localhost:8082/notify121notifMethod - 1 repetitionPeriod - 0loadLevelThreshold - 691
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:118 - Generated subscriptionID save into nwdafLoadLevelInfo
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:130 - com.nwdaf.Analytics.NnwdafEventsSubscription@445005df
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:140 - In Collector Function
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:142 - EventID - 0
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:176 -  Data send by NWDAF to SIMULATOR ::  , nfID - 1234 , notificationTargetAddress http://localhost:8081/Namf_EventExposure_Notify , eventId 1 , correlationId bd0c9de7-80ba-4efe-a91d-dacbe532f02b
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:207 -  POST Response Code :: 200
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:209 - Response received!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:212 - Collector subscription Worked!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:225 -  unSubCorrelationId [ Response from SIMULATOR ] :: b6730cdb-022e-43d8-87ed-ab8ed2c84f15
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:226 - Response Received [unSubCorrelationID ]
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:231 - Stored response of collector into nwdafSubTable
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:234 - Starting thread
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:318 - In Start Thread function
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:321 - Thread started.
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:346 - In Thread!
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:329 - fetching all subIDs
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:132 - Collector Function called! 
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ||  Threshold Value  - 691
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:95 - new Subscriber!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:96 - 0http://localhost:8082/notify121
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:99 - Subscription ID is generated - a2d8dcd8-2032-4f7c-ae3b-83dd3f95600a
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:104 - Subscriber data save into nwdafSubscriptionTable [ subscriptionID - a2d8dcd8-2032-4f7c-ae3b-83dd3f95600aeventID - 0 notificationURI - http://localhost:8082/notify121notifMethod - 1 repetitionPeriod - 0loadLevelThreshold - 691
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:118 - Generated subscriptionID save into nwdafLoadLevelInfo
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:130 - com.nwdaf.Analytics.NnwdafEventsSubscription@29be6f56
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:140 - In Collector Function
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:142 - EventID - 0
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:176 -  Data send by NWDAF to SIMULATOR ::  , nfID - 1234 , notificationTargetAddress http://localhost:8081/Namf_EventExposure_Notify , eventId 1 , correlationId ad5f050f-a72f-4518-9426-805ee338fca6
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:207 -  POST Response Code :: 200
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:209 - Response received!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:212 - Collector subscription Worked!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:225 -  unSubCorrelationId [ Response from SIMULATOR ] :: 791119a4-d200-4135-a1d5-92992d37ae31
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:226 - Response Received [unSubCorrelationID ]
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:231 - Stored response of collector into nwdafSubTable
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:234 - Starting thread
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:318 - In Start Thread function
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:321 - Thread started.
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:346 - In Thread!
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:329 - fetching all subIDs
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:132 - Collector Function called! 
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ||  Threshold Value  - 691
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:95 - new Subscriber!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:96 - 0http://localhost:8082/notify121
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:99 - Subscription ID is generated - e8b4a0f5-9174-421b-8985-2b428c1b457b
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:104 - Subscriber data save into nwdafSubscriptionTable [ subscriptionID - e8b4a0f5-9174-421b-8985-2b428c1b457beventID - 0 notificationURI - http://localhost:8082/notify121notifMethod - 1 repetitionPeriod - 0loadLevelThreshold - 691
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:118 - Generated subscriptionID save into nwdafLoadLevelInfo
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:130 - com.nwdaf.Analytics.NnwdafEventsSubscription@3ea49b56
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:140 - In Collector Function
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:142 - EventID - 0
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:176 -  Data send by NWDAF to SIMULATOR ::  , nfID - 1234 , notificationTargetAddress http://localhost:8081/Namf_EventExposure_Notify , eventId 1 , correlationId ff66ff95-7b32-4b02-848c-279fb2f8579e
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:207 -  POST Response Code :: 200
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:209 - Response received!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:212 - Collector subscription Worked!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:225 -  unSubCorrelationId [ Response from SIMULATOR ] :: 8ed1066d-b4a9-4fd7-ab98-0aed7f5a6536
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:226 - Response Received [unSubCorrelationID ]
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:231 - Stored response of collector into nwdafSubTable
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:234 - Starting thread
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:318 - In Start Thread function
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:321 - Thread started.
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:346 - In Thread!
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:132 - Collector Function called! 
+2020-02-03 17:05:17 INFO  Nnwdaf_controller:329 - fetching all subIDs
+2020-02-03 17:05:17 DEBUG Nnwdaf_controller:356 -  
+ Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ||  Threshold Value  - 691
+2020-02-03 17:05:18 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:18 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:18 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:18 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:18 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:18 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:18 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:18 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:19 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:19 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:19 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:19 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:19 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:19 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:19 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:19 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:19 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:19 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:19 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:19 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:20 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:20 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:20 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:20 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:20 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:20 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:20 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:20 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:21 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:21 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:21 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:21 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:21 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:21 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:21 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:21 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:21 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:21 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:21 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:22 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:22 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:22 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:22 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:22 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:22 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:22 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:22 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:22 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:23 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:23 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:23 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:23 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:23 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:23 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:23 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:23 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:23 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:23 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:24 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:24 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:24 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:24 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:24 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:24 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:24 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:24 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:24 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:24 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:25 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:25 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:25 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:25 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:25 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:25 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:25 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:25 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:25 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:25 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:26 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:26 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:26 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:26 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:26 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:26 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:26 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:26 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:26 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:26 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:27 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:27 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:27 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:27 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:27 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:27 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:27 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:27 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:28 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:28 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:28 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:28 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:28 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:28 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:28 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:28 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:28 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:28 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:28 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:28 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:29 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:29 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:29 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:29 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:29 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:29 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:29 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:29 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:30 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:30 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:30 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:30 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:30 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:30 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:30 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:30 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:30 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:30 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:30 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:30 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:31 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:31 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:31 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:31 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:31 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:31 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:31 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:31 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:32 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:32 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:32 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:32 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:32 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:32 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:32 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:32 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:32 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:32 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:32 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:32 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:33 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:33 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:33 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:33 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:33 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:33 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:33 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:33 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:34 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:34 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:34 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:34 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:34 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:34 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:34 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:34 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:34 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:34 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:34 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:34 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:35 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:35 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:35 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:35 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:35 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:35 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0
+2020-02-03 17:05:35 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:35 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:36 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:36 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 6adf6b3e-b77d-4a0d-a5f2-5801d37cfbaa ] ||  Load Level 0
+2020-02-03 17:05:36 INFO  Nnwdaf_controller:371 - Checking load level in thread!
+2020-02-03 17:05:36 DEBUG Nnwdaf_controller:372 -  Subscription ID [ 133cace8-2766-4f89-be64-2f99968fb382 ] ||  Load Level 0

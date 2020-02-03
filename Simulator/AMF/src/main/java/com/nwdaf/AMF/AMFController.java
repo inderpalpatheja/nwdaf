@@ -53,7 +53,7 @@ public class AMFController extends Functionality {
 
         UUID unSubCorrelationId = UUID.randomUUID();
 
-        sendNotification(obj, obj.getNotificationTargetAddress() + "/" + obj.getCorrelationId());
+        //sendNotification(obj, obj.getNotificationTargetAddress() + "/" + obj.getCorrelationId());
 
 
 
@@ -80,7 +80,7 @@ public class AMFController extends Functionality {
             String notificationString = "\n\nSending Notification to " + namf_eventExposure_subscribe.getNotificationTargetAddress() + "/" +
                     namf_eventExposure_subscribe.getCorrelationId();
 
-            System.out.println(notificationString);
+          //  System.out.println(notificationString);
 
             // For POST only - START
             con.setDoOutput(true);
