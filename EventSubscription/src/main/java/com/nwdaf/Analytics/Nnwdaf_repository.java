@@ -222,6 +222,19 @@ public class Nnwdaf_repository {
     }
 
 
+    public NnwdafEventsSubscription findNFURI(String subId) {
+
+        String query = "select *from nwdafSubscriptionTable where subscriptionID= ?";
+
+        try {
+            return (NnwdafEventsSubscription) this.jdbcTemplate.queryForObject(query, new Object[]{subId}, new eventTableMapper());
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
+
+    }
+
+
     public List<NnwdafEventsSubscription> getALLSubID(int eventID) {
 
         //return jdbcTemplate.query("select subscriptionID from eventTable where eventId = ?" + eventID,this );

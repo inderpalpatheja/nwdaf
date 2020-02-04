@@ -4,6 +4,9 @@ package com.nwdaf.Analytics;
 import com.nwdaf.Analytics.Repository.CollectorRepository;
 import com.nwdaf.Analytics.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 import com.nwdaf.Analytics.model.analytics;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,10 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.*;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpHeaders;
 
+import static java.lang.System.out;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 
@@ -36,6 +37,8 @@ public class Nnwdaf_controller {
 
     private int subscriptionCounter = 0;
     private int subscriptionResponse = 0;
+
+    private Log log = LogFactory.getLog(Nnwdaf_controller.class);
 
     public int t_value = 0;
 
@@ -51,6 +54,9 @@ public class Nnwdaf_controller {
 
     public Nnwdaf_controller() {
         logger.info("In Nnwdaf_controller class!");
+        // logger.error("error log");
+        // logger.fatal("fatal");
+
     }
 
     public Nnwdaf_controller(List<UUID> subIDs) {
@@ -83,6 +89,21 @@ public class Nnwdaf_controller {
     }
 
 
+    @RequestMapping("/log")
+    public String log() {
+        // log.trace("This is a TRACE level message");
+        //log.debug("This is a DEBUG level message");
+        //log.info("This is an INFO level message");
+        //log.warn("This is a WARN level message");
+        //log.error("This is an ERROR level message");
+
+        //  Logger logger = LogManager.getLogger("CONSOLE_JSON_APPENDER");
+        // logger.debug("Debug message");
+
+        return "See the log for details";
+    }
+
+
     @GetMapping(PATH + "/allNFs")
     public List<NnwdafEventsSubscription> getAllNFs() {
         return repository.getAllNFs();
@@ -101,6 +122,7 @@ public class Nnwdaf_controller {
         // adding data to nwdafSubscriptionTable;
 
         repository.subscribeNF(nnwdafEventsSubscription, subID);
+
         logger.info("Subscriber data save into nwdafSubscriptionTable [ subscriptionID - " + subID
                 + "eventID - " + nnwdafEventsSubscription.getEventID()
                 + " notificationURI - " + nnwdafEventsSubscription.getNotificationURI()
@@ -115,6 +137,7 @@ public class Nnwdaf_controller {
 
         //adding subscription ID to nwdafLoadLevelInformation Table
         repository.addSubscriptionIdToLoadLevelInfo(nnwdafEventsSubscription, subID);
+
         logger.info("Generated subscriptionID save into nwdafLoadLevelInfo");
 
         // adding subsctiptionCounter to nwdafCounterTable;
@@ -128,7 +151,9 @@ public class Nnwdaf_controller {
 
         // Calling Collector Function
         logger.debug(nnwdafEventsSubscription);
+
         collectorFuntion(nnwdafEventsSubscription, subID);
+
         logger.info("Collector Function called! ");
 
 
@@ -142,11 +167,16 @@ public class Nnwdaf_controller {
         logger.info("EventID - " + nnwdafEventsSubscription.getEventID());
         Namf_EventExposure_Subscribe namf_eventExposure_subscribe = new Namf_EventExposure_Subscribe();
 
-//        System.out.println("\n\n--------------------------------------------------------------------------------");
+        // POST_AMF_URL = POST_AMF_URL + subId;
 
-        //      System.out.println("\n Event Id is : " + repository.findById(String.valueOf(subId)).eventID + "\n");
+        //POST_AMF_URL = http::/localhost:8082/Namf_EventExposure_Subscribe/subID
 
-        URL obj = new URL(POST_AMF_URL);
+        String updated_POST_AMF_URL = POST_AMF_URL + "/" + subId;
+        System.out.println(updated_POST_AMF_URL);
+
+        //logger.info(POST_AMF_URL + "/" +subId);
+
+        URL obj = new URL(updated_POST_AMF_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
         con.setRequestMethod("POST");
@@ -162,6 +192,8 @@ public class Nnwdaf_controller {
 
 
         simulationDataObject.setNfId(1234);
+
+        // notificationTargetUrl = Namf_EventExposure_Notify
         simulationDataObject.setNotificationTargetAddress(notificationTargetUrl);
         simulationDataObject.setEventId(1);
         simulationDataObject.setCorrelationId(String.valueOf(correationId));
@@ -170,6 +202,8 @@ public class Nnwdaf_controller {
         json.put("subscriptionId", subId);
         json.put("correlationId", correationId);
         json.put("unSubCorrelationId", namf_eventExposure_subscribe.getUnSubCorrelationId());
+
+        // notificationTargetUrl = Namf_EventExposure_Notify
         json.put("notificationTargetAddress", notificationTargetUrl);
 
         //  System.out.println("\n");
@@ -223,14 +257,16 @@ public class Nnwdaf_controller {
             // print result
             // System.out.println("\n");
             logger.debug(" unSubCorrelationId [ Response from SIMULATOR ] :: " + response);
+
             logger.info("Response Received [unSubCorrelationID ]");
 
             // Saving unSubCorrelationId into subTable table
 
             collectorRepository.updatesubTableWithunSubCorrealtionId(response.toString(), correationId);
-            logger.info("Stored response of collector into nwdafSubTable");
-            // Start Thread
 
+            logger.info("Stored response of collector into nwdafSubTable");
+
+            // Start Thread
             logger.info("Starting thread");
             startThread();
 
@@ -299,10 +335,13 @@ public class Nnwdaf_controller {
     }
 
 
-    // Accepting Notification.
-    @RequestMapping("/Namf_EventExposure_Notify/{CorrelationId}")
-    public void acceptingNotification(@PathVariable String CorrelationId) {
-        logger.debug(" Notification Received : " + CorrelationId);
+    // Accepting Notification
+    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{subscriptionID}")
+    public void acceptingNotification(@PathVariable String subscriptionID) {
+        logger.debug(" Data Received for : " + subscriptionID);
+        System.out.println("Data received !!");
+
+
     }
 
 
@@ -356,7 +395,7 @@ public class Nnwdaf_controller {
                 logger.debug(" \n Subscription ID [ "
                         + repository.findById(String.valueOf(ids.get(i))).getSubscriptionID() + " ||  Threshold Value  - " + t_value);
 
-                System.out.println(" \n Current Load Level  in Load_Level_info Table [ " +
+                logger.debug(" \n Current Load Level  in Load_Level_info Table [ " +
                         repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID() + " ] "
                         + " Available Load  " + repository.findDataByuSubId(String.valueOf(ids.get(i))).getLoadLevelThreshold());
 
@@ -374,13 +413,139 @@ public class Nnwdaf_controller {
                 }
 
                 logger.debug("\n TH Reached ! Notification Send to :: "
-                        + repository.findById(repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID()).getNotificationURI() + "/"
-                        + repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID());
+                        //  + repository.findById(repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID()).getNotificationURI() + "/"
+                        + repository.findById(repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID()).getNotificationURI());
+
+                try {
+                    out.println("NF URI " + repository.findById(repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID()).getNotificationURI());
+
+                    sendNotificationToNF(repository.findById(repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID()).getNotificationURI());     // URI from NIKHIL Table;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
             }
         }
-
     }
+
+    private void sendNotificationToNF(String notificationURI) throws IOException {
+
+
+        out.println(notificationURI);
+
+        URL url = null;
+        try {
+            url = new URL(notificationURI);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        // Opening connection;
+        HttpURLConnection con = null;
+        try {
+            con = (HttpURLConnection) url.openConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            con.setRequestMethod("POST");
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        }
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+        con.setDoOutput(true);
+
+        // JSON  String sending to M1
+       // String jsonInputString = "{\"id\":10000,\"name\":\" [ M2 -> M1 ]\"}";
+
+        String jsonInputString = "Hey I am Notificaion";
+
+        System.out.println("\n\nSending Notificaiton From  NWDAF TO NF  - " + jsonInputString);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+
+            os.write(input, 0, input.length);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Read the response from input stream;
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(con.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            System.out.println(response.toString());
+            out.println("Response code from NF - " + HttpStatus.valueOf(con.getResponseCode()));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    // out.println("NF notificaiton Post mapping " + notificationURI);
+      /*  URL url = new URL(notificationURI);
+
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+
+
+        String notificaitonString = "Hello NF!";
+
+        con.setDoOutput(true);
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = notificaitonString.getBytes("utf-8");
+
+            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
+
+            os.write(input, 0, input.length);
+            os.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // For POST only - END
+
+
+        int responseCode = con.getResponseCode();
+        String responseMessage = con.getResponseMessage();
+        System.out.println("POST Response Code :: " + responseCode);
+        System.out.println("POST Response Message :: " + responseMessage);
+
+
+
+
+
+        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // print result
+            System.out.println("\n\n");
+            System.out.println(response);
+        } else {
+            System.out.println("\n\n");
+            System.out.println("POST request not worked For NF");
+        }
+    }*/
 
 
 }
