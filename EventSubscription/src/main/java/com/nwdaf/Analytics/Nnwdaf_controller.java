@@ -81,29 +81,40 @@ public class Nnwdaf_controller {
     @Autowired
     CollectorRepository collectorRepository;
 
-    @GetMapping(PATH + "/test")
+    @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/")
     public String testing() {
 
 
-        return "Working Properly!" + POST_AMF_URL;
+        return "HI Analytics";
     }
 
 
+    @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/{snssais}/{subscriptionID}")
+    public ResponseEntity<?> loadLevelAllData(@PathVariable("snssais") String s, @PathVariable("subscriptionID") String sub) {
+
+        List<events_connection> connect = repository.getData(s, sub);
 
 
+        if (connect.isEmpty()) {
 
+            logger.warn("data not found ");
+            // return new ResponseEntity<String>( "Data not found",HttpStatus.NO_CONTENT);
+            return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+        } else {
+            System.out.println(connect);
+            return new ResponseEntity<events_connection>(HttpStatus.OK);
+        }
 
-
-    
+    }
 
 
     @RequestMapping("/log")
     public String log() {
-        // log.trace("This is a TRACE level message");
-        //log.debug("This is a DEBUG level message");
-        //log.info("This is an INFO level message");
-        //log.warn("This is a WARN level message");
-        //log.error("This is an ERROR level message");
+        log.trace("This is a TRACE level message");
+        log.debug("This is a DEBUG level message");
+        log.info("This is an INFO level message");
+        log.warn("This is a WARN level message");
+        log.error("This is an ERROR level message");
 
         //  Logger logger = LogManager.getLogger("CONSOLE_JSON_APPENDER");
         // logger.debug("Debug message");

@@ -264,54 +264,20 @@ public class Nnwdaf_repository {
         });
     }
 
+// sadaf 4 feb start
+    /*
+    public List<events_connection> getData(String sn, String sub) {
 
-    ////Sadaf's load_level_information Code/////
-
-
-    //LOAD_LEVEL_INFORMATION
-
-    /*public List<events_connection> getUser()
-       {
-           return jdbctemplate.query("SELECT event_id, snssais, anySlice,id from load_level_information",new Events_connectionRowMapper());
-       }*/
-    public List<events_connection> getData() {
-
-        return jdbcTemplate.query("SELECT event_id, snssais, anySlice,id from load_level_information", new Events_connectionRowMapper());
+        return jdbcTemplate.query("SELECT * from nwdafLoadLevelInformation WHERE snssais='" + sn + "' AND  subscriptionID ='" + sub + "'", new analyticsRowMapper());
     }
+sadaf 4 feb ends
+*/
+public List<events_connection> getData(String sn, String sub) {
 
-    /*public events_connection findById(Integer event_id)
-       {
-           String query = "SELECT * FROM load_level_information WHERE event_id = ?";
-           try
-           { return (events_connection) this.jdbctemplate.queryForObject(query, new Object[] { event_id }, new Events_connectionRowMapper()); }
-           catch(EmptyResultDataAccessException ex)
-           { return null; }
-       }*/
-    public events_connection findById(int id) {
-        String query = "SELECT * FROM load_level_information WHERE id = ?";
-
-        try {
-            return (events_connection) this.jdbcTemplate.queryForObject(query, new Object[]{id}, new Events_connectionRowMapper());
-        } catch (EmptyResultDataAccessException ex) {
-            return null;
-        }
+    return jdbcTemplate.query("SELECT *from nwdafLoadLevelInformation WHERE snssais='" + sn + "' AND  subscriptionID ='" + sub + "'", new analyticsRowMapper());
+}
 
 
-    }
-
-    /*public Boolean saveUser(events_connection c)
-       {
-           String query = "INSERT INTO load_level_information (event_id,snssais,anySlice) VALUES(?,?,?)";
-           return jdbctemplate.execute(query, new PreparedStatementCallback<Boolean>() {
-                   @Override
-                   public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException{
-                   preparedStatement.setInt(1,c.getEvent_id());
-                   preparedStatement.setString(2, c.getSnssais());
-                   preparedStatement.setBoolean(3,c.isAnySlice());
-                   return preparedStatement.execute();
-               }
-           });
-       }*/
     public Boolean saveData(events_connection c) {
         // String query = "INSERT INTO load_level_information (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + c.getSubscriptionID() + "', " + String.valueOf(30) + ")";
         String query = "INSERT INTO nwdafLoadLevelInformation (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + c.getSubscriptionID() + "', " + String.valueOf(30) + ")";

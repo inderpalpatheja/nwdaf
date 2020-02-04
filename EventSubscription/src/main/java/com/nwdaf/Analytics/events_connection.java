@@ -3,88 +3,75 @@ package com.nwdaf.Analytics;
 import java.util.UUID;
 
 public class events_connection {
-	
-	//LOAD_LEVEL_INFORMATION
-	//private int event_id;
-	private String snssais;
-	private boolean anySlice;
-	private String subscriptionID;
-	//
-	
-	private int id;
-	//
+
+    //LOAD_LEVEL_INFORMATION
+    //private int event_id;
+    private String snssais;
+    private boolean anySlice;
+    private String subscriptionID;
+
+    private int currentLoadLevelInfo;
 
 
-	public events_connection() {
-	}
-
-	public events_connection(String snssais, boolean anySlice, String subscriptionID) {
-		super();
-		this.snssais = snssais;
-		this.anySlice = anySlice;
-		this.subscriptionID = subscriptionID;
-	}
+    private int id;
 
 
+    public String getSnssais() {
+        return snssais;
+    }
 
-	public events_connection(String snssais, boolean anySlice, UUID subscriptionID) {
-		
-	}
-	
-	public int getId() {
-		return id;
-	}
+    public void setSnssais(String snssais) {
+        this.snssais = snssais;
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    public boolean isAnySlice() {
+        return anySlice;
+    }
 
-	
+    public void setAnySlice(boolean anySlice) {
+        this.anySlice = anySlice;
+    }
 
+    public String getSubscriptionID() {
+        return subscriptionID;
+    }
 
-	
-	/*public int getEvent_id() {
-		return event_id;
-	}
-	public void setEvent_id(int event_id) {
-		this.event_id = event_id;
-	}*/
-	
-	public String getSnssais() {
-		return snssais;
-	}
-	public void setSnssais(String snssais) {
-		this.snssais = snssais;
-	}
-	
+    public void setSubscriptionID(String subscriptionID) {
+        this.subscriptionID = subscriptionID;
+    }
 
-	public boolean isAnySlice() {
-		return anySlice;
-	}
+    public int getCurrentLoadLevelInfo() {
+        return currentLoadLevelInfo;
+    }
 
-	public void setAnySlice(boolean anySlice) {
-		this.anySlice = anySlice;
-	}
+    public void setCurrentLoadLevelInfo(int currentLoadLevelInfo) {
+        this.currentLoadLevelInfo = currentLoadLevelInfo;
+    }
 
-	@Override
-	public String toString() {
-		return "events_connection [snssais=" + snssais + ", anySlice=" + anySlice + ", id="
-				+ id + "]";
-	}
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public events_connection() {
+    }
 
 
-	public String getSubscriptionID() {
-		return subscriptionID;
-	}
+    public events_connection(String snssais, boolean anySlice, String subscriptionID, int currentLoadLevelInfo) {
+        this.snssais = snssais;
+        this.anySlice = anySlice;
+        this.subscriptionID = subscriptionID;
+        this.currentLoadLevelInfo = currentLoadLevelInfo;
+    }
 
-	public void setSubscriptionID(String subscriptionID) {
-		this.subscriptionID = subscriptionID;
-	}
+    @Override
+    public String toString() {
+        return "events_connection [snssais=" + snssais + ", anySlice=" + anySlice + ", currentLoadLevelInfo="
+                + currentLoadLevelInfo + "]";
+    }
 
-
-	// END OF LOAD_LEVEL_INFORMATION
-	
-	
-	
 
 }

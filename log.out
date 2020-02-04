@@ -3316,3 +3316,15 @@
  Current Load Level  in Load_Level_info Table [ f9a22ba8-d965-41c2-a57d-b1a9301ef70d ]  Available Load  100000000
 2020-02-04 17:26:44 DEBUG Nnwdaf_controller:415 - 
  TH Reached ! Notification Send to :: http://localhost:8082/notify
+2020-02-04 18:53:44 INFO  Nnwdaf_controller:56 - In Nnwdaf_controller class!
+2020-02-04 18:55:28 WARN  Nnwdaf_controller:101 - data not found 
+2020-02-04 19:03:43 INFO  Nnwdaf_controller:56 - In Nnwdaf_controller class!
+2020-02-04 19:06:30 INFO  Nnwdaf_controller:56 - In Nnwdaf_controller class!
+2020-02-04 19:06:52 WARN  Nnwdaf_controller:101 - data not found 
+2020-02-04 19:19:06 INFO  Nnwdaf_controller:56 - In Nnwdaf_controller class!
+2020-02-04 19:22:58 INFO  Nnwdaf_controller:56 - In Nnwdaf_controller class!
+2020-02-04 19:24:55 INFO  Nnwdaf_controller:56 - In Nnwdaf_controller class!
+2020-02-04 19:27:00 WARN  Nnwdaf_controller:101 - data not found 
+2020-02-04 19:27:02 WARN  Nnwdaf_controller:101 - data not found 
+2020-02-04 19:32:24 INFO  Nnwdaf_controller:56 - In Nnwdaf_controller class!
+2020-02-04 19:37:11 INFO  Nnwdaf_controller:56 - In Nnwdaf_controller class!
