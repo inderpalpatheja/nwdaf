@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.BufferedReader;
@@ -33,6 +34,8 @@ import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 @RestController
 public class Nnwdaf_controller {
+
+
 
     public static Logger logger = Logger.getLogger(Nnwdaf_controller.class.getName());
 
@@ -430,8 +433,39 @@ public class Nnwdaf_controller {
 
     /////Sadaf's load_level_information Code:-/////////////
 
+    @RequestMapping("/test")
+    public String show(){
 
-    //working
+        //loadLevelAllData();
+
+        return "testing";
+    }
+
+    //sadaf
+    //@RequestMapping("/analytics")
+    @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/{snssais}/{subscriptionID}")
+    public ResponseEntity<?> loadLevelAllData(@PathVariable("snssais")  String s, @PathVariable("subscriptionID") String sub) {
+
+        List<events_connection> connect=repository.getData(s,sub);
+
+
+
+        if(connect.isEmpty()){
+
+            logger.warn("data not found ");
+           // return new ResponseEntity<String>( "Data not found",HttpStatus.NO_CONTENT);
+            return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+        }
+        else{
+            System.out.println(connect);
+            return new ResponseEntity<events_connection>(HttpStatus.OK);
+        }
+
+    }
+    //sadaf
+
+
+   /* //working
     public Object getAllData() {
 
         System.out.println("angel");
@@ -446,7 +480,7 @@ public class Nnwdaf_controller {
 
             return c;
         }
-    }
+    }*/
 
 
     //working

@@ -261,9 +261,12 @@ public class Nnwdaf_repository {
        {
            return jdbctemplate.query("SELECT event_id, snssais, anySlice,id from load_level_information",new Events_connectionRowMapper());
        }*/
-    public List<events_connection> getData() {
+    public List<events_connection> getData(String sn,String sub) {
 
-        return jdbcTemplate.query("SELECT event_id, snssais, anySlice,id from load_level_information", new Events_connectionRowMapper());
+
+       System.out.println(sn);
+
+        return jdbcTemplate.query("SELECT * from nwdafLoadLevelInformation WHERE snssais='"+sn+"' AND subscriptionID='"+sub+"'",  new analyticsRowMapper());
     }
 
     /*public events_connection findById(Integer event_id)

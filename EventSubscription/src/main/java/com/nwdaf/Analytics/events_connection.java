@@ -9,6 +9,7 @@ public class events_connection {
 	private String snssais;
 	private boolean anySlice;
 	private String subscriptionID;
+
 	//
 	
 	private int id;
@@ -66,12 +67,20 @@ public class events_connection {
 		this.anySlice = anySlice;
 	}
 
-	@Override
+	/*@Override
 	public String toString() {
 		return "events_connection [snssais=" + snssais + ", anySlice=" + anySlice + ", id="
 				+ id + "]";
-	}
+	}*/
 
+	@Override
+	public String toString() {
+		return "events_connection{" +
+				"snssais='" + snssais + '\'' +
+				", anySlice=" + anySlice +
+				", subscriptionID='" + subscriptionID + '\'' +
+				'}';
+	}
 
 	public String getSubscriptionID() {
 		return subscriptionID;
@@ -83,6 +92,7 @@ public class events_connection {
 
 
 	// END OF LOAD_LEVEL_INFORMATION
+
 	
 	
 	
