@@ -89,6 +89,14 @@ public class Nnwdaf_controller {
     }
 
 
+
+
+
+
+
+    
+
+
     @RequestMapping("/log")
     public String log() {
         // log.trace("This is a TRACE level message");
@@ -458,7 +466,7 @@ public class Nnwdaf_controller {
         con.setDoOutput(true);
 
         // JSON  String sending to M1
-       // String jsonInputString = "{\"id\":10000,\"name\":\" [ M2 -> M1 ]\"}";
+        // String jsonInputString = "{\"id\":10000,\"name\":\" [ M2 -> M1 ]\"}";
 
         String jsonInputString = "Hey I am Notificaion";
 
@@ -488,64 +496,6 @@ public class Nnwdaf_controller {
             e.printStackTrace();
         }
     }
-
-
-    // out.println("NF notificaiton Post mapping " + notificationURI);
-      /*  URL url = new URL(notificationURI);
-
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-
-
-        String notificaitonString = "Hello NF!";
-
-        con.setDoOutput(true);
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = notificaitonString.getBytes("utf-8");
-
-            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
-
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // For POST only - END
-
-
-        int responseCode = con.getResponseCode();
-        String responseMessage = con.getResponseMessage();
-        System.out.println("POST Response Code :: " + responseCode);
-        System.out.println("POST Response Message :: " + responseMessage);
-
-
-
-
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // print result
-            System.out.println("\n\n");
-            System.out.println(response);
-        } else {
-            System.out.println("\n\n");
-            System.out.println("POST request not worked For NF");
-        }
-    }*/
 
 
 }
