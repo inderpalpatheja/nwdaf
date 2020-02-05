@@ -2,6 +2,8 @@ package com.nwdaf.Analytics;
 
 
 import com.nwdaf.Analytics.Repository.CollectorRepository;
+import com.nwdaf.Analytics.MetaData.EventSubData;
+import com.nwdaf.Analytics.MetaData.CollectorData;
 import com.nwdaf.Analytics.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 import com.nwdaf.Analytics.model.analytics;
 import org.apache.commons.logging.Log;
@@ -123,6 +125,11 @@ public class Nnwdaf_controller {
     }
 
 
+    @RequestMapping("webpage")
+    public String homePage()
+    { return "webpage"; }
+
+
     @GetMapping(PATH + "/allNFs")
     public List<NnwdafEventsSubscription> getAllNFs() {
         return repository.getAllNFs();
@@ -131,6 +138,15 @@ public class Nnwdaf_controller {
 
     @PostMapping(PATH + "/subscriptions")
     public ResponseEntity<String> subscribeNF(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
+
+        ///////////*******************//////////////
+
+        EventSubData.incrementSubscriptions();
+        showEventSubData();
+
+        ///////////*******************//////////////
+
+
 
         logger.info("new Subscriber!");
         logger.debug(nnwdafEventsSubscription.getEventID() + nnwdafEventsSubscription.getNotificationURI());
@@ -226,7 +242,7 @@ public class Nnwdaf_controller {
         json.put("notificationTargetAddress", notificationTargetUrl);
 
         //  System.out.println("\n");
-        logger.debug(" Data send by NWDAF to SIMULATOR :: " +
+        logger.debug(" Data sent by NWDAF to SIMULATOR :: " +
                 " , nfID - " + simulationDataObject.getNfId() +
                 " , notificationTargetAddress " + notificationTargetUrl +
                 " , eventId " + simulationDataObject.getEventId() +
@@ -263,6 +279,16 @@ public class Nnwdaf_controller {
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
             logger.debug("Collector subscription Worked!");
+
+
+            ///////////*******************//////////////
+
+            CollectorData.incrementSubscriptions();
+            showCollectorData();
+
+            ///////////*******************//////////////
+
+
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     con.getInputStream()));
             String inputLine;
@@ -315,6 +341,7 @@ public class Nnwdaf_controller {
 
     @PutMapping(PATH + "/subscriptions/{subscriptionID}")
     public ResponseEntity<?> updateNF(@PathVariable("subscriptionID") String id, @RequestBody NnwdafEventsSubscription user) {
+
         NnwdafEventsSubscription check_user = repository.findById(id);
 
         if (check_user == null) {
@@ -323,6 +350,13 @@ public class Nnwdaf_controller {
         }
 
         repository.updateNF(user, id);
+
+        ///////////*******************//////////////
+
+        EventSubData.incrementSubscriptionUpdates();
+        showEventSubData();
+
+        ///////////*******************//////////////
 
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.OK);
     }
@@ -337,6 +371,13 @@ public class Nnwdaf_controller {
         }
 
         repository.unsubscribeNF(id);
+
+        ///////////*******************//////////////
+
+        EventSubData.incrementUnSubscriptions();
+        showEventSubData();
+
+        ///////////*******************//////////////
 
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
     }
@@ -360,6 +401,12 @@ public class Nnwdaf_controller {
         logger.debug(" Data Received for : " + subscriptionID);
         System.out.println("Data received !!");
 
+        ///////////*******************//////////////
+
+        CollectorData.incrementSubscriptionNotifications();
+        showCollectorData();
+
+        ///////////*******************//////////////
 
     }
 
@@ -501,6 +548,14 @@ public class Nnwdaf_controller {
             }
             System.out.println(response.toString());
             out.println("Response code from NF - " + HttpStatus.valueOf(con.getResponseCode()));
+
+            ///////////*******************//////////////
+
+            EventSubData.incrementSubscriptionNotifications();
+            showEventSubData();
+
+            ///////////*******************//////////////
+
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -508,5 +563,22 @@ public class Nnwdaf_controller {
         }
     }
 
+
+
+    public void showEventSubData()
+    {
+        log.info("> #Event_Subscriptions: " + EventSubData.getSubscriptions());
+        log.info("> #Event_UnSubscriptions: " + EventSubData.getUnSubscriptions());
+        log.info("> #Event_SubscriptionUpdates: " + EventSubData.getSubscriptionUpdates());
+        log.info("> #Event_SubscriptionNotifications: " + EventSubData.getSubscriptionNotifications());
+    }
+
+    public void showCollectorData()
+    {
+        log.info("> #Collector_Subscriptions: " + CollectorData.getSubscriptions());
+        log.info("> #Collector_SubscriptionNotifications: " + CollectorData.getSubscriptionNotifications());
+        log.info("> #Collector_AnalyticsSubscriptions: " + CollectorData.getAnalyticsSubscriptions());
+        log.info("> #Collector_AnalyticsNotifications: " + CollectorData.getAnalyticsNotifications());
+    }
 
 }
