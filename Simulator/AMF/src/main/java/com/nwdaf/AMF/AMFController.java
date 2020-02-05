@@ -45,10 +45,21 @@ public class AMFController extends Functionality {
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }*/
 
+
+
+    public String getSubID() throws Exception {
+
+        return subscribe(0, 1, 0, 15);
+    }
+
+
     // Post Method for HTTP for 8082
-    @RequestMapping(method = RequestMethod.POST, value="//notify")
-    public void adddata(@RequestBody String string) throws IOException {
+    @RequestMapping(method = RequestMethod.POST, value="/notify")
+    public void adddata(@RequestBody String string) throws Exception {
         System.out.println("\n\nReceived From NWDAF -" + string);
+       // String subID = getSubID();
+        //out.println();
+       // System.out.println(subID);
 
     }
 

@@ -171,7 +171,7 @@ public class Nnwdaf_controller {
         // Calling Collector Function
         logger.debug(nnwdafEventsSubscription);
 
-        collectorFuntion(nnwdafEventsSubscription, subID);
+        collectorFuntion(nnwdafEventsSubscription, subID); /// no pass subID
 
         logger.info("Collector Function called! ");
 
