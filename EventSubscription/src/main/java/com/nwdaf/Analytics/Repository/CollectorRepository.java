@@ -2,8 +2,12 @@ package com.nwdaf.Analytics.Repository;
 
 
 import com.nwdaf.Analytics.Mapper.CollectorRowMapper;
+import com.nwdaf.Analytics.Mapper.subTableMapper;
+import com.nwdaf.Analytics.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.loadLevelMapper;
 import com.nwdaf.Analytics.model.CollectorDataModel;
 
+import com.nwdaf.Analytics.model.SubTableDataModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -101,6 +105,19 @@ public class CollectorRepository {
 
         return jdbcTemplate.update(query, parameters, types);
 
+    }
+
+
+
+    public SubTableDataModel findunSubCorrelationID(String subId) {
+
+        String query = "select *from nwdafSubTable where subscriptionID= ?";
+
+        try {
+            return (SubTableDataModel) this.jdbcTemplate.queryForObject(query, new Object[]{subId}, new subTableMapper());
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
 
     }
 
@@ -110,6 +127,5 @@ public class CollectorRepository {
         Object[] parameters = { unSubCorrelationId };
         int[] types = {Types.VARCHAR };
         jdbcTemplate.update(query, parameters, types);
-
     }
 }
