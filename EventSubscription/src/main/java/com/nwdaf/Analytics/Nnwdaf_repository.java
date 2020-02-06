@@ -34,7 +34,7 @@ public class Nnwdaf_repository {
     Random random = new Random();
 
     public List<NnwdafEventsSubscription> getAllNFs() {
-        return jdbcTemplate.query("SELECT subscriptionID, eventID, notificationURI, notifMethod, repetitionPeriod, loadLevelThreshold FROM eventTable", new eventTableMapper());
+        return jdbcTemplate.query("SELECT subscriptionID, eventID, notificationURI, notifMethod, repetitionPeriod, loadLevelThreshold FROM nwdafSubscriptionTable", new eventTableMapper());
     }
 
 
@@ -62,14 +62,14 @@ public class Nnwdaf_repository {
 
     public Integer addEventDataID(int eventDataID, UUID subscriptionID) {
 
-        return jdbcTemplate.update("UPDATE eventTable SET eventDataID = ? WHERE subscriptionID = ?", new Object[]{eventDataID, String.valueOf(subscriptionID)});
+        return jdbcTemplate.update("UPDATE nwdafSubscriptionTable SET eventDataID = ? WHERE subscriptionID = ?", new Object[]{eventDataID, String.valueOf(subscriptionID)});
 
     }
 
 
     public NnwdafEventsSubscription findById(String id) {
         //  String query = "SELECT * FROM eventTable WHERE subscriptionID = ?";
-        String query = "select *from nwdafSubscriptionTable where subscriptionID = ?";
+        String query = "select * from nwdafSubscriptionTable where subscriptionID = ?";
         try {
             return (NnwdafEventsSubscription) this.jdbcTemplate.queryForObject(query, new Object[]{id}, new eventTableMapper());
         } catch (EmptyResultDataAccessException ex) {
@@ -79,7 +79,7 @@ public class Nnwdaf_repository {
 
 
     public Integer updateNF(NnwdafEventsSubscription user, String id) {
-        String UPDATE_QUERY = "UPDATE eventTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = ?";
+        String UPDATE_QUERY = "UPDATE nwdafSubscriptionTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = ?";
 
         return jdbcTemplate.update(UPDATE_QUERY, user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getLoadLevelThreshold(), id);
 
@@ -94,7 +94,7 @@ public class Nnwdaf_repository {
 
 
     public Integer unsubscribeNF(String id) {
-        return jdbcTemplate.update("DELETE FROM eventTable WHERE subscriptionID = ?", id);
+        return jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionID = ?", id);
     }
 
 
@@ -300,7 +300,7 @@ public List<events_connection> getData(String sn, String sub) {
 	      { return jdbctemplate.update("DELETE FROM load_level_information WHERE event_id = ?", event_id); }*/
 
     public Integer deleteDataById(int id) {
-        return jdbcTemplate.update("DELETE FROM load_level_information WHERE id = ?", id);
+        return jdbcTemplate.update("DELETE FROM nwdafLoadLevelInformation WHERE id = ?", id);
     }
 
 
@@ -318,7 +318,7 @@ public List<events_connection> getData(String sn, String sub) {
     //
     public events_connection findBySnssais(String snssais) {
 
-        String query = "SELECT *FROM load_level_information WHERE snssais= ?";
+        String query = "SELECT *FROM nwdafLoadLevelInformation WHERE snssais= ?";
 
         try {
             return (events_connection) this.jdbcTemplate.queryForObject(query, new Object[]{snssais}, new Events_connectionRowMapper());

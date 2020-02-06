@@ -12,7 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class EvenSubscriptionApplication {
 
 
-    static Logger log = Logger.getLogger(EvenSubscriptionApplication.class);
+  //  static Logger log = Logger.getLogger(EvenSubscriptionApplication.class);
 
 
     public static void main(String[] args) {
