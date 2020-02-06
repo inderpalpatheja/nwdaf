@@ -80,35 +80,156 @@ public class Nnwdaf_controller {
 
 
     @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/")
-    public String testing() {
+    public Object testing() {
+
+        NnwdafEventsSubscription n  = new NnwdafEventsSubscription();
+
+       // n.setSubscriptionID(String.valueOf(123));
+        n.setSnssais("1234");
+        return new ResponseEntity<NnwdafEventsSubscription>(n, HttpStatus.OK);
 
 
-        return "HI Analytics";
     }
 
 
-    @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/{snssais}/{subscriptionID}")
-    public ResponseEntity<?> loadLevelAllData(@PathVariable("snssais") String s, @PathVariable("subscriptionID") String sub) throws IOException, JSONException {
+    @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/{snssais}/{anySlice}")
+    public ResponseEntity<?> loadLevelAllData(@PathVariable("snssais") String snssais, @PathVariable("anySlice") Boolean anySlice) throws IOException, JSONException {
 
-        List<events_connection> connect = repository.getData(s, sub);
+
+        List<events_connection> connect = repository.getData(snssais, anySlice);
 
         NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
-        nnwdafEventsSubscription.setSnssais(s);
-        //  nnwdafEventsSubscription.setSubscriptionID(sub);
+        nnwdafEventsSubscription.setSnssais(snssais);
 
         if (connect.isEmpty()) {
 
             logger.warn("Data not found ");
 
             // calling collector function for Analytics
-            //  UUID CorrelationID = collectorFuntion(nnwdafEventsSubscription);
+              UUID correlationID = collectorFuntionForAnalytics(nnwdafEventsSubscription);
 
-
+             // [IN ANALYTICS - here adding snssais and anySlice into database]
+         //   repository.addSubscriptionIdToLoadLevelInfo(nnwdafEventsSubscription,null, correlationID);
+            repository.addSnssaisAndAnySliceIntoLoadLevelInfo(snssais,anySlice,String.valueOf(correlationID));
             return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+
         } else {
-            System.out.println(connect);
+
             return new ResponseEntity<events_connection>(HttpStatus.OK);
         }
+
+    }
+
+
+    /*
+    /////   COLLECTOR FUNCTION FOR ANALYTICS
+     */
+
+    private UUID collectorFuntionForAnalytics(NnwdafEventsSubscription nnwdafEventsSubscription) throws IOException, JSONException {
+
+
+        UUID correlationID = UUID.randomUUID();
+
+
+        Namf_EventExposure_Subscribe namf_eventExposure_subscribe = new Namf_EventExposure_Subscribe();
+
+
+        // POST_AMF_URL = POST_AMF_URL + subId;
+        //POST_AMF_URL = http::/localhost:8082/Namf_EventExposure_Subscribe/subID
+
+
+        updated_POST_AMF_URL = POST_AMF_URL + "/" + correlationID;
+
+        out.println("IN COLLECTOR FUNCITON " + updated_POST_AMF_URL);
+
+
+        URL obj = new URL(updated_POST_AMF_URL);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+
+        JSONObject json = new JSONObject();
+
+
+        //  json.put("subscriptionId", namf_eventExposure_subscribe.ge);
+        json.put("correlationID", correlationID);
+        json.put("unSubCorrelationId", namf_eventExposure_subscribe.getUnSubCorrelationId());
+
+        // notificationTargetUrl = Namf_EventExposure_Notify
+        json.put("notificationTargetAddress", notificationTargetUrl);
+        //  System.out.println("\n");
+        // logger.debug(" Data send by NWDAF to SIMULATOR :: " +
+        //       " , nfID - " + simulationDataObject.getNfId() +
+        //     " , notificationTargetAddress " + notificationTargetUrl +
+        //    " , eventId " + simulationDataObject.getEventId() +
+        //   " , correlationId " + simulationDataObject.getCorrelationId()
+        //  );
+
+
+        // For POST only - START
+        con.setDoOutput(true);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = json.toString().getBytes("utf-8");
+
+            //   System.out.println("\n");
+
+            os.write(input, 0, input.length);
+            os.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // For POST only - END
+
+        int responseCode = con.getResponseCode();
+        String responseMessage = con.getResponseMessage();
+        System.out.println("\n");
+
+        // logger.debug(" POST Response Code :: " + responseCode);
+
+        // logger.info("Response received!");
+
+        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+            // logger.debug("Collector subscription Worked!");
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // print result
+            // System.out.println("\n");
+            //  logger.debug(" unSubCorrelationId [ Response from SIMULATOR ] :: " + response);
+
+            logger.info("Response Received [unSubCorrelationID ]");
+
+            out.println("\n\n\n\nUnsubCorrelationID "+ response.toString());
+            out.println("\nCorrelationId - " +  correlationID);
+
+            // repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(correlationID,unSubCorrelationID);
+
+            // save correlationID and unSubCorrelationID into nwdafIDTable /[ here is have to update unSubCorrelationID]
+            repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(correlationID,response.toString());
+
+            logger.info("Stored response of collector into nwdafIDTable");
+
+
+            //checking th values associated with subscription IDs
+            //  checkThresholdValuesAndSendNotification(nnwdafEventsSubscription);
+
+
+        } else {
+            logger.warn(" POST request not worked");
+        }
+
+        return correlationID;
 
     }
 
@@ -146,18 +267,9 @@ public class Nnwdaf_controller {
         UUID correlationID = collectorFuntion(nnwdafEventsSubscription);
         // logger.info("Collector Function called! ");
 
-        //adding correlationID and unSubCorrelationID [ unSubCorrelationID will be updated later ]
-       // repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(correlationID,unSubCorrelationID);
-
 
         // working without correlation
         repository.addSubscriptionIdToLoadLevelInfo(nnwdafEventsSubscription, subID, correlationID);
-
-
-        //  startThread();
-
-        // TestThread testThread = new TestThread();
-        // testThread.start();
 
 
         URI location = new URI(URI + "subscriptions/" + String.valueOf(subID));
@@ -356,15 +468,6 @@ public class Nnwdaf_controller {
     }
 
 
-    public void startThread() {
-        logger.info("In Start Thread function");
-        //   TestThread testThread = new TestThread();
-        // testThread.start();
-        logger.info("Thread started.");
-
-
-    }
-
 
     public List<UUID> getAllSubIds(List<NnwdafEventsSubscription> nnwdafEventsSubscription) {
 
@@ -423,12 +526,6 @@ public class Nnwdaf_controller {
 
                 logger.debug("subThValue" + subThValue);
 
-                // check -- after commenting this line it gives null pointer exception;;
-                // [TODO]
-                // need review;;!
-                // logger.debug(" \n Current Load Level  in Load_Level_info Table [ " +
-                //       repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID() + " ] "
-                //     + " Available Load  " + repository.findDataByuSubId(String.valueOf(ids.get(i))).getLoadLevelThreshold());
 
 
                 if (repository.findDataByuSubId(String.valueOf(ids.get(i))) == null) {

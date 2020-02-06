@@ -28,11 +28,9 @@ public class Nnwdaf_repository {
     Random random = new Random();
 
 
-
-
     public Boolean subscribeNF(NnwdafEventsSubscription user) {
         //String query = "INSERT INTO eventTable VALUES('" + id + "', ?, ?, ?, ?, ?);";
-       // String query = "INSERT INTO nwdafSubscriptionTable VALUES('" + id + "', ?, ?, ?, ?, ?)";
+        // String query = "INSERT INTO nwdafSubscriptionTable VALUES('" + id + "', ?, ?, ?, ?, ?)";
 
         String query = "INSERT INTO nwdafSubscriptionTable VALUES(?, ?, ?, ?, ?, ?)";
 
@@ -41,7 +39,7 @@ public class Nnwdaf_repository {
             @Override
             public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
 
-                preparedStatement.setString(1,user.getSubscriptionID());
+                preparedStatement.setString(1, user.getSubscriptionID());
                 preparedStatement.setInt(2, user.getEventID());
                 preparedStatement.setString(3, user.getNotificationURI());
                 preparedStatement.setInt(4, user.getNotifMethod());
@@ -52,7 +50,6 @@ public class Nnwdaf_repository {
             }
         });
     }
-
 
 
     public NnwdafEventsSubscription findById(String id) {
@@ -80,8 +77,6 @@ public class Nnwdaf_repository {
     }
 
 
-
-
     public NnwdafEventsSubscription findDataByuSubId(String subId) {
 
         String query = "select *from nwdafLoadLevelInformation where subscriptionID= ?";
@@ -95,8 +90,6 @@ public class Nnwdaf_repository {
     }
 
 
-
-
     public List<NnwdafEventsSubscription> getALLSubID(int eventID) {
 
         //return jdbcTemplate.query("select subscriptionID from eventTable where eventId = ?" + eventID,this );
@@ -107,15 +100,19 @@ public class Nnwdaf_repository {
 
     public Boolean addSubscriptionIdToLoadLevelInfo(NnwdafEventsSubscription nnwdafEventsSubscription, UUID subscriptionID, UUID correlationID) {
 
-              String query = "INSERT INTO nwdafLoadLevelInformation (snssais,anySlice,currentLoadLevelInfo,subscriptionID,correlationID) VALUES(?,?," + 0 + ",'" + subscriptionID + "', '" + correlationID + "')";
+        String query = "INSERT INTO nwdafLoadLevelInformation (snssais,anySlice,currentLoadLevelInfo,subscriptionID,correlationID) VALUES(?,?," + 0 + ",'" + subscriptionID + "', '" + correlationID + "')";
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
             @Override
             public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
 
-                preparedStatement.setString(1, nnwdafEventsSubscription.getSnssais());
-                preparedStatement.setBoolean(2, nnwdafEventsSubscription.isAnySlice());
+              //  preparedStatement.setString(1, nnwdafEventsSubscription.getSnssais());
+               // preparedStatement.setBoolean(2, nnwdafEventsSubscription.isAnySlice());
 
+                String s1 = "xyz";
+                boolean s2 = true;
+                  preparedStatement.setString(1, s1);
+                 preparedStatement.setBoolean(2, s2);
 
                 return preparedStatement.execute();
             }
@@ -123,9 +120,15 @@ public class Nnwdaf_repository {
     }
 
 
-    public List<events_connection> getData(String sn, String sub) {
+    public List<events_connection> getData(String snssais, Boolean anySlice) {
 
-        return jdbcTemplate.query("SELECT *from nwdafLoadLevelInformation WHERE snssais='" + sn + "' AND  subscriptionID ='" + sub + "'", new analyticsRowMapper());
+        String s = "Select * from nwdafLoadLevelInformation  where snssais = '" + snssais + "' AND anySlice =" + anySlice;
+
+        //String s = "SELECT *from nwdafLoadLevelInformation WHERE snssais='" + snssais + "' AND  anySlice =' + anySlice + '";
+        System.out.println("\n\n\n\ntest query String is " + s);
+
+        return jdbcTemplate.query(s, new analyticsRowMapper());
+    //return jdbcTemplate.query("SELECT *from nwdafLoadLevelInformation WHERE snssais='xyz' AND  anySlice ='1'",new analyticsRowMapper());
     }
 
 
@@ -169,9 +172,7 @@ public class Nnwdaf_repository {
     */
 
 
-
-
-    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correationId,String unSubCorrelationID) {
+    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correationId, String unSubCorrelationID) {
 
 
         String query = "insert into nwdafIDTable (correlationID,unSubCorrelationID) values (?,?);";
@@ -202,17 +203,36 @@ public class Nnwdaf_repository {
     }*/
 
 
-
-
     public int updateNwdafIDTableWithunSubCorrealtionId(UUID correlationID, String unSubCorrelationID) {
 
         String query = "UPDATE nwdafIDTable SET unSubCorrelationID = ? WHERE correlationID = ?";
 
-        Object[] parameters = { correlationID,unSubCorrelationID };
-        int[] types = {Types.VARCHAR, Types.VARCHAR };
+        Object[] parameters = {correlationID, unSubCorrelationID};
+        int[] types = {Types.VARCHAR, Types.VARCHAR};
 
         return jdbcTemplate.update(query, parameters, types);
 
+
+    }
+
+    public Boolean addSnssaisAndAnySliceIntoLoadLevelInfo(String snssais, Boolean anySlice, String correlationID) {
+
+        //  String query = "INSERT INTO nwdafLoadLevelInformation (snssais,anySlice, currentLoadLevelInfo ) VALUES(?,?, '" + c.getSubscriptionID() + "', " + String.valueOf(30) + ")";
+        //  String query = "insert into nwdafLoadLevelInformation (snssais,anySlice) values ('" + snssais +"',"+ anySlice + ")";
+
+        String query = "INSERT INTO nwdafLoadLevelInformation (snssais,anySlice,currentLoadLevelInfo,subscriptionID,correlationID) VALUES('" + snssais + "'," + anySlice + "," + 0 + ",'" + 0 + "', '" + correlationID + "')";
+        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+
+            @Override
+            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+                //preparedStatement.setInt(1,c.getEvent_id());
+                //  preparedStatement.setString(1, c.getSnssais());
+                // preparedStatement.setString(4, correlationID);
+
+
+                return preparedStatement.execute();
+            }
+        });
 
     }
 

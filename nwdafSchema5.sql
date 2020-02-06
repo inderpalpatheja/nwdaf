@@ -12,8 +12,8 @@ CREATE TABLE `NWDAF`.`nwdafLoadLevelInformation` (
   
   CREATE TABLE `NWDAF`.`nwdafSubscriptionTable` (
   `subscriptionID` VARCHAR(128) NOT NULL,
-  `eventID` INT NULL,
-  `notificationURI` VARCHAR(128) NULL,
+  `eventID` INT NOT NULL,
+  `notificationURI` VARCHAR(128) NOT NULL,
   `notifMethod` TINYINT NULL,
   `repetitionPeriod` INT NULL,
   `loadLevelThreshold` INT NULL,
@@ -25,9 +25,6 @@ CREATE TABLE `NWDAF`.`nwdafLoadLevelInformation` (
   `unSubCorrelationID` varchar(256) NOT NULL,
   PRIMARY KEY (`correlationID`));
 
-
-ALTER TABLE `NWDAF`.`nwdafLoadLevelInformation`
-ADD FOREIGN KEY (`subscriptionID`) REFERENCES `NWDAF`.`nwdafSubscriptionTable`(`subscriptionID`);
 
 ALTER TABLE `NWDAF`.`nwdafLoadLevelInformation`
 ADD FOREIGN KEY (`correlationID`) REFERENCES `NWDAF`.`nwdafIDTable`(`correlationID`);
