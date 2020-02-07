@@ -34,35 +34,16 @@ public class AMFController extends Functionality {
     CollectorRepository collectorRepository;
 
 
-
-
-    /*@RequestMapping(method =RequestMethod.POST, value = "/notify")
-    public ResponseEntity<String> notifyfromnwdaf() {
-
-      //  out.println("Notification Received for NF!");
-        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
-    }*/
-
-
-
-    public String getSubID() throws Exception {
-
-        return subscribe(0, 1, 0, 15);
-    }
-
-
     // Post Method for HTTP for 8082
-    @RequestMapping(method = RequestMethod.POST, value="/notify")
+    @RequestMapping(method = RequestMethod.POST, value = "/notify")
     public void adddata(@RequestBody String string) throws Exception {
         System.out.println("\n\nReceived From NWDAF -" + string);
-       // String subID = getSubID();
-        //out.println();
-       // System.out.println(subID);
+
 
     }
 
 
-    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Subscribe/{subID}")
+    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Subscribe/{correlationID}")
     public ResponseEntity<String> show(@RequestBody String response) throws JSONException, IOException {
 
         // System.out.println("Worked!!!!!");
@@ -72,8 +53,7 @@ public class AMFController extends Functionality {
 
         Namf_EventExposure_Subscribe obj = new Namf_EventExposure_Subscribe();
 
-        obj.setCorrelationId(json.getString("correlationId"));
-        obj.setSubscriptionId(json.getString("subscriptionId"));
+        obj.setCorrelationId(json.getString("correlationID"));
         obj.setNotificationTargetAddress(json.getString("notificationTargetAddress"));
 
 
@@ -81,27 +61,27 @@ public class AMFController extends Functionality {
 
         UUID unSubCorrelationId = UUID.randomUUID();
 
-        sendData(obj, obj.getNotificationTargetAddress(), obj.getSubscriptionId());
+        sendData(obj, obj.getNotificationTargetAddress(), obj.getCorrelationId());
 
-        System.out.println(obj.getNotificationTargetAddress());
-        System.out.println(obj.getSubscriptionId());
+       // System.out.println(obj.getNotificationTargetAddress());
+       // System.out.println(obj.getCorrelationId());
 
-        String NOTIFICATOIN_URL = obj.getNotificationTargetAddress() + "/" + obj.getSubscriptionId();
+        String NOTIFICATOIN_URL = obj.getNotificationTargetAddress() + "/" + obj.getCorrelationId();
 
-        out.println(NOTIFICATOIN_URL);
+       // out.println(NOTIFICATOIN_URL);
 
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
     }
 
 
-    private void sendData(Namf_EventExposure_Subscribe namf_eventExposure_subscribe, String notiTargetAddress, String subscriptionId) throws IOException, JSONException {
+    private void sendData(Namf_EventExposure_Subscribe namf_eventExposure_subscribe, String notiTargetAddress, String correlationID) throws IOException, JSONException {
 
 
         // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
         //   out.println("NotificaitonURL " + NOTIFICATION_URL);
 
-        String updated_URL = notiTargetAddress + "/" + subscriptionId;
+        String updated_URL = notiTargetAddress + "/" + correlationID;
         out.println("updated URl - " + updated_URL);
         URL url = new URL(updated_URL);
 
@@ -115,9 +95,9 @@ public class AMFController extends Functionality {
 
 
         String notificationString = "\n\nSending Notification to " + namf_eventExposure_subscribe.getNotificationTargetAddress() + "/" +
-                namf_eventExposure_subscribe.getSubscriptionId();
+                namf_eventExposure_subscribe.getCorrelationId();
 
-        System.out.println(notificationString);
+        // System.out.println(notificationString);
 
         // For POST only - START
         con.setDoOutput(true);
@@ -158,10 +138,5 @@ public class AMFController extends Functionality {
             System.out.println("POST request not worked");
         }
     }
-
-
-
-
-
 }
 
