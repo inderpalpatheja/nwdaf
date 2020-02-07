@@ -2,7 +2,6 @@ package com.nwdaf.AMF;
 
 import com.nwdaf.AMF.Repository.CollectorRepository;
 import com.nwdaf.AMF.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
-import netscape.javascript.JSObject;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import sun.net.www.http.HttpClient;
 
 import java.io.*;
 import java.net.HttpURLConnection;

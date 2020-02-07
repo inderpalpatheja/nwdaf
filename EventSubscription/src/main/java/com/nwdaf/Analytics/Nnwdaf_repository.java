@@ -51,10 +51,9 @@ public class Nnwdaf_repository {
         });
     }
 
-
     public NnwdafEventsSubscription findById(String id) {
         //  String query = "SELECT * FROM eventTable WHERE subscriptionID = ?";
-        String query = "select *from nwdafSubscriptionTable where subscriptionID = ?";
+        String query = "select * from nwdafSubscriptionTable where subscriptionID = ?";
         try {
             return (NnwdafEventsSubscription) this.jdbcTemplate.queryForObject(query, new Object[]{id}, new eventTableMapper());
         } catch (EmptyResultDataAccessException ex) {
@@ -64,7 +63,7 @@ public class Nnwdaf_repository {
 
 
     public Integer updateNF(NnwdafEventsSubscription user, String id) {
-        String UPDATE_QUERY = "UPDATE eventTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = ?";
+        String UPDATE_QUERY = "UPDATE nwdafSubscriptionTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = ?";
 
         return jdbcTemplate.update(UPDATE_QUERY, user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getLoadLevelThreshold(), id);
 
@@ -73,7 +72,7 @@ public class Nnwdaf_repository {
 
 
     public Integer unsubscribeNF(String id) {
-        return jdbcTemplate.update("DELETE FROM eventTable WHERE subscriptionID = ?", id);
+        return jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionID = ?", id);
     }
 
 
@@ -193,14 +192,9 @@ public class Nnwdaf_repository {
 
 
 
-
-   /* public int updateNwdafWithUnSubCorrelationID(UUID correationId, String unSubCorrelationID) {
-
-        String UPDATE_QUERY = "UPDATE nwdafIDTable SET unSubCorrelationID = ? WHERE correlationID = ?";
-
-        return jdbcTemplate.update(UPDATE_QUERY, unSubCorrelationID,correationId);
-
-    }*/
+    public Integer deleteDataById(int id) {
+        return jdbcTemplate.update("DELETE FROM nwdafLoadLevelInformation WHERE id = ?", id);
+    }
 
 
     public int updateNwdafIDTableWithunSubCorrealtionId(UUID correlationID, String unSubCorrelationID) {
