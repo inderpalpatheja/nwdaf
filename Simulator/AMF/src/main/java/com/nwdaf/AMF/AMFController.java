@@ -84,7 +84,7 @@ public class AMFController extends Functionality {
         //   out.println("NotificaitonURL " + NOTIFICATION_URL);
 
         String updated_URL = notiTargetAddress + "/" + correlationID;
-        out.println("updated URl - " + updated_URL);
+//        out.println("updated URl - " + updated_URL);
         URL url = new URL(updated_URL);
 
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -118,8 +118,8 @@ public class AMFController extends Functionality {
 
         int responseCode = con.getResponseCode();
         String responseMessage = con.getResponseMessage();
-        System.out.println("POST Response Code :: " + responseCode);
-        System.out.println("POST Response Message :: " + responseMessage);
+       // System.out.println("POST Response Code :: " + responseCode);
+       // System.out.println("POST Response Message :: " + responseMessage);
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
             BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -137,7 +137,7 @@ public class AMFController extends Functionality {
             System.out.println(response);
         } else {
             System.out.println("\n\n");
-            System.out.println("POST request not worked");
+            //System.out.println("POST request not worked");
         }
     }
 }

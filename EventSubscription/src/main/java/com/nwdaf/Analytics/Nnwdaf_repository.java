@@ -125,7 +125,7 @@ public class Nnwdaf_repository {
         String s = "Select * from nwdafLoadLevelInformation  where snssais = '" + snssais + "' AND anySlice =" + anySlice;
 
         //String s = "SELECT *from nwdafLoadLevelInformation WHERE snssais='" + snssais + "' AND  anySlice =' + anySlice + '";
-        System.out.println("\n\n\n\ntest query String is " + s);
+     //   System.out.println("\n\n\n\ntest query String is " + s);
 
         return jdbcTemplate.query(s, new analyticsRowMapper());
     //return jdbcTemplate.query("SELECT *from nwdafLoadLevelInformation WHERE snssais='xyz' AND  anySlice ='1'",new analyticsRowMapper());
