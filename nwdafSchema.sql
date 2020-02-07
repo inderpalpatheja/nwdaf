@@ -1,3 +1,4 @@
+# help tables
 DROP DATABASE IF EXISTS NWDAF;
 CREATE SCHEMA `NWDAF` ;
 CREATE TABLE `NWDAF`.`nwdafLoadLevelInformation` (
