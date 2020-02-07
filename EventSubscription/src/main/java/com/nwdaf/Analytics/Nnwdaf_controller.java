@@ -278,12 +278,7 @@ public class Nnwdaf_controller {
         // notificationTargetUrl = Namf_EventExposure_Notify
         json.put("notificationTargetAddress", notificationTargetUrl);
 
-        logger.debug(" Data sent by NWDAF to SIMULATOR :: " +
-                " , nfID - " + simulationDataObject.getNfId() +
-                " , notificationTargetAddress " + notificationTargetUrl +
-                " , eventId " + simulationDataObject.getEventId() +
-                " , correlationId " + simulationDataObject.getCorrelationId()
-        );
+
 
         // For POST only - START
         con.setDoOutput(true);
@@ -611,22 +606,5 @@ public class Nnwdaf_controller {
         // log.info("> #Collector_AnalyticsNotifications: " + CollectorData.getAnalyticsNotifications());
     }
 
-
-
-    public void showEventSubData()
-    {
-        log.info("> #Event_Subscriptions: " + EventSubData.getSubscriptions());
-        log.info("> #Event_UnSubscriptions: " + EventSubData.getUnSubscriptions());
-        log.info("> #Event_SubscriptionUpdates: " + EventSubData.getSubscriptionUpdates());
-        log.info("> #Event_SubscriptionNotifications: " + EventSubData.getSubscriptionNotifications());
-    }
-
-    public void showCollectorData()
-    {
-        log.info("> #Collector_Subscriptions: " + CollectorData.getSubscriptions());
-        log.info("> #Collector_SubscriptionNotifications: " + CollectorData.getSubscriptionNotifications());
-        log.info("> #Collector_AnalyticsSubscriptions: " + CollectorData.getAnalyticsSubscriptions());
-        log.info("> #Collector_AnalyticsNotifications: " + CollectorData.getAnalyticsNotifications());
-    }
 
 }
