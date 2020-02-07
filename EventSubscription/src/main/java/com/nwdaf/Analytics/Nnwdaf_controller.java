@@ -1,5 +1,6 @@
 package com.nwdaf.Analytics;
 
+import com.nwdaf.Analytics.MetaData.Counters;
 import com.nwdaf.Analytics.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.*;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.*;
@@ -204,8 +206,8 @@ public class Nnwdaf_controller {
     public ResponseEntity<String> subscribeNF(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
 
-        EventSubData.incrementSubscriptions();
-        showEventSubData();
+        Counters.incrementSubscriptions();
+        showCounters();
 
 
         logger.debug(nnwdafEventsSubscription.getEventID() + nnwdafEventsSubscription.getNotificationURI());
@@ -302,8 +304,8 @@ public class Nnwdaf_controller {
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
 
-            CollectorData.incrementSubscriptions();
-            showCollectorData();
+            Counters.incrementCollectorSubscriptions();;
+            showCounters();
 
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     con.getInputStream()));
@@ -352,8 +354,8 @@ public class Nnwdaf_controller {
 
         ///////////*******************//////////////
 
-        EventSubData.incrementSubscriptionUpdates();
-        showEventSubData();
+        Counters.incrementSubscriptionUpdates();
+        showCounters();
 
         ///////////*******************//////////////
 
@@ -371,8 +373,8 @@ public class Nnwdaf_controller {
 
         repository.unsubscribeNF(id);
 
-        EventSubData.incrementUnSubscriptions();
-        showEventSubData();
+        Counters.incrementUnSubscriptions();
+        showCounters();
 
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
     }
@@ -394,8 +396,8 @@ public class Nnwdaf_controller {
     @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{subscriptionID}")
     public void acceptingNotification(@PathVariable String subscriptionID) {
 
-        CollectorData.incrementSubscriptionNotifications();
-        showCollectorData();
+        Counters.incrementCollectorSubscriptionNotifications();
+        showCounters();
     }
 
 
@@ -525,8 +527,8 @@ public class Nnwdaf_controller {
 
             ///////////*******************//////////////
 
-            EventSubData.incrementSubscriptionNotifications();
-            showEventSubData();
+            Counters.incrementSubscriptionNotifications();
+            showCounters();
 
             ///////////*******************//////////////
 
@@ -592,19 +594,43 @@ public class Nnwdaf_controller {
     }
 
 
-    public void showEventSubData() {
-        log.info("> #Event_Subscriptions: " + EventSubData.getSubscriptions());
-        // log.info("> #Event_UnSubscriptions: " + EventSubData.getUnSubscriptions());
-        // log.info("> #Event_SubscriptionUpdates: " + EventSubData.getSubscriptionUpdates());
-        // log.info("> #Event_SubscriptionNotifications: " + EventSubData.getSubscriptionNotifications());
+    public void showCounters() {
+        log.info("> # Event_Subscriptions: " + Counters.getSubscriptions());
+        log.info("> # Event_UnSubscriptions: " + Counters.getUnSubscriptions());
+        log.info("> # Event_SubscriptionUpdates: " + Counters.getSubscriptionUpdates());
+        log.info("> # Event_SubscriptionNotifications: " + Counters.getSubscriptionNotifications());
+
+        log.info("> # Collector_Subscriptions: " + Counters.getCollectorSubscriptions());
+        log.info("> # Collector_SubscriptionNotifications: " + Counters.getCollectorSubscriptionNotifications());
+        log.info("> # Collector_AnalyticsSubscriptions: " + Counters.getAnalyticsSubscriptions());
+        log.info("> # Collector_AnalyticsNotifications: " + Counters.getAnalyticsNotifications());
     }
 
-    public void showCollectorData() {
-        log.info("> #Collector_Subscriptions: " + CollectorData.getSubscriptions());
-        // log.info("> #Collector_SubscriptionNotifications: " + CollectorData.getSubscriptionNotifications());
-        // log.info("> #Collector_AnalyticsSubscriptions: " + CollectorData.getAnalyticsSubscriptions());
-        // log.info("> #Collector_AnalyticsNotifications: " + CollectorData.getAnalyticsNotifications());
+
+
+    @GetMapping("/stats/get")
+    public HashMap<String, BigInteger> getStats() throws Exception {
+
+        HashMap<String, BigInteger> map = new HashMap<String, BigInteger>();
+
+        map.put("Event_Subscriptions", Counters.getSubscriptions());
+        map.put("Event_UnSubscriptions", Counters.getUnSubscriptions());
+        map.put("Event_SubscriptionUpdates", Counters.getSubscriptionUpdates());
+        map.put("Event_SubscriptionNotifications", Counters.getSubscriptionNotifications());
+
+        map.put("Collector_Subscriptions", Counters.getCollectorSubscriptions());
+        map.put("Collector_SubscriptionNotifications", Counters.getCollectorSubscriptionNotifications());
+        map.put("Collector_AnalyticsSubscriptions", Counters.getAnalyticsSubscriptions());
+        map.put("Collector_AnalyticsNotifications", Counters.getAnalyticsNotifications());
+
+        return map;
     }
 
+
+    @PostMapping("/stats/clear")
+    public String resetCounters()
+    { Counters.reset();
+        return "Counters set to 0.";
+    }
 
 }
