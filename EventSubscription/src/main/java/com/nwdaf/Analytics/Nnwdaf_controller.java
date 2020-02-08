@@ -473,7 +473,12 @@ public class Nnwdaf_controller {
                 } else {
                     currentLoadLevel = repository.findDataByuSubId(String.valueOf(ids.get(i))).getLoadLevelThreshold();
                 }
-                  currentLoadLevel = repository.findDataByuSubId(String.valueOf(ids.get(i))).getLoadLevelThreshold();
+                 if(repository.findDataByuSubId(String.valueOf(ids.get(i))) == null ){
+                     logger.warn("Null Object!");
+                 }else{
+                     currentLoadLevel = repository.findDataByuSubId(String.valueOf(ids.get(i))).getLoadLevelThreshold();
+                 }
+
 
                   logger.debug("current Load Level " + currentLoadLevel);
 
