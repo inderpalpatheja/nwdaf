@@ -224,9 +224,14 @@ public class Nnwdaf_controller {
                 "LoadLevelThreshold" + nnwdafEventsSubscription.getLoadLevelThreshold());
 
 
+        //add level-load info regarding snssais
+        repository.addLoadLevelData(nnwdafEventsSubscription.getSnssais());
+
         // adding data to nwdafSubscriptionTable;
         repository.subscribeNF(nnwdafEventsSubscription);
 
+
+        /*
         //calling Collector Function
         UUID correlationID = collectorFuntion(nnwdafEventsSubscription);
         // logger.info("Collector Function called! ");
@@ -234,7 +239,7 @@ public class Nnwdaf_controller {
 
         // working without correlation
         repository.addSubscriptionIdToLoadLevelInfo(nnwdafEventsSubscription, subID, correlationID);
-
+        */
 
         URI location = new URI(URI + "subscriptions/" + String.valueOf(subID));
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -393,11 +398,14 @@ public class Nnwdaf_controller {
 
 
     // Accepting Notification
-    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{subscriptionID}")
-    public void acceptingNotification(@PathVariable String subscriptionID) {
+    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{correlationID}")
+    public void acceptingNotification(@PathVariable String correlationID) {
 
         Counters.incrementCollectorSubscriptionNotifications();
         showCounters();
+
+        repository.updateLoadLevelBySnssais(repository.getSnssais(correlationID), 10);
+
     }
 
 
@@ -405,7 +413,7 @@ public class Nnwdaf_controller {
     public String unSubscribeEvent(@PathVariable UUID unSubCorrelationId) {
 
         //  collectorRepository.unSubscribeEventViaUnSubCorrelationId(unSubCorrelationId);
-        return " Event Deleted";
+        return "Event Deleted";
     }
 
 

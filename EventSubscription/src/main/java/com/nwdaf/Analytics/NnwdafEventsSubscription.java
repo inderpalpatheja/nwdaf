@@ -25,13 +25,12 @@ public class NnwdafEventsSubscription {
     UUID subscriptionID;
     EventID eventID;
     String notificationURI;
+    String snssais;
+    boolean anySlice;
     NotificationMethod notifMethod;
     int repetitionPeriod;
     int loadLevelThreshold;
-    int eventDataID;
 
-    String snssais;
-    boolean anySlice;
 
 
     public String getSubscriptionID() {
@@ -58,6 +57,22 @@ public class NnwdafEventsSubscription {
         this.notificationURI = notificationURI;
     }
 
+    public String getSnssais() {
+        return snssais;
+    }
+
+    public void setSnssais(String snssais) {
+        this.snssais = snssais;
+    }
+
+    public boolean isAnySlice() {
+        return anySlice;
+    }
+
+    public void setAnySlice(boolean anySlice) {
+        this.anySlice = anySlice;
+    }
+
     public int getNotifMethod() {
         return notifMethod.ordinal();
     }
@@ -82,27 +97,4 @@ public class NnwdafEventsSubscription {
         this.loadLevelThreshold = loadLevelThreshold;
     }
 
-    public int getEventDataID() {
-        return eventDataID;
-    }
-
-    public void setEventDataID(int eventDataID) {
-        this.eventDataID = eventDataID;
-    }
-
-    public String getSnssais() {
-        return snssais;
-    }
-
-    public void setSnssais(String snssais) {
-        this.snssais = snssais;
-    }
-
-    public boolean isAnySlice() {
-        return anySlice;
-    }
-
-    public void setAnySlice(boolean anySlice) {
-        this.anySlice = anySlice;
-    }
 }

@@ -6,9 +6,11 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -32,7 +34,7 @@ public class Nnwdaf_repository {
         //String query = "INSERT INTO eventTable VALUES('" + id + "', ?, ?, ?, ?, ?);";
         // String query = "INSERT INTO nwdafSubscriptionTable VALUES('" + id + "', ?, ?, ?, ?, ?)";
 
-        String query = "INSERT INTO nwdafSubscriptionTable VALUES(?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO nwdafSubscriptionTable VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
@@ -42,9 +44,11 @@ public class Nnwdaf_repository {
                 preparedStatement.setString(1, user.getSubscriptionID());
                 preparedStatement.setInt(2, user.getEventID());
                 preparedStatement.setString(3, user.getNotificationURI());
-                preparedStatement.setInt(4, user.getNotifMethod());
-                preparedStatement.setInt(5, user.getRepetitionPeriod());
-                preparedStatement.setInt(6, user.getLoadLevelThreshold());
+                preparedStatement.setString(4, user.getSnssais());
+                preparedStatement.setBoolean(5, user.isAnySlice());
+                preparedStatement.setInt(6, user.getNotifMethod());
+                preparedStatement.setInt(7, user.getRepetitionPeriod());
+                preparedStatement.setInt(8, user.getLoadLevelThreshold());
 
                 return preparedStatement.execute();
             }
@@ -241,4 +245,47 @@ public class Nnwdaf_repository {
                 query, new ArrayList<UUID>);
        //return  (List<UUID>)jdbcTemplate.execute(query);
     }*/
+
+
+
+
+
+    // New code from Nikhil 10/02/2020
+   public Boolean addLoadLevelData(String snssais)
+   {
+       String query = "INSERT INTO nwdafLoadLevelInformation VALUES(?, ?) ON DUPLICATE KEY UPDATE snssais = snssais;";
+
+       return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+
+           @Override
+           public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+
+               preparedStatement.setString(1, snssais);
+               preparedStatement.setInt(2, 0);
+
+               return preparedStatement.execute();
+           }
+       });
+   }
+
+
+   public String getSnssais(String correlationID) {
+
+       String query = "SELECT snssais FROM nwdafIDTable WHERE correlationID = '" + correlationID + "';";
+
+       return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+
+           @Override
+           public String mapRow(ResultSet resultSet, int i) throws SQLException {
+               return resultSet.getString("snssais");
+           }
+       });
+   }
+
+
+   public Integer updateLoadLevelBySnssais(String snssais, int updateVal)
+   { return jdbcTemplate.update("UPDATE nwdafLoadLevelInformation SET currentLoadLevel = ? WHERE snssais = ?", new Object[] { updateVal, snssais }); }
+
+
+
 }
