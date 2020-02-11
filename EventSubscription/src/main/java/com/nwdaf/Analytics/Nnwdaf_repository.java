@@ -38,8 +38,6 @@ public class Nnwdaf_repository {
 
 
     public Boolean subscribeNF(NnwdafEventsSubscription nnwdafEventsSubscription) {
-        //String query = "INSERT INTO eventTable VALUES('" + id + "', ?, ?, ?, ?, ?);";
-        // String query = "INSERT INTO nwdafSubscriptionTable VALUES('" + id + "', ?, ?, ?, ?, ?)";
 
         String query = "INSERT INTO nwdafSubscriptionTable VALUES(?, ?, ?, ?, ?)";
 
@@ -59,7 +57,7 @@ public class Nnwdaf_repository {
     }
 
     public SliceLoadLevelSubscriptionDataMapper findById(String id) {
-        //  String query = "SELECT * FROM eventTable WHERE subscriptionID = ?";
+
         String query = "select * from nwdafSubscriptionDataTable where subscriptionID = ?";
         try {
             return (SliceLoadLevelSubscriptionDataMapper) this.jdbcTemplate.queryForObject(query, new Object[]{id}, new SliceLoadLevelSubscriptionDataMapper());
@@ -97,14 +95,6 @@ public class Nnwdaf_repository {
     }
 
 
-   /* public List<NnwdafEventsSubscription> getALLSubID(int eventID) {
-
-        //return jdbcTemplate.query("select subscriptionID from eventTable where eventId = ?" + eventID,this );
-
-        return (List<NnwdafEventsSubscription>) this.jdbcTemplate.query("SELECT *from nwdafSubscriptionTable WHERE eventID = ?", new Object[]{eventID}, new eventTableMapper());
-    }*/
-
-
     public Boolean addSubscriptionIdToLoadLevelInfo(NnwdafEventsSubscription nnwdafEventsSubscription, UUID subscriptionID, UUID correlationID) {
 
         String query = "INSERT INTO nwdafLoadLevelInformation (snssais,anySlice,currentLoadLevelInfo,subscriptionID,correlationID) VALUES(?,?," + 0 + ",'" + subscriptionID + "', '" + correlationID + "')";
@@ -139,16 +129,6 @@ public class Nnwdaf_repository {
 
     }
 
-    //  String s = "Select * from nwdafSliceLoadLevelInformation  where snssais = '" + snssais + "' AND anySlice =" + anySlice;
-
-    //  String s = "Select *From nwdafSliceLoadLevelInformation where snssais = '" + snssais;
-
-    //String s = "SELECT *from nwdafLoadLevelInformation WHERE snssais='" + snssais + "' AND  anySlice =' + anySlice + '";
-    //System.out.println("\n\n\n\ntest query String is " + s);
-
-    //return jdbcTemplate.query(s, new analyticsRowMapper());
-    //return jdbcTemplate.query("SELECT *from nwdafLoadLevelInformation WHERE snssais='xyz' AND  anySlice ='1'",new analyticsRowMapper());
-
 
     public Boolean saveData(events_connection c) {
         // String query = "INSERT INTO load_level_information (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + c.getSubscriptionID() + "', " + String.valueOf(30) + ")";
@@ -163,29 +143,6 @@ public class Nnwdaf_repository {
             }
         });
     }
-
-
-
-  /*  public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correationId, StringBuffer response) {
-
-
-        String query = "insert into nwdafIDTable (correlationID,unSubCorrelationID ) values (?,?);";
-
-        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
-
-            @Override
-            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
-
-                preparedStatement.setString(1, String.valueOf(correationId));
-                preparedStatement.setString(2, String.valueOf(response));
-
-                return preparedStatement.execute();
-            }
-        });
-
-    }
-    */
-
 
     public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correationId, String unSubCorrelationID, String snssais) {
 
@@ -227,10 +184,6 @@ public class Nnwdaf_repository {
 
     public Boolean addDataIntoLoadLevelInformaitionTable(String snssais) {
 
-        //  String query = "INSERT INTO nwdafLoadLevelInformation (snssais,anySlice, currentLoadLevelInfo ) VALUES(?,?, '" + c.getSubscriptionID() + "', " + String.valueOf(30) + ")";
-        //  String query = "insert into nwdafLoadLevelInformation (snssais,anySlice) values ('" + snssais +"',"+ anySlice + ")";
-
-        //  String query = "INSERT INTO nwdafLoadLevelInformation (snssais,currentLoadLevel) VALUES('" + snssais +  "," + currentLoadLevel +  "')";
         String query = "INSERT INTO nwdafSliceLoadLevelInformation (snssais,currentLoadLevel) VALUES(?,?) on duplicate key update snssais = snssais";
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
@@ -248,7 +201,7 @@ public class Nnwdaf_repository {
     }
 
     public List<NwdafSliceLoadLevelInformationModel> getALLsnssais() {
-        // String query = "Select snssais from nwdafSliceLoadLevelInformation";
+
         String query = "Select *from nwdafSliceLoadLevelInformation";
         return jdbcTemplate.query(query, new SliceLoadLevelInformationMapper());
     }
@@ -316,16 +269,4 @@ public class Nnwdaf_repository {
         });
     }
 
-
-   /* public List<UUID> getAlLSubIdsFromLoadLevelTable() {
-
-        String query = "select subscriptionID from nwdafLoadLevelInformation";
-
-      //  return jdbcTemplate.query("SELECT *from nwdafLoadLevelInformation WHERE snssais='" + sn + "' AND  subscriptionID ='" + sub + "'", new analyticsRowMapper());
-
-
-        return jdbcTemplate.queryForList(
-                query, new ArrayList<UUID>);
-       //return  (List<UUID>)jdbcTemplate.execute(query);
-    }*/
 }

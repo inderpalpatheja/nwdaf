@@ -5,17 +5,12 @@ public class analytics {
 	private int eventId;
 	private int load_level_info;
 	private String snssais;
-	
-	
-	
-	
-	
+
+
 	public analytics() {
 		
 	}
-     
-	
-	
+
 
 	public analytics(int eventId, int load_level_info, String snssais) {
 		super();

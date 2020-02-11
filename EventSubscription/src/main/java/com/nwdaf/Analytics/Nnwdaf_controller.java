@@ -37,6 +37,7 @@ public class Nnwdaf_controller {
 
     public static Logger logger = Logger.getLogger(Nnwdaf_controller.class.getName());
 
+
     Set<String> subID_SET = new HashSet<String>();
 
     String updated_POST_AMF_URL = null;
@@ -85,135 +86,43 @@ public class Nnwdaf_controller {
     String POST_AMF_URL;
 
 
+    // Get Request For Analytics Information
     @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/{snssais}/{anySlice}/{eventID}")
-    public List<events_connection> loadLevelAllData(@PathVariable("snssais") String snssais, @PathVariable("anySlice") Boolean anySlice, @PathVariable("eventID") int eventID) throws IOException, JSONException {
+    public List<events_connection> getALLAnalyticsInformation(@PathVariable("snssais") String snssais, @PathVariable("anySlice") Boolean anySlice, @PathVariable("eventID") int eventID) throws IOException, JSONException {
 
 
+        // Fetching all data from database
         List<events_connection> connect = repository.getData(snssais, anySlice);
 
         NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
         nnwdafEventsSubscription.setSnssais(snssais);
 
+        // if data is not found -> calling collector function to collect data
         if (connect.isEmpty()) {
 
             logger.warn("Data not found ");
 
-            // calling collector function for Analytics
-            UUID correlationID = collectorFuntion(nnwdafEventsSubscription);
+            // Calling collector function
+            UUID correlationID = collectorFunction(nnwdafEventsSubscription);
 
-            // [IN ANALYTICS - here adding snssais and anySlice into database]
+            // Adding snssais into database
             repository.addDataIntoLoadLevelInformaitionTable(snssais);
+
             throw new NullPointerException("Data not found!");
 
         } else {
 
-            // return new ResponseEntity<events_connection>(HttpStatus.OK);
+            // if Data found returning JSON
             return connect;
         }
 
     }
 
-
-
-    /*
-    /////   COLLECTOR FUNCTION FOR ANALYTICS
-     */
-
-   /* private UUID collectorFuntionForAnalytics(NnwdafEventsSubscription nnwdafEventsSubscription) throws IOException, JSONException {
-
-
-        UUID correlationID = UUID.randomUUID();
-
-
-        Namf_EventExposure_Subscribe namf_eventExposure_subscribe = new Namf_EventExposure_Subscribe();
-
-
-        // POST_AMF_URL = POST_AMF_URL + subId;
-        //POST_AMF_URL = http::/localhost:8082/Namf_EventExposure_Subscribe/subID
-
-
-        updated_POST_AMF_URL = POST_AMF_URL + "/" + correlationID;
-
-        out.println("IN COLLECTOR FUNCITON " + updated_POST_AMF_URL);
-
-
-        URL obj = new URL(updated_POST_AMF_URL);
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-
-        JSONObject json = new JSONObject();
-
-
-        //  json.put("subscriptionId", namf_eventExposure_subscribe.ge);
-        json.put("correlationID", correlationID);
-        json.put("unSubCorrelationId", namf_eventExposure_subscribe.getUnSubCorrelationId());
-
-        // notificationTargetUrl = Namf_EventExposure_Notify
-        json.put("notificationTargetAddress", notificationTargetUrl);
-        //  System.out.println("\n");
-        // logger.debug(" Data send by NWDAF to SIMULATOR :: " +
-        //       " , nfID - " + simulationDataObject.getNfId() +
-        //     " , notificationTargetAddress " + notificationTargetUrl +
-        //    " , eventId " + simulationDataObject.getEventId() +
-        //   " , correlationId " + simulationDataObject.getCorrelationId()
-        //  );
-
-
-        // For POST only - START
-        con.setDoOutput(true);
-
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-
-            //   System.out.println("\n");
-
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // For POST only - END
-
-        int responseCode = con.getResponseCode();
-        String responseMessage = con.getResponseMessage();
-        System.out.println("\n");
-
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            // logger.debug("Collector subscription Worked!");
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-
-            // save correlationID and unSubCorrelationID into nwdafIDTable /[ here is have to update unSubCorrelationID]
-            repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(correlationID, response.toString(), nnwdafEventsSubscription.getSnssais());
-
-
-        } else {
-            logger.warn(" POST request not worked");
-        }
-
-        return correlationID;
-
-    }   */
-
-
     @PostMapping(PATH + "/subscriptions")
     public ResponseEntity<String> subscribeNF(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
 
-        // Random generating SubscitpionID
+        // Random generating SubscriptionID
         UUID subID = UUID.randomUUID();
 
         // setting subscription ID
@@ -255,9 +164,8 @@ public class Nnwdaf_controller {
                 " LoadLevelThreshold : " + nnwdafEventsSubscription.getLoadLevelThreshold());
 
 
-        // out.println("Hello");
         //calling Collector Function
-        UUID correlationID = collectorFuntion(nnwdafEventsSubscription);
+        UUID correlationID = collectorFunction(nnwdafEventsSubscription);
 
 
         // Returning Response header [ subscription ID ] for NF to unsubscribe
@@ -270,8 +178,8 @@ public class Nnwdaf_controller {
     }
 
 
-    // In Collector Function  [ For Subscription ]
-    private UUID collectorFuntion(NnwdafEventsSubscription nnwdafEventsSubscription) throws IOException, JSONException {
+    // In Collector Function
+    private UUID collectorFunction(NnwdafEventsSubscription nnwdafEventsSubscription) throws IOException, JSONException {
 
 
         // Generating CorrelationID
@@ -320,8 +228,8 @@ public class Nnwdaf_controller {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // For POST only - END
 
+        // For POST only - END
         int responseCode = con.getResponseCode();
         String responseMessage = con.getResponseMessage();
         System.out.println("\n");
@@ -330,7 +238,6 @@ public class Nnwdaf_controller {
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
 
             Counters.incrementCollectorSubscriptions();
-            ;
             showCounters();
 
             BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -344,7 +251,7 @@ public class Nnwdaf_controller {
             in.close();
 
 
-            // save correlationID and unSubCorrelationID into nwdafIDTable /[ here is have to update unSubCorrelationID]
+            // Save correlationID and unSubCorrelationID into nwdafIDTable /[ here is have to update unSubCorrelationID]
 
             try {
                 repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(correlationID,
@@ -361,14 +268,6 @@ public class Nnwdaf_controller {
         return correlationID;
 
     }
-
-   /* private List<NnwdafEventsSubscription> checkThresholdValuesAndSendNotification(NnwdafEventsSubscription nnwdafEventsSubscription) {
-
-        EventID eventID = EventID.values()[nnwdafEventsSubscription.getEventID()];
-        return repository.getALLSubID(eventID.ordinal());
-
-
-    }*/
 
 
     @PutMapping(PATH + "/subscriptions/{subscriptionID}")
@@ -438,7 +337,6 @@ public class Nnwdaf_controller {
     @RequestMapping("/Namf_EventExposure_UnSubscribe/{unSubCorrelationId}")
     public String unSubscribeEvent(@PathVariable UUID unSubCorrelationId) {
 
-        //  collectorRepository.unSubscribeEventViaUnSubCorrelationId(unSubCorrelationId);
         return " Event Deleted";
     }
 
@@ -472,10 +370,13 @@ public class Nnwdaf_controller {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                //  logger.info("In Thread!");
 
                 try {
+
+                    // Calling notification Manager Function
                     callNotificationManagerFunction();
+
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -483,54 +384,49 @@ public class Nnwdaf_controller {
             }
         }
 
+
         private void callNotificationManagerFunction() throws IOException {
 
-
+            // Fetching all snssais list
             List<NwdafSliceLoadLevelInformationModel> list = repository.getALLsnssais();
 
+
+            // Iterating throw list and getting all subscriptionID related to that snssais
             for (int i = 0; i < list.size(); i++) {
 
-                // checkThandSendNotification(subscriptionList);
+                // checking current Threshold value
                 currentLoadLevel = repository.currentLoadLevel(list.get(i).getSnssais());
 
                 //    if (currentLoadLevel == 0)
                 //      continue;
 
+                // Fetching all subscription ID of a particular snssais
                 List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionList = getAllSubscriptionIds(list.get(i).getSnssais());
 
+
+                // Iterating throw subscriptionIDs to check whose TH value has been reached
                 for (int j = 0; j < subscriptionList.size(); j++) {
 
-                    //  out.println("Hello : " + subscriptionList.get(j).getSnssais());
-                    out.println("sending to this subID " + subscriptionList.get(j).getSubscriptionID());
-
-                    out.println(subscriptionList.get(j).getSnssais() + " ::" + subscriptionList.get(j).getSubscriptionID());
-
-                    //  out.println(subscriptionList.get(j).getSnssais() + " : " + repository.findById(subscriptionList.get(j).getSubscriptionID()).getLoadLevelThreshold());
-
-
-                    //subThValue = repository.findById(subscriptionList.get(j).getSubscriptionID());
-
-
-                    out.println("subTh value : " + subThValue);
-
-                    out.println(" testing loadlevels " + subThValue + " : " + currentLoadLevel);
-
-
+                    // Checking currentLoadLevel Of that snsssais is greater than required TH Value
                     if (currentLoadLevel > subThValue) {
-                        //sendNotificationToNF(repository.findById(repository.getALLsnssais().get(j)).getNotificationURI());
+
+                        /* Checking SET if notification has been sent to that particular subscriptionID
+                        if Notification has been sent to that subID we do not have to send the notification again.
+                        */
 
                         if (!(subID_SET.contains(subscriptionList.get(j).getSubscriptionID()))) {
                             subID_SET.add(subscriptionList.get(j).getSubscriptionID());
 
-                            //  sendNotificationToNF(repository.findById(repository.findDataByuSubId(String.valueOf(ids.get(i))).getSubscriptionID()).getNotificationURI());     // URI from NIKHIL Table;
                             if (subscriptionList.get(j).getSubscriptionID() == null) {
                                 logger.warn("Null Object Found!");
                             } else {
-                                out.println("subID ------> " + subscriptionList.get(j).getSubscriptionID());
+                                // out.println("subID ------> " + subscriptionList.get(j).getSubscriptionID());
 
+                                // Fetching notification URL on which NWDAF will send notification
                                 String NotificationURI = repository.getNotificationURI(subscriptionList.get(j).getSubscriptionID());
+
+                                // Calling sendNotification Function
                                 sendNotificationToNF(NotificationURI);
-                                out.println("send notificaiton");
 
                             }
 
@@ -545,7 +441,7 @@ public class Nnwdaf_controller {
 
         }
 
-
+        //Fetching all subscriptionID of particular snssais
         private List<NwdafSliceLoadLevelSubscriptionDataModel> getAllSubscriptionIds(String snssais) {
 
             List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionIDList = repository.getAllSubIdsbysnssais(snssais);
@@ -554,7 +450,7 @@ public class Nnwdaf_controller {
         }
 
         private void sendNotificationToNF(String notificationURI) throws IOException {
-            out.println(" [In send notification function ] Notification send to " + notificationURI);
+
 
             ///////////*******************//////////////
 
@@ -562,9 +458,6 @@ public class Nnwdaf_controller {
             showCounters();
 
             ///////////*******************//////////////
-
-
-            //   out.println(notificationURI);
 
             URL url = null;
             try {
@@ -613,8 +506,7 @@ public class Nnwdaf_controller {
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }
-                // System.out.println(response.toString());
-                //  out.println("Response code from NF - " + HttpStatus.valueOf(con.getResponseCode()));
+
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -638,6 +530,7 @@ public class Nnwdaf_controller {
     }
 
 
+    // Mapping to get all the counters
     @GetMapping("/stats/get")
     public HashMap<String, BigInteger> getStats() throws Exception {
 
@@ -657,24 +550,10 @@ public class Nnwdaf_controller {
     }
 
 
+    // Mapping to reset all the counters
     @PostMapping("/stats/clear")
     public String resetCounters() {
         Counters.reset();
         return "Counters set to 0.";
     }
-
-
-   /* public void callNotification() {
-
-        List<NwdafSliceLoadLevelInformationModel> snsData = repository.getALLsnssais();
-
-        for(NwdafSliceLoadLevelInformationModel sns: snsData)
-        {
-
-
-
-        }
-
-    }*/
-
 }
