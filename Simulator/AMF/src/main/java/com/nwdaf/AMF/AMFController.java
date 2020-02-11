@@ -34,6 +34,15 @@ public class AMFController extends Functionality {
     CollectorRepository collectorRepository;
 
 
+
+
+
+
+    @RequestMapping("/testHttp2")
+    public String testHttp2() {
+        return "Http2 Check!";
+    }
+
     // Post Method for HTTP for 8082
     @RequestMapping(method = RequestMethod.POST, value = "/notify")
     public void adddata(@RequestBody String string) throws Exception {

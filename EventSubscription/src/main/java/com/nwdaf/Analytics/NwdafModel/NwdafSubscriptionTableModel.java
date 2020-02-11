@@ -1,4 +1,4 @@
-package com.nwdaf.Analytics;
+package com.nwdaf.Analytics.NwdafModel;
 
 import java.util.UUID;
 
@@ -15,22 +15,22 @@ enum EventID
     ABNORMAL_BEHAVIOUR;
 }
 
-
 enum NotificationMethod
 { PERIODIC, THRESHOLD; }
 
 
-public class NnwdafEventsSubscription {
+public class NwdafSubscriptionTableModel {
 
-    UUID subscriptionID;
-    EventID eventID;
-    String notificationURI;
-    NotificationMethod notifMethod;
-    int repetitionPeriod;
-    int loadLevelThreshold;
-    int eventDataID;
-    String snssais;
-    boolean anySlice;
+
+    private UUID subscriptionID;
+    private EventID eventID;
+    private String notificationURI;
+    private NotificationMethod notifMethod;
+    private int repetitionPeriod;
+
+
+    public NwdafSubscriptionTableModel() {
+    }
 
 
     public String getSubscriptionID() {
@@ -62,7 +62,7 @@ public class NnwdafEventsSubscription {
     }
 
     public void setNotifMethod(int method_no) {
-        this.notifMethod = NotificationMethod.values()[method_no];
+        this.notifMethod = notifMethod.values()[method_no];
     }
 
     public int getRepetitionPeriod() {
@@ -73,39 +73,11 @@ public class NnwdafEventsSubscription {
         this.repetitionPeriod = repetitionPeriod;
     }
 
-    public int getLoadLevelThreshold() {
-        return loadLevelThreshold;
-    }
-
-    public void setLoadLevelThreshold(int loadLevelThreshold) {
-        this.loadLevelThreshold = loadLevelThreshold;
-    }
-
-    public int getEventDataID() {
-        return eventDataID;
-    }
-
-    public void setEventDataID(int eventDataID) {
-        this.eventDataID = eventDataID;
-    }
-
-    public String getSnssais() {
-        return snssais;
-    }
-
-
-    public void setSnssais(String snssais) {
-        this.snssais = snssais;
-    }
-
-    public boolean isAnySlice() {
-        return anySlice;
-    }
-
-    public void setAnySlice(boolean anySlice) {
-        this.anySlice = anySlice;
-    }
-    public boolean getAnySlice() {
-    return anySlice;
+    public NwdafSubscriptionTableModel(UUID subscriptionID, EventID eventID, String notificationURI, NotificationMethod notifMethod, int repetitionPeriod) {
+        this.subscriptionID = subscriptionID;
+        this.eventID = eventID;
+        this.notificationURI = notificationURI;
+        this.notifMethod = notifMethod;
+        this.repetitionPeriod = repetitionPeriod;
     }
 }

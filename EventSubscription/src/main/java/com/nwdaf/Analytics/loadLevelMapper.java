@@ -16,12 +16,9 @@ public class loadLevelMapper implements RowMapper {
 
         NnwdafEventsSubscription load_level_information = new NnwdafEventsSubscription();
 
-       // load_level_information.setEventID(resultSet.getInt("eventId"));
-       // load_level_information.setSnssais(resultSet.getString("snssai"));
-        load_level_information.setAnySlice(resultSet.getBoolean("anySlice"));
-       // load_level_information.setEventID(resultSet.getInt("id"));
-        load_level_information.setLoadLevelThreshold(resultSet.getInt("currentLoadLevelInfo"));
-        load_level_information.setSubscriptionID(resultSet.getString("subscriptionID"));
+        load_level_information.setSnssais(resultSet.getString("snssais"));
+//        load_level_information.setLoadLevelThreshold(resultSet.getInt("currentLoadLevelInfo"));
+  //      load_level_information.setSubscriptionID(resultSet.getString("subscriptionID"));
 
         return load_level_information;
     }

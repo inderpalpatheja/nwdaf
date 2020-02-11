@@ -1,11 +1,11 @@
-package com.nwdaf.Analytics.model;
+package com.nwdaf.Analytics.NwdafModel;
 
-public class LOAD_LEVEL_INFORMATION {
+public class NwdafSliceLoadLevelInformationModel {
 
-  private String snssais;
-  private int currentLoadLevel;
+    private String snssais;
+    private int currentLoadLevel;
 
-    public LOAD_LEVEL_INFORMATION() {
+    public NwdafSliceLoadLevelInformationModel() {
     }
 
     public String getSnssais() {
@@ -24,7 +24,7 @@ public class LOAD_LEVEL_INFORMATION {
         this.currentLoadLevel = currentLoadLevel;
     }
 
-    public LOAD_LEVEL_INFORMATION(String snssais, int currentLoadLevel) {
+    public NwdafSliceLoadLevelInformationModel(String snssais, int currentLoadLevel) {
         this.snssais = snssais;
         this.currentLoadLevel = currentLoadLevel;
     }

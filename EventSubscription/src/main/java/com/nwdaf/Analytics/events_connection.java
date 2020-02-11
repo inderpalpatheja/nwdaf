@@ -7,7 +7,7 @@ public class events_connection {
     //LOAD_LEVEL_INFORMATION
     //private int event_id;
     private String snssais;
-    private boolean anySlice;
+
     private String subscriptionID;
 
     private int currentLoadLevelInfo;
@@ -24,13 +24,7 @@ public class events_connection {
         this.snssais = snssais;
     }
 
-    public boolean isAnySlice() {
-        return anySlice;
-    }
 
-    public void setAnySlice(boolean anySlice) {
-        this.anySlice = anySlice;
-    }
 
     public String getSubscriptionID() {
         return subscriptionID;
@@ -60,16 +54,14 @@ public class events_connection {
     }
 
 
-    public events_connection(String snssais, boolean anySlice, String subscriptionID, int currentLoadLevelInfo) {
+    public events_connection(String snssais, boolean anySlice, int currentLoadLevelInfo) {
         this.snssais = snssais;
-        this.anySlice = anySlice;
-        this.subscriptionID = subscriptionID;
         this.currentLoadLevelInfo = currentLoadLevelInfo;
     }
 
     @Override
     public String toString() {
-        return "events_connection [snssais=" + snssais + ", anySlice=" + anySlice + ", currentLoadLevelInfo="
+        return "events_connection [snssais=" + snssais + ", currentLoadLevelInfo="
                 + currentLoadLevelInfo + "]";
     }
 

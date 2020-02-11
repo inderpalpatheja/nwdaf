@@ -14,11 +14,11 @@ public class eventTableMapper implements RowMapper {
         NnwdafEventsSubscription user = new NnwdafEventsSubscription();
 
         user.setSubscriptionID(resultSet.getString("subscriptionID"));
-        user.setEventID(resultSet.getInt("eventID"));
-        user.setNotificationURI(resultSet.getString("notificationURI"));
-        user.setNotifMethod(resultSet.getInt("notifMethod"));
-        user.setRepetitionPeriod(resultSet.getInt("repetitionPeriod"));
-        user.setLoadLevelThreshold(resultSet.getInt("loadLevelThreshold"));
+      //  user.setEventID(resultSet.getInt("eventID"));
+       // user.setNotificationURI(resultSet.getString("notificationURI"));
+        user.setSnssais(resultSet.getString("snssais"));
+
+      //  user.setLoadLevelThreshold(resultSet.getInt("loadLevelThreshold"));
 
         return user;
     }
