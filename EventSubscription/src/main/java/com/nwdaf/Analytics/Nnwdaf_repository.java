@@ -129,31 +129,35 @@ public class Nnwdaf_repository {
 
     public List<events_connection> getData(String snssais, Boolean anySlice) {
 
-        //if(0 ==)
+        if (anySlice == true) {
+            String s = "select *From nwdafSliceLoadLevelInformation";
+            return jdbcTemplate.query(s, new analyticsRowMapper());
+        }
 
-        //  String s = "Select * from nwdafSliceLoadLevelInformation  where snssais = '" + snssais + "' AND anySlice =" + anySlice;
-
-        String s = "Select *From nwdafSliceLoadLevelInformation where snssais = '" + snssais;
-
-        //String s = "SELECT *from nwdafLoadLevelInformation WHERE snssais='" + snssais + "' AND  anySlice =' + anySlice + '";
-        //System.out.println("\n\n\n\ntest query String is " + s);
-
+        String s = "select *From nwdafSliceLoadLevelInformation where snssais = '" + snssais + "';";
         return jdbcTemplate.query(s, new analyticsRowMapper());
-        //return jdbcTemplate.query("SELECT *from nwdafLoadLevelInformation WHERE snssais='xyz' AND  anySlice ='1'",new analyticsRowMapper());
+
     }
+
+    //  String s = "Select * from nwdafSliceLoadLevelInformation  where snssais = '" + snssais + "' AND anySlice =" + anySlice;
+
+    //  String s = "Select *From nwdafSliceLoadLevelInformation where snssais = '" + snssais;
+
+    //String s = "SELECT *from nwdafLoadLevelInformation WHERE snssais='" + snssais + "' AND  anySlice =' + anySlice + '";
+    //System.out.println("\n\n\n\ntest query String is " + s);
+
+    //return jdbcTemplate.query(s, new analyticsRowMapper());
+    //return jdbcTemplate.query("SELECT *from nwdafLoadLevelInformation WHERE snssais='xyz' AND  anySlice ='1'",new analyticsRowMapper());
 
 
     public Boolean saveData(events_connection c) {
         // String query = "INSERT INTO load_level_information (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + c.getSubscriptionID() + "', " + String.valueOf(30) + ")";
-        String query = "INSERT INTO nwdafLoadLevelInformation (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + c.getSubscriptionID() + "', " + String.valueOf(30) + ")";
+        String query = "INSERT INTO nwdafLoadLevelInformation (snssais, currentLoadLevel) VALUES(?," + String.valueOf(0) + ")";
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
             @Override
             public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
-                //preparedStatement.setInt(1,c.getEvent_id());
                 preparedStatement.setString(1, c.getSnssais());
-                // preparedStatement.setBoolean(2, c.isAnySlice());
-
 
                 return preparedStatement.execute();
             }
