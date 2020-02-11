@@ -85,8 +85,8 @@ public class Nnwdaf_controller {
     String POST_AMF_URL;
 
 
-    @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/{snssais}/{anySlice}")
-    public List<events_connection> loadLevelAllData(@PathVariable("snssais") String snssais, @PathVariable("anySlice") Boolean anySlice) throws IOException, JSONException {
+    @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/{snssais}/{anySlice}/{eventID}")
+    public List<events_connection> loadLevelAllData(@PathVariable("snssais") String snssais, @PathVariable("anySlice") Boolean anySlice, @PathVariable("eventID") int eventID) throws IOException, JSONException {
 
 
         List<events_connection> connect = repository.getData(snssais, anySlice);
@@ -102,7 +102,7 @@ public class Nnwdaf_controller {
             UUID correlationID = collectorFuntion(nnwdafEventsSubscription);
 
             // [IN ANALYTICS - here adding snssais and anySlice into database]
-            //  repository.addSnssaisAndAnySliceIntoLoadLevelInfo(snssais, anySlice, String.valueOf(correlationID));
+            repository.addDataIntoLoadLevelInformaitionTable(snssais);
             throw new NullPointerException("Data not found!");
 
         } else {
@@ -112,6 +112,7 @@ public class Nnwdaf_controller {
         }
 
     }
+
 
 
     /*
@@ -206,26 +207,6 @@ public class Nnwdaf_controller {
         return correlationID;
 
     }   */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     @PostMapping(PATH + "/subscriptions")
@@ -393,7 +374,7 @@ public class Nnwdaf_controller {
     @PutMapping(PATH + "/subscriptions/{subscriptionID}")
     public ResponseEntity<?> updateNF(@PathVariable("subscriptionID") String id, @RequestBody NnwdafEventsSubscription user) {
 
-       NwdafSubscriptionTableModel check_user = repository.findById_subscriptionID(id);
+        NwdafSubscriptionTableModel check_user = repository.findById_subscriptionID(id);
 
 
         if (check_user == null) {

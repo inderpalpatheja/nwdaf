@@ -16,7 +16,7 @@ public class analyticsRowMapper implements RowMapper {
         connect.setSnssais(resultSet.getString("snssais"));
   //      connect.setAnySlice(resultSet.getBoolean("anySlice"));
     //    connect.setSubscriptionID(resultSet.getString("subscriptionID"));
-        connect.setCurrentLoadLevelInfo(resultSet.getInt("currentLoadLevelInfo"));
+        connect.setCurrentLoadLevelInfo(resultSet.getInt("currentLoadLevel"));
 
         return connect;
 
