@@ -3,7 +3,6 @@ package com.nwdaf.Analytics;
 import com.nwdaf.Analytics.MetaData.Counters;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelInformationModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionDataModel;
-import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionTableModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSubscriptionTableModel;
 import com.nwdaf.Analytics.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 import org.apache.commons.logging.Log;
@@ -13,21 +12,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.io.*;
 import java.math.BigInteger;
 import java.net.*;
-import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.*;
-
 import org.springframework.http.HttpHeaders;
-import sun.lwawt.macosx.CSystemTray;
-
 import static java.lang.System.out;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 
@@ -37,6 +30,7 @@ public class Nnwdaf_controller {
 
     public static Logger logger = Logger.getLogger(Nnwdaf_controller.class.getName());
 
+    int refcountForsnssais = 0;
 
     Set<String> subID_SET = new HashSet<String>();
 
@@ -91,6 +85,8 @@ public class Nnwdaf_controller {
     public List<events_connection> getALLAnalyticsInformation(@PathVariable("snssais") String snssais, @PathVariable("anySlice") Boolean anySlice, @PathVariable("eventID") int eventID) throws IOException, JSONException {
 
 
+        // refCount = refCount + 1 ;
+
         // Fetching all data from database
         List<events_connection> connect = repository.getData(snssais, anySlice);
 
@@ -125,12 +121,17 @@ public class Nnwdaf_controller {
         // Random generating SubscriptionID
         UUID subID = UUID.randomUUID();
 
+
         // setting subscription ID
         nnwdafEventsSubscription.setSubscriptionID(String.valueOf(subID));
 
         // Adding data into NwdafSubscriptionTable   [ Database ]
         repository.subscribeNF(nnwdafEventsSubscription);
 
+
+        // Incrementing Subscription Counter
+        Counters.incrementSubscriptions();
+        showCounters();
 
         // Object of NwdafSliceLoadLevelSubscirptionDataModel Class
         NwdafSliceLoadLevelSubscriptionDataModel nwdafSliceLoadLevelSubscriptionDataModel = new
@@ -181,6 +182,8 @@ public class Nnwdaf_controller {
     // In Collector Function
     private UUID collectorFunction(NnwdafEventsSubscription nnwdafEventsSubscription) throws IOException, JSONException {
 
+
+        //  refCount = refCount + 1;
 
         // Generating CorrelationID
         UUID correlationID = UUID.randomUUID();
@@ -252,10 +255,12 @@ public class Nnwdaf_controller {
 
 
             // Save correlationID and unSubCorrelationID into nwdafIDTable /[ here is have to update unSubCorrelationID]
+            refcountForsnssais = refcountForsnssais + 1;
+            //repository.updateRefCount(nnwdafEventsSubscription.getSnssais(), refcountForsnssais);
 
             try {
                 repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(correlationID,
-                        response.toString(), nnwdafEventsSubscription.getSnssais());
+                        response.toString(), nnwdafEventsSubscription.getSnssais(), refcountForsnssais);
             } catch (Exception e) {
                 out.println(e.getMessage());
             }
@@ -390,6 +395,10 @@ public class Nnwdaf_controller {
             // Fetching all snssais list
             List<NwdafSliceLoadLevelInformationModel> list = repository.getALLsnssais();
 
+            if (repository.getALLsnssais() == null) {
+                logger.warn("no snssais Found [ Null object ]");
+            }
+
 
             // Iterating throw list and getting all subscriptionID related to that snssais
             for (int i = 0; i < list.size(); i++) {
@@ -397,34 +406,45 @@ public class Nnwdaf_controller {
                 // checking current Threshold value
                 currentLoadLevel = repository.currentLoadLevel(list.get(i).getSnssais());
 
+                if (repository.getALLsnssais() == null) {
+                    logger.warn("Null object!");
+                }
                 //    if (currentLoadLevel == 0)
                 //      continue;
 
                 // Fetching all subscription ID of a particular snssais
                 List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionList = getAllSubscriptionIds(list.get(i).getSnssais());
 
+                if (subscriptionList == null) {
+                    logger.warn("No subscription List found");
+                }
 
                 // Iterating throw subscriptionIDs to check whose TH value has been reached
                 for (int j = 0; j < subscriptionList.size(); j++) {
 
-                    // Checking currentLoadLevel Of that snsssais is greater than required TH Value
+                    // Checking currentLoadLevel Of that snsssais if  current Load level greater than required TH Value
+                    // then send notification
                     if (currentLoadLevel > subThValue) {
 
-                        /* Checking SET if notification has been sent to that particular subscriptionID
-                        if Notification has been sent to that subID we do not have to send the notification again.
+                        /* Checking Hash SET if notification has been sent on that particular subscriptionID/
+                       Then we do not have to send the notification again.
                         */
 
                         if (!(subID_SET.contains(subscriptionList.get(j).getSubscriptionID()))) {
                             subID_SET.add(subscriptionList.get(j).getSubscriptionID());
 
                             if (subscriptionList.get(j).getSubscriptionID() == null) {
-                                logger.warn("Null Object Found!");
+                                logger.warn("Null Object Found! [ No subscription ID is present ]");
                             } else {
+
                                 // out.println("subID ------> " + subscriptionList.get(j).getSubscriptionID());
 
                                 // Fetching notification URL on which NWDAF will send notification
                                 String NotificationURI = repository.getNotificationURI(subscriptionList.get(j).getSubscriptionID());
 
+                                if (repository.getNotificationURI(subscriptionList.get(j).getSubscriptionID()) == null) {
+                                    logger.warn("No subscription ID is present -> can't get Notification URI ");
+                                }
                                 // Calling sendNotification Function
                                 sendNotificationToNF(NotificationURI);
 
@@ -445,6 +465,10 @@ public class Nnwdaf_controller {
         private List<NwdafSliceLoadLevelSubscriptionDataModel> getAllSubscriptionIds(String snssais) {
 
             List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionIDList = repository.getAllSubIdsbysnssais(snssais);
+
+            if (subscriptionIDList == null) {
+                logger.warn("No subscription List present");
+            }
 
             return subscriptionIDList;
         }

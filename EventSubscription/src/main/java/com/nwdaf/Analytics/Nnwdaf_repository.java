@@ -1,12 +1,10 @@
 package com.nwdaf.Analytics;
 
-import com.nwdaf.Analytics.Mapper.eventTableMapper;
 import com.nwdaf.Analytics.NwdafMapper.SliceLoadLevelInformationMapper;
 import com.nwdaf.Analytics.NwdafMapper.SliceLoadLevelSubscriptionDataMapper;
 import com.nwdaf.Analytics.NwdafMapper.SubscriptionTableMapper;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelInformationModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionDataModel;
-import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionTableModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSubscriptionTableModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -144,10 +142,10 @@ public class Nnwdaf_repository {
         });
     }
 
-    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correationId, String unSubCorrelationID, String snssais) {
+    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correlationId, String unSubCorrelationID, String snssais,int refCount) {
 
 
-        String query = "insert into nwdafSliceLoadLevelSubscriptionTable (snssais,subscriptionID,correlationID) values (?,?,?);";
+        String query = "insert into nwdafSliceLoadLevelSubscriptionTable (snssais,subscriptionID,correlationID,refCount) values (?,?,?,?);";
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
@@ -156,7 +154,8 @@ public class Nnwdaf_repository {
 
                 preparedStatement.setString(1, snssais);
                 preparedStatement.setString(2, unSubCorrelationID);
-                preparedStatement.setString(3, String.valueOf(correationId));
+                preparedStatement.setString(3, String.valueOf(correlationId));
+                preparedStatement.setInt(4, refCount);
 
                 return preparedStatement.execute();
             }
@@ -269,4 +268,22 @@ public class Nnwdaf_repository {
         });
     }
 
+    public int getRefCount(String snssais) {
+        String query = "select refCount  FROM nwdafSliceLoadLevelSubscriptionTable  WHERE snssais= '" + snssais + "';";
+
+
+        return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
+            @Override
+            public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                return 1;
+                }
+        });
+
+    }
+
+    public void updateRefCount(String snssais,int refCount) {
+
+        String query = "UPDATE  nwdafSliceLoadLevelSubscriptionTable  SET refCount = ? WHERE snssais = ?";
+
+    }
 }
