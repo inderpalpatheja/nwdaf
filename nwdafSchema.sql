@@ -30,5 +30,6 @@ CREATE TABLE `NWDAF`.`nwdafSliceLoadLevelSubscriptionData` (
   `snssais` VARCHAR(128) NULL,
   `subscriptionID` VARCHAR(128) NOT NULL,
   `correlationID` VARCHAR(128) NOT NULL,
+  `refCount` int null,
   PRIMARY KEY (`ID`));
   

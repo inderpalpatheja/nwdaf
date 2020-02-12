@@ -9,6 +9,15 @@ public class NwdafSliceLoadLevelSubscriptionTableModel {
     private String snssais;
     private UUID subscriptionID;
     private UUID correlationID;
+    private int refrenceCount;
+
+    public int getRefrenceCount() {
+        return refrenceCount;
+    }
+
+    public void setRefrenceCount(int refrenceCount) {
+        this.refrenceCount = refrenceCount;
+    }
 
     public NwdafSliceLoadLevelSubscriptionTableModel() {
     }
