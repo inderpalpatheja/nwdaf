@@ -30,9 +30,8 @@ public class Nnwdaf_repository {
     JdbcTemplate jdbcTemplate;
 
 
-    List<NnwdafEventsSubscription> nnwdafEventsSubscriptionList = new ArrayList<>();
+    //List<NnwdafEventsSubscription> nnwdafEventsSubscriptionList = new ArrayList<>();
 
-    Random random = new Random();
 
 
     public Boolean subscribeNF(NnwdafEventsSubscription nnwdafEventsSubscription) {
@@ -54,7 +53,7 @@ public class Nnwdaf_repository {
         });
     }
 
-    public SliceLoadLevelSubscriptionDataMapper findById(String id) {
+   /* public SliceLoadLevelSubscriptionDataMapper findById(String id) {
 
         String query = "select * from nwdafSubscriptionDataTable where subscriptionID = ?";
         try {
@@ -62,15 +61,18 @@ public class Nnwdaf_repository {
         } catch (EmptyResultDataAccessException ex) {
             return null;
         }
-    }
+    }*/
 
 
     public Integer updateNF(NnwdafEventsSubscription user, String id) {
-        String UPDATE_QUERY = "UPDATE nwdafSubscriptionTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = ?";
+        //String UPDATE_QUERY = "UPDATE nwdafSubscriptionTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = ?";
+        //return jdbcTemplate.update(UPDATE_QUERY, user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getLoadLevelThreshold(), id);
 
-        return jdbcTemplate.update(UPDATE_QUERY, user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getLoadLevelThreshold(), id);
+        String updateSubscriptionTable = "UPDATE nwdafSubscriptionTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ? WHERE subscriptionID = ?;";
+        jdbcTemplate.update(updateSubscriptionTable, new Object[] {user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getSubscriptionID()});
 
-
+        String updateLoadLevelSubData = "UPDATE nwdafSliceLoadLevelSubscriptionData SET snssais = ?, loadLevelThreshold = ? WHERE subscriptionID = ?;";
+        return jdbcTemplate.update(updateLoadLevelSubData, new Object[] { user.getSnssais(), user.getLoadLevelThreshold() });
     }
 
 
@@ -104,10 +106,10 @@ public class Nnwdaf_repository {
                 //  preparedStatement.setString(1, nnwdafEventsSubscription.getSnssais());
                 // preparedStatement.setBoolean(2, nnwdafEventsSubscription.isAnySlice());
 
-                String s1 = "xyz";
-                boolean s2 = true;
-                preparedStatement.setString(1, s1);
-                preparedStatement.setBoolean(2, s2);
+              //  String s1 = "xyz";
+              //  boolean s2 = true;
+               // preparedStatement.setString(1, s1);
+               // preparedStatement.setBoolean(2, s2);
 
                 return preparedStatement.execute();
             }
@@ -142,7 +144,7 @@ public class Nnwdaf_repository {
         });
     }
 
-    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correlationId, String unSubCorrelationID, String snssais,int refCount) {
+   /* public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correlationId, String unSubCorrelationID, String snssais,int refCount) {
 
 
         String query = "insert into nwdafSliceLoadLevelSubscriptionTable (snssais,subscriptionID,correlationID,refCount) values (?,?,?,?);";
@@ -156,6 +158,34 @@ public class Nnwdaf_repository {
                 preparedStatement.setString(2, unSubCorrelationID);
                 preparedStatement.setString(3, String.valueOf(correlationId));
                 preparedStatement.setInt(4, refCount);
+
+                return preparedStatement.execute();
+            }
+        });
+
+    }*/
+
+
+
+
+    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correlationId, String unSubCorrelationID, String snssais) {
+
+        if(snsExists(snssais))
+        {
+            jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", snssais);
+            return true;
+        }
+
+        String query = "INSERT INTO nwdafSliceLoadLevelSubscriptionTable (snssais,subscriptionID,correlationID,refCount) VALUES (?,?,?,1);";
+
+        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+
+            @Override
+            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+
+                preparedStatement.setString(1, snssais);
+                preparedStatement.setString(2, unSubCorrelationID);
+                preparedStatement.setString(3, String.valueOf(correlationId));
 
                 return preparedStatement.execute();
             }
@@ -268,7 +298,7 @@ public class Nnwdaf_repository {
         });
     }
 
-    public int getRefCount(String snssais) {
+/*    public int getRefCount(String snssais) {
         String query = "select refCount  FROM nwdafSliceLoadLevelSubscriptionTable  WHERE snssais= '" + snssais + "';";
 
 
@@ -279,11 +309,28 @@ public class Nnwdaf_repository {
                 }
         });
 
-    }
+    }*/
 
-    public void updateRefCount(String snssais,int refCount) {
+   /* public void updateRefCount(String snssais,int refCount) {
 
         String query = "UPDATE  nwdafSliceLoadLevelSubscriptionTable  SET refCount = ? WHERE snssais = ?";
 
+    }*/
+
+
+    public boolean snsExists(String snssais)
+    {
+        String query = "SELECT IFNULL ((SELECT snssais FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais = '" + snssais + "'), null) AS snssais;";
+
+        String result = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+
+            @Override
+            public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getString("snssais");
+            }
+        });
+
+        return (result != null);
     }
+
 }
