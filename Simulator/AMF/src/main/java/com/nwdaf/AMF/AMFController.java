@@ -33,11 +33,7 @@ public class AMFController extends Functionality {
     @Autowired
     CollectorRepository collectorRepository;
 
-
-
-
-
-
+    // testing HTTP2 [ Not working ]
     @RequestMapping("/testHttp2")
     public String testHttp2() {
         return "Http2 Check!";
@@ -55,11 +51,8 @@ public class AMFController extends Functionality {
     @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Subscribe/{correlationID}")
     public ResponseEntity<String> show(@RequestBody String response) throws JSONException, IOException {
 
-        // System.out.println("Worked!!!!!");
-
 
         JSONObject json = new JSONObject(response);
-
         Namf_EventExposure_Subscribe obj = new Namf_EventExposure_Subscribe();
 
         obj.setCorrelationId(json.getString("correlationID"));
