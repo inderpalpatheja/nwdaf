@@ -4,12 +4,19 @@ import com.nwdaf.Analytics.MetaData.Counters;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelInformationModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionDataModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSubscriptionTableModel;
+import com.nwdaf.Analytics.model.APIBuildInformation;
 import com.nwdaf.Analytics.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
+import org.springframework.boot.info.BuildProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +25,10 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.*;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 
 import org.springframework.http.HttpHeaders;
@@ -32,6 +43,8 @@ public class Nnwdaf_controller {
     public static Logger logger = Logger.getLogger(Nnwdaf_controller.class.getName());
 
     int refcountForsnssais = 0;
+
+    String getAnalytics = "False";
 
     Set<String> subID_SET = new HashSet<String>();
 
@@ -58,10 +71,10 @@ public class Nnwdaf_controller {
         logger.info("Thread started");
 
         // Object of NwdafNotification Thread
-        NwdafNotificationThread nwdafNotificationThread = new NwdafNotificationThread();
+        //    NwdafNotificationThread nwdafNotificationThread = new NwdafNotificationThread();
 
         // Starting thread
-        nwdafNotificationThread.start();
+        //  nwdafNotificationThread.start();
 
         logger.debug("Exit Nnwdaf_controller()");
 
@@ -84,6 +97,11 @@ public class Nnwdaf_controller {
     @Autowired
     Nnwdaf_repository repository;
 
+
+    @Autowired
+    BuildProperties buildProperties;
+
+
     String unSubCorrelationID;
 
 
@@ -93,13 +111,14 @@ public class Nnwdaf_controller {
 
     // Get Request For Analytics Information
     @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/{snssais}/{anySlice}/{eventID}")
-    public List<events_connection> getALLAnalyticsInformation(@PathVariable("snssais") String snssais, @PathVariable("anySlice") Boolean anySlice, @PathVariable("eventID") int eventID) throws IOException, JSONException {
+    public Object getALLAnalyticsInformation(@PathVariable("snssais") String snssais, @PathVariable("anySlice") Boolean anySlice, @PathVariable("eventID") int eventID) throws IOException, JSONException {
 
+        getAnalytics = "True";
 
         logger.debug("Entered getAllAnalyticsInformation");
 
         // Fetching all data from database
-        List<events_connection> connect = repository.getData(snssais, anySlice);
+        List<EventConnection> connect = repository.getData(snssais, anySlice);
 
         NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
         nnwdafEventsSubscription.setSnssais(snssais);
@@ -110,16 +129,26 @@ public class Nnwdaf_controller {
             logger.warn("Data not found ");
 
             // Calling collector function
-            UUID correlationID = collectorFunction(nnwdafEventsSubscription);
+            UUID correlationID = collectorFunction(nnwdafEventsSubscription, getAnalytics);
 
             // Adding snssais into database
             repository.addDataIntoLoadLevelInformaitionTable(snssais);
 
-            throw new NullPointerException("Data not found!");
+            EventConnection eventConnection = new EventConnection();
+
+            eventConnection.setMessage("Data not Found for " + snssais);
+            eventConnection.setCurrentLoadLevelInfo(0);
+            eventConnection.setSnssais(snssais);
+            eventConnection.setDataStatus(false);
+
+            //throw new NullPointerException("Data not found!");
+            return eventConnection;
 
         } else {
 
             logger.debug("Exit getALLAnalyticsInformation");
+
+            UUID correlationID = collectorFunction(nnwdafEventsSubscription, getAnalytics);
             // if Data found returning JSON
             return connect;
         }
@@ -185,8 +214,9 @@ public class Nnwdaf_controller {
                 " LoadLevelThreshold : " + nnwdafEventsSubscription.getLoadLevelThreshold());
 
 
+        getAnalytics = "false";
         //calling Collector Function
-        UUID correlationID = collectorFunction(nnwdafEventsSubscription);
+        UUID correlationID = collectorFunction(nnwdafEventsSubscription, getAnalytics);
 
 
         // Returning Response header [ subscription ID ] for NF to unsubscribe
@@ -201,7 +231,7 @@ public class Nnwdaf_controller {
 
 
     // In Collector Function
-    private UUID collectorFunction(NnwdafEventsSubscription nnwdafEventsSubscription) throws IOException, JSONException {
+    private UUID collectorFunction(NnwdafEventsSubscription nnwdafEventsSubscription, String getAnalytics) throws IOException, JSONException {
 
         logger.debug("Entered Collector Function");
 
@@ -211,7 +241,7 @@ public class Nnwdaf_controller {
         Namf_EventExposure_Subscribe namf_eventExposure_subscribe = new Namf_EventExposure_Subscribe();
 
         // POST_AMF_URL : POST_AMF_URL + subId;
-        //POST_AMF_URL : http::/localhost:8082/Namf_EventExposure_Subscribe/subID [ Reading from file ]
+        // POST_AMF_URL : http::/localhost:8082/Namf_EventExposure_Subscribe/subID [ Reading from file ]
 
         // Updated URL For NWDAF to Subscribe
         updated_POST_AMF_URL = POST_AMF_URL + "/" + correlationID;
@@ -249,6 +279,7 @@ public class Nnwdaf_controller {
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
 
+
             // incrementing Counter
             Counters.incrementCollectorSubscriptions();
             showCounters();
@@ -261,27 +292,32 @@ public class Nnwdaf_controller {
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine);
             }
+
+            try {
+                repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(correlationID,
+                        response.toString(), nnwdafEventsSubscription.getSnssais(), getAnalytics);
+            } catch (Exception e) {
+                out.println(e.getMessage());
+            }
             in.close();
 
 
             // Save correlationID and unSubCorrelationID into nwdafIDTable /[ here is have to update unSubCorrelationID]
-            refcountForsnssais = refcountForsnssais + 1;
-            //repository.updateRefCount(nnwdafEventsSubscription.getSnssais(), refcountForsnssais);
 
+           /*
             try {
                 repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(correlationID,
                         response.toString(), nnwdafEventsSubscription.getSnssais());
             } catch (Exception e) {
                 out.println(e.getMessage());
-            }
-
+            }*/
         } else {
             logger.error(" POST request not worked");
         }
 
         logger.debug("Exit Collector Function");
-        return correlationID;
 
+        return correlationID;
     }
 
 
@@ -355,15 +391,23 @@ public class Nnwdaf_controller {
 
     // Accepting Notification [ from Simulator]
     @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{correlationID}")
-    public void acceptingNotification(@PathVariable String correlationID) {
-
-        logger.debug("Entered Accepting Notification");
+    public void acceptingNotification(@RequestBody String response) throws JSONException {
 
         // Here Data will be received and nwdafSliceLoadLevelInformation Table will get populated.
-        /*
-         TODO
-            -   add Data to nwdafSliceLoadLevelInformation
-         */
+        logger.debug("Entered Accepting Notification");
+
+
+        // here subID == correlationID
+
+        JSONObject json = new JSONObject(response);
+
+        // String correlationID = json.getString("correlationID");
+        int currentLoadLevel = json.getInt("currentLoadLevel");
+        String correlationID = json.getString("correlationID");
+
+        out.println("received from SIMULATOR - " + "currentLoadLevel - " + currentLoadLevel + correlationID);
+
+        //repository.getSnssaisViaSubID(correlationID);
 
         // incrementing notification Counter
         Counters.incrementCollectorSubscriptionNotifications();
@@ -614,4 +658,33 @@ public class Nnwdaf_controller {
         logger.debug("Exit resetCounters");
         return "Counters set to 0.";
     }
+
+
+    @RequestMapping("/apiDetails")
+    public Object getNwdafAPIInformation() throws IOException {
+
+
+        //  JarFile jf = new JarFile("/Users/sheetalkumar/Desktop/Demo3W/nwdaf/Simulator/AMF/target/Collector-0.0.1-SNAPSHOT.jar");
+        //  ZipEntry manifest = jf.getEntry("META-INF/MANIFEST.MF");
+        //  long manifestTime = manifest.getTime();
+        //  Timestamp ts = new Timestamp(manifestTime);
+        //  Date date = new Date(ts.getTime());
+        //  return " Date - " + date;
+
+
+        APIBuildInformation apiBuildInformation = new APIBuildInformation();
+
+        LocalDate date = LocalDateTime.ofInstant(buildProperties.getTime(), ZoneId.systemDefault()).toLocalDate();
+        LocalTime time = LocalDateTime.ofInstant(buildProperties.getTime(), ZoneId.systemDefault()).toLocalTime();
+
+
+        apiBuildInformation.setAPI_VERSION(buildProperties.getVersion());
+        apiBuildInformation.setAPI_NAME(buildProperties.getName());
+        apiBuildInformation.setBUILD_DATE(date);
+        apiBuildInformation.setBUILD_TIME(time);
+
+        return apiBuildInformation;
+
+    }
+
 }

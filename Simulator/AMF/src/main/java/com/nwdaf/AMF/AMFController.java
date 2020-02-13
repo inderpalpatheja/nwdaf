@@ -1,12 +1,13 @@
 package com.nwdaf.AMF;
 
-import com.nwdaf.AMF.Repository.CollectorRepository;
+
 import com.nwdaf.AMF.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
+
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +18,11 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.Base64;
-import java.util.Random;
-import java.util.Scanner;
-import java.util.UUID;
+
+import java.time.*;
+
+import java.util.*;
+
 
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 import static java.lang.System.out;
@@ -31,7 +32,8 @@ public class AMFController extends Functionality {
 
 
     @Autowired
-    CollectorRepository collectorRepository;
+    BuildProperties buildProperties;
+
 
     // testing HTTP2 [ Not working ]
     @RequestMapping("/testHttp2")
@@ -44,6 +46,36 @@ public class AMFController extends Functionality {
     public void adddata(@RequestBody String string) throws Exception {
         System.out.println("\n\nReceived From NWDAF -" + string);
 
+
+    }
+
+
+    @RequestMapping("/NWDAFJarDetails")
+    public Object getNwdafAPIInformation() throws IOException {
+
+
+        //  JarFile jf = new JarFile("/Users/sheetalkumar/Desktop/Demo3W/nwdaf/Simulator/AMF/target/Collector-0.0.1-SNAPSHOT.jar");
+        //  ZipEntry manifest = jf.getEntry("META-INF/MANIFEST.MF");
+        //  long manifestTime = manifest.getTime();
+        //  Timestamp ts = new Timestamp(manifestTime);
+        //  Date date = new Date(ts.getTime());
+        //  return " Date - " + date;
+
+
+        APIBuildInformation apiBuildInformation = new APIBuildInformation();
+
+
+        LocalDate date = LocalDateTime.ofInstant(buildProperties.getTime(), ZoneId.systemDefault()).toLocalDate();
+
+        LocalTime time = LocalDateTime.ofInstant(buildProperties.getTime(), ZoneId.systemDefault()).toLocalTime();
+
+
+        apiBuildInformation.setAPI_VERSION(buildProperties.getVersion());
+        apiBuildInformation.setAPI_NAME(buildProperties.getName());
+        apiBuildInformation.setBUILD_DATE(date);
+        apiBuildInformation.setBUILD_TIME(time);
+
+        return apiBuildInformation;
 
     }
 
@@ -63,25 +95,26 @@ public class AMFController extends Functionality {
 
         UUID unSubCorrelationId = UUID.randomUUID();
 
-        sendData(obj, obj.getNotificationTargetAddress(), obj.getCorrelationId());
-
-       // System.out.println(obj.getNotificationTargetAddress());
-       // System.out.println(obj.getCorrelationId());
+        sendData(obj.getNotificationTargetAddress(), obj.getCorrelationId());
 
         String NOTIFICATOIN_URL = obj.getNotificationTargetAddress() + "/" + obj.getCorrelationId();
 
-       // out.println(NOTIFICATOIN_URL);
+        // out.println(NOTIFICATOIN_URL);
 
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
     }
 
 
-    private void sendData(Namf_EventExposure_Subscribe namf_eventExposure_subscribe, String notiTargetAddress, String correlationID) throws IOException, JSONException {
+    // @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_notify/{correlationID}")
+
+    private ResponseEntity<String> sendData(String notiTargetAddress, String correlationID) throws IOException, JSONException {
 
 
         // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
         //   out.println("NotificaitonURL " + NOTIFICATION_URL);
+
+        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
 
         String updated_URL = notiTargetAddress + "/" + correlationID;
         out.println("updated URl - " + updated_URL);
@@ -96,16 +129,21 @@ public class AMFController extends Functionality {
         con.setRequestProperty("Accept", "application/json");
 
 
-        String notificationString = "\n\nSending Notification to " + namf_eventExposure_subscribe.getNotificationTargetAddress() + "/" +
-                namf_eventExposure_subscribe.getCorrelationId();
+        // String notificationString = "\n\nSending Notification to " + notiTargetAddress + "/" +
+        //      correlationID;
 
-        // System.out.println(notificationString);
+        // int currnetLoadLevel =50;
+
+        JSONObject json = new JSONObject();
+
+        json.put("currentLoadLevel", 50);
+        json.put("correlationID", correlationID);
 
         // For POST only - START
         con.setDoOutput(true);
 
         try (OutputStream os = con.getOutputStream()) {
-            byte[] input = notificationString.getBytes("utf-8");
+            byte[] input = json.toString().getBytes("utf-8");
 
             // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
 
@@ -139,6 +177,10 @@ public class AMFController extends Functionality {
             System.out.println("\n\n");
             System.out.println("POST request not worked");
         }
+        //  return "Data send to " + updated_URL;
+        return new ResponseEntity<String>("Send", HttpStatus.OK);
     }
+
+
 }
 

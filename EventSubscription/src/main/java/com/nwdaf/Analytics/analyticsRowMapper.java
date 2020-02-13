@@ -1,6 +1,5 @@
 package com.nwdaf.Analytics;
 
-import com.nwdaf.Analytics.model.analytics;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -12,7 +11,9 @@ public class analyticsRowMapper implements RowMapper {
     public Object mapRow(ResultSet resultSet, int i) throws SQLException {
 
 
-        events_connection connect = new events_connection();
+        EventConnection connect = new EventConnection();
+        connect.setMessage("Data Found");
+        connect.setDataStatus(Boolean.TRUE);
         connect.setSnssais(resultSet.getString("snssais"));
         connect.setCurrentLoadLevelInfo(resultSet.getInt("currentLoadLevel"));
 
