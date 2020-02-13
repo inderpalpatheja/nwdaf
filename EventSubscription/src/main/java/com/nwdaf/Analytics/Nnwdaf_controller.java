@@ -176,7 +176,7 @@ public class Nnwdaf_controller {
 
 
         // JSON payload send by NF to NWDAF
-        out.println("\n" + "SubID : " + nnwdafEventsSubscription.getSubscriptionID() +
+        logger.info("\n" + "SubID : " + nnwdafEventsSubscription.getSubscriptionID() +
                 " NotificationURI : " + nnwdafEventsSubscription.getEventID() +
                 " snssais : " + nnwdafEventsSubscription.getSnssais() +
                 " anySlice : " + nnwdafEventsSubscription.getAnySlice() +
