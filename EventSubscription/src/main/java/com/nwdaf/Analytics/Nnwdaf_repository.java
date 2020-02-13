@@ -18,9 +18,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.UUID;
 
 @Repository
@@ -117,7 +115,7 @@ public class Nnwdaf_repository {
     }
 
 
-    public List<events_connection> getData(String snssais, Boolean anySlice) {
+    public List<EventConnection> getData(String snssais, Boolean anySlice) {
 
         if (anySlice == true) {
             String s = "select *From nwdafSliceLoadLevelInformation";
@@ -130,7 +128,7 @@ public class Nnwdaf_repository {
     }
 
 
-    public Boolean saveData(events_connection c) {
+    public Boolean saveData(EventConnection c) {
         // String query = "INSERT INTO load_level_information (snssais,anySlice,subscriptionID, load_level_info) VALUES(?,?, '" + c.getSubscriptionID() + "', " + String.valueOf(30) + ")";
         String query = "INSERT INTO nwdafLoadLevelInformation (snssais, currentLoadLevel) VALUES(?," + String.valueOf(0) + ")";
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
@@ -168,7 +166,7 @@ public class Nnwdaf_repository {
 
 
 
-    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correlationId, String unSubCorrelationID, String snssais) {
+    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correlationId, String unSubCorrelationID, String snssais,String getAnalytics) {
 
         if(snsExists(snssais))
         {
@@ -176,7 +174,7 @@ public class Nnwdaf_repository {
             return true;
         }
 
-        String query = "INSERT INTO nwdafSliceLoadLevelSubscriptionTable (snssais,subscriptionID,correlationID,refCount) VALUES (?,?,?,1);";
+        String query = "INSERT INTO nwdafSliceLoadLevelSubscriptionTable (snssais,subscriptionID,correlationID,refCount,getAnalytics) VALUES (?,?,?,1,?);";
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
@@ -186,6 +184,7 @@ public class Nnwdaf_repository {
                 preparedStatement.setString(1, snssais);
                 preparedStatement.setString(2, unSubCorrelationID);
                 preparedStatement.setString(3, String.valueOf(correlationId));
+                preparedStatement.setString(4, getAnalytics);
 
                 return preparedStatement.execute();
             }
@@ -333,4 +332,17 @@ public class Nnwdaf_repository {
         return (result != null);
     }
 
+    public String getSnssaisViaSubID(String correlationID) {
+
+        //String query = "select snssais from nwdafSliceLoadLevelSubscriptionTable where subscriptionID "
+        String query = "SELECT snssais FROM nwdafSliceLoadLevelSUbscriptionTable WHERE subscriptionID = '" + correlationID + "';";
+
+        return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+            @Override
+            public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getString("snssais");
+            }
+        });
+
+    }
 }
