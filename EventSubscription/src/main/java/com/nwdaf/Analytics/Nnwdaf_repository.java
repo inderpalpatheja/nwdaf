@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Repository
@@ -27,6 +28,7 @@ public class Nnwdaf_repository {
     @Autowired
     JdbcTemplate jdbcTemplate;
 
+    Random  random = new Random();
 
     //List<NnwdafEventsSubscription> nnwdafEventsSubscriptionList = new ArrayList<>();
 
@@ -61,22 +63,36 @@ public class Nnwdaf_repository {
         }
     }*/
 
-
     public Integer updateNF(NnwdafEventsSubscription user, String id) {
         //String UPDATE_QUERY = "UPDATE nwdafSubscriptionTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ?, loadLevelThreshold = ? WHERE subscriptionID = ?";
         //return jdbcTemplate.update(UPDATE_QUERY, user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getLoadLevelThreshold(), id);
 
-        String updateSubscriptionTable = "UPDATE nwdafSubscriptionTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ? WHERE subscriptionID = ?;";
-        jdbcTemplate.update(updateSubscriptionTable, new Object[] {user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), user.getSubscriptionID()});
 
-        String updateLoadLevelSubData = "UPDATE nwdafSliceLoadLevelSubscriptionData SET snssais = ?, loadLevelThreshold = ? WHERE subscriptionID = ?;";
-        return jdbcTemplate.update(updateLoadLevelSubData, new Object[] { user.getSnssais(), user.getLoadLevelThreshold() });
+        // Updating nwdafSubscriptionTable
+        String updateSubscriptionTable = "UPDATE nwdafSubscriptionTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ? WHERE subscriptionID = ?";
+        jdbcTemplate.update(updateSubscriptionTable, new Object[] { user.getEventID(), user.getNotifMethod(), user.getRepetitionPeriod(), id });
+
+
+        // Updating nwdafSliceLoadLevelSubscriptionData
+        String updateLoadLevelSubData = "UPDATE nwdafSliceLoadLevelSubscriptionData SET loadLevelThreshold = ? WHERE subscriptionID = ?";
+        jdbcTemplate.update(updateLoadLevelSubData, new Object[] { user.getLoadLevelThreshold(), id });
+
+
+        // Updating nwdafSliceLoadLevelSubscriptionTable
+        //updateLoadLevelSubTable(user.getSnssais(), current_snssais);
+
+        return 1;
     }
 
 
     public Integer unsubscribeNF(String id) {
+
+        String snssais = getSnssais(id);
+
         jdbcTemplate.update("DELETE FROM nwdafSliceLoadLevelSubscriptionData WHERE subscriptionID = ?", id);
-        return jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionID = ?", id);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionID = ?", id);
+
+        return decrementRefCount(snssais);
     }
 
 
@@ -115,7 +131,7 @@ public class Nnwdaf_repository {
     }
 
 
-    public List<EventConnection> getData(String snssais, Boolean anySlice) {
+    public List<EventConnection> checkForData(String snssais, Boolean anySlice) {
 
         if (anySlice == true) {
             String s = "select *From nwdafSliceLoadLevelInformation";
@@ -166,7 +182,7 @@ public class Nnwdaf_repository {
 
 
 
-    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correlationId, String unSubCorrelationID, String snssais,String getAnalytics) {
+    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correlationId, String unSubCorrelationID, String snssais,Boolean getAnalytics) {
 
         if(snsExists(snssais))
         {
@@ -184,7 +200,7 @@ public class Nnwdaf_repository {
                 preparedStatement.setString(1, snssais);
                 preparedStatement.setString(2, unSubCorrelationID);
                 preparedStatement.setString(3, String.valueOf(correlationId));
-                preparedStatement.setString(4, getAnalytics);
+                preparedStatement.setBoolean(4, getAnalytics);
 
                 return preparedStatement.execute();
             }
@@ -210,7 +226,7 @@ public class Nnwdaf_repository {
 
     }
 
-    public Boolean addDataIntoLoadLevelInformaitionTable(String snssais) {
+    public Boolean add_data_into_load_level_table(String snssais) {
 
         String query = "INSERT INTO nwdafSliceLoadLevelInformation (snssais,currentLoadLevel) VALUES(?,?) on duplicate key update snssais = snssais";
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
@@ -344,5 +360,103 @@ public class Nnwdaf_repository {
             }
         });
 
+    }
+
+    public Integer increment_ref_count(String snssais)
+    { return jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", snssais);  }
+
+
+    // 14 feb update
+
+    public Integer decrementRefCount(String snssais)
+    {
+        jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount - 1 WHERE snssais = ?", snssais);
+
+        if(getRefCount(snssais) < 1)
+        { jdbcTemplate.update("DELETE FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais = ?", snssais);
+            jdbcTemplate.update("DELETE FROM nwdafSliceLoadLevelInformation WHERE snssais = ?", snssais);
+        }
+
+        return 1;
+    }
+
+    public Integer incrementRefCount(String snssais)
+    { return jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", snssais);  }
+
+
+
+
+
+    public String getSnssais(String subID)
+    {
+        String query = "SELECT snssais FROM nwdafSliceLoadLevelSubscriptionData WHERE subscriptionID = '" + subID  +"';";
+
+        return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+            @Override
+            public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getString("snssais");
+            }
+        });
+    }
+
+
+    public Integer getRefCount(String snssais)
+    {
+        String query = "SELECT refCount FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais = '" + snssais + "';";
+
+        return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
+            @Override
+            public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getInt("refCount");
+            }
+        });
+    }
+
+
+    public Integer updateCurrentLoadLevel(String snssais)
+    { return jdbcTemplate.update("UPDATE nwdafSliceLoadLeveLInformation SET currentLoadLevel = currentLoadLevel + ? WHERE snssais = ?", new Object[] { 50 + random.nextInt(10), snssais }); }
+
+
+    public String getSnssaisByCorrelationID(String correlationID)
+    {
+        String query = "SELECT snssais FROM nwdafSliceLoadLevelSubscriptionTable WHERE correlationID = '" + correlationID + "';";
+
+        return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+            @Override
+            public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getString("snssais");
+            }
+        });
+    }
+
+
+    public boolean isGetAnalytics(String snssais)
+    {
+        String query = "SELECT getAnalytics FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais = '" + snssais + "';";
+
+        return jdbcTemplate.queryForObject(query, new RowMapper<Boolean>() {
+            @Override
+            public Boolean mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getBoolean("getAnalytics");
+            }
+        });
+    }
+
+    public Integer setGetAnalytics(String snssais, boolean setVal)
+    { return jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET getAnalytics = ? WHERE snssais = ?", new Object[] { setVal, snssais }); }
+
+
+
+
+    public Integer getLoadLevelThreshold(String subID)
+    {
+        String query = "SELECT loadLevelThreshold FROM nwdafSliceLoadLevelSubscriptionData WHERE subscriptionID = '" + subID + "';";
+
+        return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
+            @Override
+            public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getInt("loadLevelThreshold");
+            }
+        });
     }
 }
