@@ -5,6 +5,7 @@ import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelInformationModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionDataModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSubscriptionTableModel;
 import com.nwdaf.Analytics.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
+import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,6 +30,7 @@ import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 
 @RestController
+
 public class Nnwdaf_controller {
 
     public static Logger logger = Logger.getLogger(Nnwdaf_controller.class.getName());
@@ -68,8 +70,8 @@ public class Nnwdaf_controller {
     Nnwdaf_repository repository;
 
 
-   // @Autowired
-   // BuildProperties buildProperties;
+    // @Autowired
+    // BuildProperties buildProperties;
 
     @Value("${spring.AMF_EVENT_EXPOSURE_SUBSCRIBE.url}")
     String POST_AMF_URL;
@@ -84,7 +86,11 @@ public class Nnwdaf_controller {
      * @throws JSONException
      * @desc this will hold functions for Analytics information
      */
+
     @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/{snssais}/{anySlice}/{eventID}")
+    @ApiOperation(value = "Get Analytics Details By snssais or anySlice Details",
+            notes = "Provide snssais, anySlice and eventID to look up specific analytics Information from NWDAF API",
+            response = Object.class)
     public Object nwdaf_analytics(@PathVariable("snssais") String snssais,
                                   @PathVariable("anySlice") Boolean anySlice,
                                   @PathVariable("eventID") int eventID) throws IOException, JSONException {
@@ -322,7 +328,7 @@ public class Nnwdaf_controller {
                             response.toString(), nnwdafEventsSubscription.getSnssais(), getAnalytics);
                 } else {
                     if (!repository.isGetAnalytics(nnwdafEventsSubscription.getSnssais())) {
-                        repository.setGetAnalytics(nnwdafEventsSubscription.getSnssais(),true);
+                        repository.setGetAnalytics(nnwdafEventsSubscription.getSnssais(), true);
                         repository.increment_ref_count(nnwdafEventsSubscription.getSnssais());
                     }
 
@@ -462,9 +468,10 @@ public class Nnwdaf_controller {
 
         String snssais = repository.getSnssaisByCorrelationID(correlationID);
 
-        if(repository.isGetAnalytics(snssais))
-        { repository.decrementRefCount(snssais);
-          repository.setGetAnalytics(snssais, false); }
+        if (repository.isGetAnalytics(snssais)) {
+            repository.decrementRefCount(snssais);
+            repository.setGetAnalytics(snssais, false);
+        }
 
         repository.updateCurrentLoadLevel(snssais);
         nwdaf_notification_manager();
@@ -505,74 +512,72 @@ public class Nnwdaf_controller {
         }
     }
 
-        /**
-         * @throws IOException
-         * @desc this function manages notifications for subscribers
-         */
-        private void nwdaf_notification_manager() throws IOException {
+    /**
+     * @throws IOException
+     * @desc this function manages notifications for subscribers
+     */
+    private void nwdaf_notification_manager() throws IOException {
 
-            //logger.debug("Entered callNotificationManagerFunction()");
+        //logger.debug("Entered callNotificationManagerFunction()");
 
-            // Fetching all snssais list
-            List<NwdafSliceLoadLevelInformationModel> list = repository.getALLsnssais();
+        // Fetching all snssais list
+        List<NwdafSliceLoadLevelInformationModel> list = repository.getALLsnssais();
+
+        if (repository.getALLsnssais() == null) {
+            logger.warn("no snssais Found [ Null object ]");
+        }
+
+
+        // Iterating throw list and getting all subscriptionID related to that snssais
+        // i = indexOfsnssaisList || j = indexOfSubscriptionList
+
+        for (int indexOfSnssaisList = 0; indexOfSnssaisList < list.size(); indexOfSnssaisList++) {
+
+            // checking current Threshold value
+            currentLoadLevel = repository.currentLoadLevel(list.get(indexOfSnssaisList).getSnssais());
 
             if (repository.getALLsnssais() == null) {
-                logger.warn("no snssais Found [ Null object ]");
+                logger.warn("Null object!");
+            }
+            //    if (currentLoadLevel == 0)
+            //      continue;
+
+            // Fetching all subscription ID of a particular snssais
+            List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionList = fetch_all_subscitpionID(list.get(indexOfSnssaisList).getSnssais());
+
+            if (subscriptionList == null) {
+                logger.warn("No subscription List found");
             }
 
+            // Iterating throw subscriptionIDs to check whose TH value has been reached
+            for (int indexOfSubscriptionList = 0; indexOfSubscriptionList < subscriptionList.size(); indexOfSubscriptionList++) {
 
-            // Iterating throw list and getting all subscriptionID related to that snssais
-            // i = indexOfsnssaisList || j = indexOfSubscriptionList
+                // Checking currentLoadLevel Of that snsssais if  current Load level greater than required TH Value
+                // then send notification
+                subThValue = repository.getLoadLevelThreshold(String.valueOf(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()));
 
-            for (int indexOfSnssaisList = 0; indexOfSnssaisList < list.size(); indexOfSnssaisList++) {
-
-                // checking current Threshold value
-                currentLoadLevel = repository.currentLoadLevel(list.get(indexOfSnssaisList).getSnssais());
-
-                if (repository.getALLsnssais() == null) {
-                    logger.warn("Null object!");
-                }
-                //    if (currentLoadLevel == 0)
-                //      continue;
-
-                // Fetching all subscription ID of a particular snssais
-                List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionList = fetch_all_subscitpionID(list.get(indexOfSnssaisList).getSnssais());
-
-                if (subscriptionList == null) {
-                    logger.warn("No subscription List found");
-                }
-
-                // Iterating throw subscriptionIDs to check whose TH value has been reached
-                for (int indexOfSubscriptionList = 0; indexOfSubscriptionList < subscriptionList.size(); indexOfSubscriptionList++) {
-
-                    // Checking currentLoadLevel Of that snsssais if  current Load level greater than required TH Value
-                    // then send notification
-                    subThValue = repository.getLoadLevelThreshold(String.valueOf(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()));
-
-                    if (currentLoadLevel > subThValue) {
+                if (currentLoadLevel > subThValue) {
 
                         /* Checking Hash SET if notification has been sent on that particular subscriptionID/
                        Then we do not have to send the notification again.
                         */
 
-                        if (!(subID_SET.contains(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()))) {
-                            subID_SET.add(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
+                    if (!(subID_SET.contains(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()))) {
+                        subID_SET.add(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
 
-                            if (subscriptionList.get(indexOfSubscriptionList).getSubscriptionID() == null) {
-                                logger.warn("Null Object Found! [ No subscription ID is present ]");
-                            } else {
+                        if (subscriptionList.get(indexOfSubscriptionList).getSubscriptionID() == null) {
+                            logger.warn("Null Object Found! [ No subscription ID is present ]");
+                        } else {
 
-                                // Fetching notification URL on which NWDAF will send notification
-                                String NotificationURI = repository.getNotificationURI(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
+                            // Fetching notification URL on which NWDAF will send notification
+                            String NotificationURI = repository.getNotificationURI(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
 
-                                if (repository.getNotificationURI(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()) == null) {
-                                    logger.warn("No subscription ID is present -> can't get Notification URI ");
-                                }
-
-                                // Calling sendNotification Function
-                                send_notificaiton_to_NF(NotificationURI);
-
+                            if (repository.getNotificationURI(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()) == null) {
+                                logger.warn("No subscription ID is present -> can't get Notification URI ");
                             }
+
+                            // Calling sendNotification Function
+                            send_notificaiton_to_NF(NotificationURI);
 
                         }
 
@@ -584,88 +589,90 @@ public class Nnwdaf_controller {
 
         }
 
+    }
 
-        /**
-         * @param snssais
-         * @return
-         * @desc this function will fetch all subscription IDs of a particular snssais
-         */
-        //Fetching all subscriptionID of particular snssais
-        private List<NwdafSliceLoadLevelSubscriptionDataModel> fetch_all_subscitpionID(String snssais) {
 
-            List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionIDList = repository.getAllSubIdsbysnssais(snssais);
+    /**
+     * @param snssais
+     * @return
+     * @desc this function will fetch all subscription IDs of a particular snssais
+     */
+    //Fetching all subscriptionID of particular snssais
+    private List<NwdafSliceLoadLevelSubscriptionDataModel> fetch_all_subscitpionID(String snssais) {
 
-            if (subscriptionIDList == null) {
-                logger.warn("No subscription List present");
-            }
+        List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionIDList = repository.getAllSubIdsbysnssais(snssais);
 
-            logger.debug("Exit getALLsubscirptionIDs");
-            return subscriptionIDList;
+        if (subscriptionIDList == null) {
+            logger.warn("No subscription List present");
         }
 
-        /**
-         * @param notificationURI
-         * @throws IOException
-         * @desc this function will send notification to network function
-         */
-        private void send_notificaiton_to_NF(String notificationURI) throws IOException {
-            logger.debug("Entered sendNotificationToNF");
+        logger.debug("Exit getALLsubscirptionIDs");
+        return subscriptionIDList;
+    }
 
-            Counters.incrementSubscriptionNotifications();
-            showCounters();
+    /**
+     * @param notificationURI
+     * @throws IOException
+     * @desc this function will send notification to network function
+     */
+    private void send_notificaiton_to_NF(String notificationURI) throws IOException {
+        logger.debug("Entered sendNotificationToNF");
 
-            URL url = null;
-            try {
-                url = new URL(notificationURI);
-            } catch (MalformedURLException e) {
-                logger.warn("http connect exception found");
-                e.printStackTrace();
-            }
+        Counters.incrementSubscriptionNotifications();
+        showCounters();
 
-            // Opening connection;
-            HttpURLConnection con = null;
-            try {
-                con = (HttpURLConnection) url.openConnection();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            try {
-                con.setRequestMethod("POST");
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            }
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
-            con.setRequestProperty("Accept", "application/json");
-            con.setDoOutput(true);
-
-            String jsonInputString = "Hey I am Notification";
-
-            try (OutputStream os = con.getOutputStream()) {
-                byte[] input = jsonInputString.getBytes("utf-8");
-
-                os.write(input, 0, input.length);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-            // Read the response from input stream;
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(con.getInputStream(), "utf-8"))) {
-                StringBuilder response = new StringBuilder();
-
-                String responseLine = null;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        URL url = null;
+        try {
+            url = new URL(notificationURI);
+        } catch (MalformedURLException e) {
+            logger.warn("http connect exception found");
+            e.printStackTrace();
         }
+
+        // Opening connection;
+        HttpURLConnection con = null;
+        try {
+            con = (HttpURLConnection) url.openConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            con.setRequestMethod("POST");
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        }
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+        con.setDoOutput(true);
+
+        String jsonInputString = "Hey I am Notification";
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+
+            os.write(input, 0, input.length);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        // Read the response from input stream;
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(con.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     /**
