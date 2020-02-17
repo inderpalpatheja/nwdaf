@@ -31,8 +31,8 @@ import static java.lang.System.out;
 public class AMFController extends Functionality {
 
 
-    @Autowired
-    BuildProperties buildProperties;
+    // @Autowired
+    //  BuildProperties buildProperties;
 
 
     // testing HTTP2 [ Not working ]
@@ -50,7 +50,7 @@ public class AMFController extends Functionality {
     }
 
 
-    @RequestMapping("/NWDAFJarDetails")
+ /*   @RequestMapping("/NWDAFJarDetails")
     public Object getNwdafAPIInformation() throws IOException {
 
 
@@ -77,7 +77,7 @@ public class AMFController extends Functionality {
 
         return apiBuildInformation;
 
-    }
+    }*/
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Subscribe/{correlationID}")
@@ -95,7 +95,7 @@ public class AMFController extends Functionality {
 
         UUID unSubCorrelationId = UUID.randomUUID();
 
-        sendData(obj.getNotificationTargetAddress(), obj.getCorrelationId());
+        // sendData(obj.getNotificationTargetAddress(), obj.getCorrelationId());
 
         String NOTIFICATOIN_URL = obj.getNotificationTargetAddress() + "/" + obj.getCorrelationId();
 
@@ -108,8 +108,12 @@ public class AMFController extends Functionality {
 
     // @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_notify/{correlationID}")
 
-    private ResponseEntity<String> sendData(String notiTargetAddress, String correlationID) throws IOException, JSONException {
 
+    @GetMapping("/updateCurrentLoadLevel/{correlationID}")
+    private ResponseEntity<String> sendData(String notiTargetAddress, @PathVariable("correlationID") String correlationID) throws IOException, JSONException {
+
+        notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
+        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
 
         // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
         //   out.println("NotificaitonURL " + NOTIFICATION_URL);
@@ -180,7 +184,6 @@ public class AMFController extends Functionality {
         //  return "Data send to " + updated_URL;
         return new ResponseEntity<String>("Send", HttpStatus.OK);
     }
-
 
 }
 

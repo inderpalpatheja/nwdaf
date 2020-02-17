@@ -4,19 +4,15 @@ import com.nwdaf.Analytics.MetaData.Counters;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelInformationModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionDataModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSubscriptionTableModel;
-import com.nwdaf.Analytics.model.APIBuildInformation;
 import com.nwdaf.Analytics.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
+import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +21,6 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.*;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.*;
 
 import org.springframework.http.HttpHeaders;
@@ -38,32 +30,20 @@ import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 
 @RestController
+
 public class Nnwdaf_controller {
 
     public static Logger logger = Logger.getLogger(Nnwdaf_controller.class.getName());
 
-    int refcountForsnssais = 0;
-
-    String getAnalytics = "False";
-
+    Boolean getAnalytics = true;
     Set<String> subID_SET = new HashSet<String>();
-
     String updated_POST_AMF_URL = null;
-
-
     public int subThValue = 0;
     public int currentLoadLevel = 0;
+    int flag = 0;
+
 
     List<UUID> subIDs;
-
-
-    public List<UUID> getSubIDs() {
-        return subIDs;
-    }
-
-    public void setSubIDs(List<UUID> subIDs) {
-        this.subIDs = subIDs;
-    }
 
     public Nnwdaf_controller() {
 
@@ -71,19 +51,11 @@ public class Nnwdaf_controller {
         logger.info("Thread started");
 
         // Object of NwdafNotification Thread
-        //    NwdafNotificationThread nwdafNotificationThread = new NwdafNotificationThread();
-
+        //  NwdafNotificationThread nwdafNotificationThread = new NwdafNotificationThread();
         // Starting thread
-        //  nwdafNotificationThread.start();
+        //   nwdafNotificationThread.start();
 
         logger.debug("Exit Nnwdaf_controller()");
-
-
-    }
-
-
-    public Nnwdaf_controller(List<UUID> subIDs) {
-        this.subIDs = subIDs;
     }
 
     final String PATH = "/nnwdaf-eventssubscription/v1";
@@ -98,140 +70,199 @@ public class Nnwdaf_controller {
     Nnwdaf_repository repository;
 
 
-    @Autowired
-    BuildProperties buildProperties;
-
-
-    String unSubCorrelationID;
-
+    // @Autowired
+    // BuildProperties buildProperties;
 
     @Value("${spring.AMF_EVENT_EXPOSURE_SUBSCRIBE.url}")
     String POST_AMF_URL;
 
 
-    // Get Request For Analytics Information
+    /**
+     * @param snssais
+     * @param anySlice
+     * @param eventID
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     * @desc this will hold functions for Analytics information
+     */
+
     @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/{snssais}/{anySlice}/{eventID}")
-    public Object getALLAnalyticsInformation(@PathVariable("snssais") String snssais, @PathVariable("anySlice") Boolean anySlice, @PathVariable("eventID") int eventID) throws IOException, JSONException {
+    @ApiOperation(value = "Get Analytics Details By snssais or anySlice Details",
+            notes = "Provide snssais, anySlice and eventID to look up specific analytics Information from NWDAF API",
+            response = Object.class)
+    public Object nwdaf_analytics(@PathVariable("snssais") String snssais,
+                                  @PathVariable("anySlice") Boolean anySlice,
+                                  @PathVariable("eventID") int eventID) throws IOException, JSONException {
 
-        getAnalytics = "True";
-
+        getAnalytics = true;
         logger.debug("Entered getAllAnalyticsInformation");
-
-        // Fetching all data from database
-        List<EventConnection> connect = repository.getData(snssais, anySlice);
 
         NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
         nnwdafEventsSubscription.setSnssais(snssais);
+        nnwdafEventsSubscription.setAnySlice(anySlice);
 
-        // if data is not found -> calling collector function to collect data
-        if (connect.isEmpty()) {
+        Object snssaisDataList = check_For_data(nnwdafEventsSubscription, getAnalytics);
 
-            logger.warn("Data not found ");
-
-            // Calling collector function
-            UUID correlationID = collectorFunction(nnwdafEventsSubscription, getAnalytics);
-
-            // Adding snssais into database
-            repository.addDataIntoLoadLevelInformaitionTable(snssais);
-
-            EventConnection eventConnection = new EventConnection();
-
-            eventConnection.setMessage("Data not Found for " + snssais);
-            eventConnection.setCurrentLoadLevelInfo(0);
-            eventConnection.setSnssais(snssais);
-            eventConnection.setDataStatus(false);
-
-            //throw new NullPointerException("Data not found!");
-            return eventConnection;
-
-        } else {
-
-            logger.debug("Exit getALLAnalyticsInformation");
-
-            UUID correlationID = collectorFunction(nnwdafEventsSubscription, getAnalytics);
-            // if Data found returning JSON
-            return connect;
-        }
+        return snssaisDataList;
 
     }
 
+
+    /**
+     * @param nnwdafEventsSubscription
+     * @return
+     * @throws SQLIntegrityConstraintViolationException
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws JSONException
+     * @desc this will hold functions to for event subscriptions
+     */
     @PostMapping(PATH + "/subscriptions")
-    public ResponseEntity<String> subscribeNF(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
+    public ResponseEntity<String> nwdaf_subscription(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
         logger.debug("NF Subscription | Entered subscribeNF()");
-
-        logger.info(" eventID  " + nnwdafEventsSubscription.getEventID() +
-                " notificationURI  " + nnwdafEventsSubscription.getNotificationURI() +
-                " snssais  " + nnwdafEventsSubscription.getSnssais() +
-                " notifMethod  " + nnwdafEventsSubscription.getNotifMethod() +
-                " repetitionPeriod  " + nnwdafEventsSubscription.getRepetitionPeriod() +
-                " loadLevelThreshold " + nnwdafEventsSubscription.getLoadLevelThreshold());
+        logger.info(" eventID  " + nnwdafEventsSubscription.getEventID() + " notificationURI  " + nnwdafEventsSubscription.getNotificationURI() +
+                " snssais  " + nnwdafEventsSubscription.getSnssais() + " notifMethod  " + nnwdafEventsSubscription.getNotifMethod() +
+                " repetitionPeriod  " + nnwdafEventsSubscription.getRepetitionPeriod() + " loadLevelThreshold " + nnwdafEventsSubscription.getLoadLevelThreshold());
 
         // Random generating SubscriptionID
-        UUID subID = UUID.randomUUID();
-
+        UUID subscriptionID = UUID.randomUUID();
 
         // setting subscription ID
-        nnwdafEventsSubscription.setSubscriptionID(String.valueOf(subID));
+        nnwdafEventsSubscription.setSubscriptionID(String.valueOf(subscriptionID));
 
         // Adding data into NwdafSubscriptionTable   [ Database ]
         repository.subscribeNF(nnwdafEventsSubscription);
-
 
         // Incrementing Subscription Counter
         Counters.incrementSubscriptions();
         showCounters();
 
-        // Object of NwdafSliceLoadLevelSubscirptionDataModel Class
-        NwdafSliceLoadLevelSubscriptionDataModel nwdafSliceLoadLevelSubscriptionDataModel = new
-                NwdafSliceLoadLevelSubscriptionDataModel();
-
-        // Setting values in NwdafSliceLoadLevelSubscriptionData object
-        nwdafSliceLoadLevelSubscriptionDataModel.setSubscriptionID(String.valueOf(subID));
-        nwdafSliceLoadLevelSubscriptionDataModel.setSnssais(nnwdafEventsSubscription.getSnssais());
-        nwdafSliceLoadLevelSubscriptionDataModel.setLoadLevelThreshold(nnwdafEventsSubscription.getLoadLevelThreshold());
-
-
-        // Adding nwdafSliceLoadLevelSubscriptionDatamodel into NwdafSliceLoadLevelSubscriptionData Table [ Database ]
-        repository.addDataIntoNwdafSliceLoadLevelSubscriptionDataTable(nwdafSliceLoadLevelSubscriptionDataModel);
+        // adding values into subscriptionData
+        add_values_into_subscriptionData(subscriptionID, nnwdafEventsSubscription.getSnssais(),
+                nnwdafEventsSubscription.getLoadLevelThreshold());
 
 
         // Storing data into loadlevelInformation Table
-        repository.addDataIntoLoadLevelInformaitionTable(nnwdafEventsSubscription.getSnssais());
-
-
-        // Storing values into subscription Table
-        // repository.subscribeNF(nnwdafEventsSubscription);
+        repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
 
 
         // JSON payload send by NF to NWDAF
-        logger.info("\n" + "SubID : " + nnwdafEventsSubscription.getSubscriptionID() +
-                " NotificationURI : " + nnwdafEventsSubscription.getEventID() +
-                " snssais : " + nnwdafEventsSubscription.getSnssais() +
-                " anySlice : " + nnwdafEventsSubscription.getAnySlice() +
-                " notifMethod : " + nnwdafEventsSubscription.getNotifMethod() +
-                " repetition Method : " + nnwdafEventsSubscription.getRepetitionPeriod() +
+        logger.info("\n" + "SubID : " + nnwdafEventsSubscription.getSubscriptionID() + " NotificationURI : " + nnwdafEventsSubscription.getEventID() +
+                " snssais : " + nnwdafEventsSubscription.getSnssais() + " anySlice : " + nnwdafEventsSubscription.getAnySlice() +
+                " notifMethod : " + nnwdafEventsSubscription.getNotifMethod() + " repetition Method : " + nnwdafEventsSubscription.getRepetitionPeriod() +
                 " LoadLevelThreshold : " + nnwdafEventsSubscription.getLoadLevelThreshold());
 
+        getAnalytics = false;
 
-        getAnalytics = "false";
-        //calling Collector Function
-        UUID correlationID = collectorFunction(nnwdafEventsSubscription, getAnalytics);
+        // function to check snssais data
+        check_For_data(nnwdafEventsSubscription, getAnalytics);
 
-
-        // Returning Response header [ subscription ID ] for NF to unsubscribe
-        URI location = new URI(URI + "subscriptions/" + String.valueOf(subID));
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.setLocation(location);
-
+        // function to send response header to NF
+        HttpHeaders responseHeaders = send_response_header_to_NF(subscriptionID);
 
         logger.debug("Exit subscribe NF");
         return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
     }
 
 
-    // In Collector Function
-    private UUID collectorFunction(NnwdafEventsSubscription nnwdafEventsSubscription, String getAnalytics) throws IOException, JSONException {
+    /**
+     * @param subscriptionID
+     * @param snssais
+     * @param loadLevelThreshold
+     * @desc function to add values in subscription data table
+     */
+    private void add_values_into_subscriptionData(UUID subscriptionID, String snssais, int loadLevelThreshold) {
+
+        NwdafSliceLoadLevelSubscriptionDataModel nwdafSliceLoadLevelSubscriptionDataModel = new
+                NwdafSliceLoadLevelSubscriptionDataModel();
+
+        // Setting values in NwdafSliceLoadLevelSubscriptionData object
+        nwdafSliceLoadLevelSubscriptionDataModel.setSubscriptionID(String.valueOf(subscriptionID));
+        nwdafSliceLoadLevelSubscriptionDataModel.setSnssais(snssais);
+        nwdafSliceLoadLevelSubscriptionDataModel.setLoadLevelThreshold(loadLevelThreshold);
+
+        // Adding nwdafSliceLoadLevelSubscriptionDatamodel into NwdafSliceLoadLevelSubscriptionData Table [ Database ]
+        repository.addDataIntoNwdafSliceLoadLevelSubscriptionDataTable(nwdafSliceLoadLevelSubscriptionDataModel);
+    }
+
+    /**
+     * @param subscriptionID
+     * @return
+     * @throws URISyntaxException
+     * @desc function to send response header to NF consumers
+     */
+    private HttpHeaders send_response_header_to_NF(UUID subscriptionID) throws URISyntaxException {
+
+        URI location = new URI(URI + "subscriptions/" + String.valueOf(subscriptionID));
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setLocation(location);
+        return responseHeaders;
+    }
+
+    /**
+     * @param nnwdafEventsSubscription
+     * @throws IOException
+     * @throws JSONException
+     * @desc function to check snssais data
+     */
+    private Object check_For_data(NnwdafEventsSubscription nnwdafEventsSubscription, Boolean getAnalytics) throws IOException, JSONException {
+
+        if (getAnalytics.equals(true)) {
+
+            List<EventConnection> snssaisDataList = repository.checkForData(nnwdafEventsSubscription.getSnssais(),
+                    nnwdafEventsSubscription.getAnySlice());
+
+            // if data is not found -> calling collector function to collect data
+            if (snssaisDataList.isEmpty()) {
+                logger.warn("Data not found ");
+
+                // Calling collector function
+                UUID correlationID = nwdaf_data_collector(nnwdafEventsSubscription, getAnalytics, flag);
+
+                // Adding snssais into database
+                repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
+
+                EventConnection eventConnection = new EventConnection();
+                eventConnection.setMessage("Data not Found for " + nnwdafEventsSubscription.getSnssais());
+                eventConnection.setCurrentLoadLevelInfo(0);
+                eventConnection.setSnssais(nnwdafEventsSubscription.getSnssais());
+                eventConnection.setDataStatus(false);
+
+                //throw new NullPointerException("Data not found!");
+                return eventConnection;
+
+            } else {
+                // flag to check if getAnalytics ref count will be updated or not
+                flag = 1;
+                UUID correlationID = nwdaf_data_collector(nnwdafEventsSubscription, getAnalytics, flag);
+
+                // if Data found returning JSON
+                return snssaisDataList;
+            }
+
+        } else {
+            if (!repository.snsExists(nnwdafEventsSubscription.getSnssais())) {
+                getAnalytics = true;
+                UUID correlationID = nwdaf_data_collector(nnwdafEventsSubscription, getAnalytics, flag);
+            } else {
+                repository.increment_ref_count(nnwdafEventsSubscription.getSnssais());
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * @param nnwdafEventsSubscription
+     * @param getAnalytics
+     * @return
+     * @throws IOException
+     * @throws JSONException
+     * @desc this will hold functions for data collection from network functions
+     */
+    private UUID nwdaf_data_collector(NnwdafEventsSubscription nnwdafEventsSubscription, Boolean getAnalytics, int flag) throws IOException, JSONException {
 
         logger.debug("Entered Collector Function");
 
@@ -239,6 +270,7 @@ public class Nnwdaf_controller {
         UUID correlationID = UUID.randomUUID();
 
         Namf_EventExposure_Subscribe namf_eventExposure_subscribe = new Namf_EventExposure_Subscribe();
+        namf_eventExposure_subscribe.setCorrelationId(String.valueOf(correlationID));
 
         // POST_AMF_URL : POST_AMF_URL + subId;
         // POST_AMF_URL : http::/localhost:8082/Namf_EventExposure_Subscribe/subID [ Reading from file ]
@@ -247,7 +279,6 @@ public class Nnwdaf_controller {
         updated_POST_AMF_URL = POST_AMF_URL + "/" + correlationID;
 
         URL obj = new URL(updated_POST_AMF_URL);
-
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
         con.setRequestMethod("POST");
@@ -255,13 +286,78 @@ public class Nnwdaf_controller {
         con.setRequestProperty("Content-Type", "application/json; utf-8");
         con.setRequestProperty("Accept", "application/json");
 
-        JSONObject json = new JSONObject();
 
-        json.put("correlationID", correlationID);
+        int responseCode = send_data_receieve_response(namf_eventExposure_subscribe, con);
+
+        response_handler(nnwdafEventsSubscription, responseCode, correlationID, con);
+
+
+        return correlationID;
+    }
+
+
+    /**
+     * @param nnwdafEventsSubscription
+     * @param responseCode
+     * @param correlationID
+     * @param con
+     * @throws IOException
+     * @desc function to send response header to NF consumers when they subscribe
+     */
+    private void response_handler(NnwdafEventsSubscription nnwdafEventsSubscription,
+                                  int responseCode, UUID correlationID,
+                                  HttpURLConnection con) throws IOException {
+
+        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+            // incrementing Counter
+            Counters.incrementCollectorSubscriptions();
+            showCounters();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+
+            try {
+                if (!repository.snsExists(nnwdafEventsSubscription.getSnssais())) {
+                    repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(correlationID,
+                            response.toString(), nnwdafEventsSubscription.getSnssais(), getAnalytics);
+                } else {
+                    if (!repository.isGetAnalytics(nnwdafEventsSubscription.getSnssais())) {
+                        repository.setGetAnalytics(nnwdafEventsSubscription.getSnssais(), true);
+                        repository.increment_ref_count(nnwdafEventsSubscription.getSnssais());
+                    }
+
+                }
+            } catch (Exception e) {
+                out.println(e.getMessage());
+            }
+            in.close();
+        } else {
+            logger.error(" POST request not worked");
+        }
+    }
+
+
+    /**
+     * @param namf_eventExposure_subscribe
+     * @param con
+     * @return
+     * @throws JSONException
+     * @throws IOException
+     * @desc function to receive response code
+     */
+    private int send_data_receieve_response(Namf_EventExposure_Subscribe namf_eventExposure_subscribe, HttpURLConnection con) throws JSONException, IOException {
+
+        JSONObject json = new JSONObject();
+        json.put("correlationID", namf_eventExposure_subscribe.getCorrelationId());
         json.put("unSubCorrelationId", namf_eventExposure_subscribe.getUnSubCorrelationId());
         // notificationTargetUrl = Namf_EventExposure_Notify
         json.put("notificationTargetAddress", notificationTargetUrl);
-
 
         // For POST only - START
         con.setDoOutput(true);
@@ -277,95 +373,58 @@ public class Nnwdaf_controller {
         String responseMessage = con.getResponseMessage();
         System.out.println("\n");
 
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-
-
-            // incrementing Counter
-            Counters.incrementCollectorSubscriptions();
-            showCounters();
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-
-            try {
-                repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(correlationID,
-                        response.toString(), nnwdafEventsSubscription.getSnssais(), getAnalytics);
-            } catch (Exception e) {
-                out.println(e.getMessage());
-            }
-            in.close();
-
-
-            // Save correlationID and unSubCorrelationID into nwdafIDTable /[ here is have to update unSubCorrelationID]
-
-           /*
-            try {
-                repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(correlationID,
-                        response.toString(), nnwdafEventsSubscription.getSnssais());
-            } catch (Exception e) {
-                out.println(e.getMessage());
-            }*/
-        } else {
-            logger.error(" POST request not worked");
-        }
-
-        logger.debug("Exit Collector Function");
-
-        return correlationID;
+        return responseCode;
     }
 
 
+    /**
+     * @param subscriptionID
+     * @param nnwdafEventsSubscription
+     * @return
+     * @desc this function will update network function subscription
+     */
     @PutMapping(PATH + "/subscriptions/{subscriptionID}")
-    public ResponseEntity<?> updateNF(@PathVariable("subscriptionID") String id, @RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) {
+    public ResponseEntity<?> update_nf_subscription(@PathVariable("subscriptionID") String subscriptionID, @RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) {
 
         logger.debug("Entered UpdateNF() ");
-
-        logger.info(" eventID  " + nnwdafEventsSubscription.getEventID() +
-                " snssais  " + nnwdafEventsSubscription.getSnssais() +
-                " notifMethod  " + nnwdafEventsSubscription.getNotifMethod() +
-                " repetitionPeriod  " + nnwdafEventsSubscription.getRepetitionPeriod() +
+        logger.info(" eventID  " + nnwdafEventsSubscription.getEventID() + " snssais  " + nnwdafEventsSubscription.getSnssais() +
+                " notifMethod  " + nnwdafEventsSubscription.getNotifMethod() + " repetitionPeriod  " + nnwdafEventsSubscription.getRepetitionPeriod() +
                 " loadLevelThreshold " + nnwdafEventsSubscription.getLoadLevelThreshold());
 
-        NwdafSubscriptionTableModel nwdafSubscriptionTableModel = repository.findById_subscriptionID(id);
-
-
+        NwdafSubscriptionTableModel nwdafSubscriptionTableModel = repository.findById_subscriptionID(subscriptionID);
         if (nnwdafEventsSubscription == null) {
             logger.warn("no Content");
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
         }
 
         // Updating user via subscriptionID
-        repository.updateNF(nnwdafEventsSubscription, id);
-
+        repository.updateNF(nnwdafEventsSubscription, subscriptionID);
 
         // Incrementing update counter
         Counters.incrementSubscriptionUpdates();
         showCounters();
 
-
         logger.debug("Exit UpdateNF()");
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.OK);
     }
 
-
+    /**
+     * @param subscriptionID
+     * @return
+     * @desc this function unsubscribe network function
+     */
     @DeleteMapping(value = PATH + "/subscriptions/{subscriptionID}")
-    public ResponseEntity<?> unsubscribeNF(@PathVariable("subscriptionID") String subID) {
+    public ResponseEntity<?> unsubscription_nf(@PathVariable("subscriptionID") String subscriptionID) {
 
         logger.debug("Entered UnsubscribeNf()");
-        NwdafSubscriptionTableModel sub = repository.findById_subscriptionID(subID);
+        NwdafSubscriptionTableModel sub = repository.findById_subscriptionID(subscriptionID);
 
         if (sub == null) {
             logger.warn("Data not found");
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NOT_FOUND);
         }
 
-        repository.unsubscribeNF(subID);
+        repository.unsubscribeNF(subscriptionID);
 
         Counters.incrementUnSubscriptions();
         showCounters();
@@ -374,8 +433,9 @@ public class Nnwdaf_controller {
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
     }
 
+
     @GetMapping(PATH + "/subscriptions/{subscriptionID}")
-    public ResponseEntity<?> getNF(@PathVariable("subscriptionID") String id) {
+    public ResponseEntity<?> get_all_network_function(@PathVariable("subscriptionID") String id) {
 
         logger.debug("Entered getNF()");
         NwdafSubscriptionTableModel user = repository.findById_subscriptionID(id);
@@ -391,11 +451,10 @@ public class Nnwdaf_controller {
 
     // Accepting Notification [ from Simulator]
     @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{correlationID}")
-    public void acceptingNotification(@RequestBody String response) throws JSONException {
+    public void acceptingNotification(@RequestBody String response) throws JSONException, IOException {
 
         // Here Data will be received and nwdafSliceLoadLevelInformation Table will get populated.
         logger.debug("Entered Accepting Notification");
-
 
         // here subID == correlationID
 
@@ -405,7 +464,17 @@ public class Nnwdaf_controller {
         int currentLoadLevel = json.getInt("currentLoadLevel");
         String correlationID = json.getString("correlationID");
 
-        out.println("received from SIMULATOR - " + "currentLoadLevel - " + currentLoadLevel + correlationID);
+        //out.println("received from SIMULATOR - " + "currentLoadLevel - " + currentLoadLevel + correlationID);
+
+        String snssais = repository.getSnssaisByCorrelationID(correlationID);
+
+        if (repository.isGetAnalytics(snssais)) {
+            repository.decrementRefCount(snssais);
+            repository.setGetAnalytics(snssais, false);
+        }
+
+        repository.updateCurrentLoadLevel(snssais);
+        nwdaf_notification_manager();
 
         //repository.getSnssaisViaSubID(correlationID);
 
@@ -413,7 +482,6 @@ public class Nnwdaf_controller {
         Counters.incrementCollectorSubscriptionNotifications();
         showCounters();
     }
-
 
     @RequestMapping("/Namf_EventExposure_UnSubscribe/{unSubCorrelationId}")
     public String unSubscribeEvent(@PathVariable UUID unSubCorrelationId) {
@@ -428,91 +496,88 @@ public class Nnwdaf_controller {
 
         public void run() {
 
-
             while (true) {
-
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
                 try {
-
                     // Calling notification Manager Function
-                    callNotificationManagerFunction();
-
-
+                    nwdaf_notification_manager();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
+        }
+    }
+
+    /**
+     * @throws IOException
+     * @desc this function manages notifications for subscribers
+     */
+    private void nwdaf_notification_manager() throws IOException {
+
+        //logger.debug("Entered callNotificationManagerFunction()");
+
+        // Fetching all snssais list
+        List<NwdafSliceLoadLevelInformationModel> list = repository.getALLsnssais();
+
+        if (repository.getALLsnssais() == null) {
+            logger.warn("no snssais Found [ Null object ]");
         }
 
 
-        private void callNotificationManagerFunction() throws IOException {
+        // Iterating throw list and getting all subscriptionID related to that snssais
+        // i = indexOfsnssaisList || j = indexOfSubscriptionList
 
-            //logger.debug("Entered callNotificationManagerFunction()");
+        for (int indexOfSnssaisList = 0; indexOfSnssaisList < list.size(); indexOfSnssaisList++) {
 
-            // Fetching all snssais list
-            List<NwdafSliceLoadLevelInformationModel> list = repository.getALLsnssais();
+            // checking current Threshold value
+            currentLoadLevel = repository.currentLoadLevel(list.get(indexOfSnssaisList).getSnssais());
 
             if (repository.getALLsnssais() == null) {
-                logger.warn("no snssais Found [ Null object ]");
+                logger.warn("Null object!");
+            }
+            //    if (currentLoadLevel == 0)
+            //      continue;
+
+            // Fetching all subscription ID of a particular snssais
+            List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionList = fetch_all_subscitpionID(list.get(indexOfSnssaisList).getSnssais());
+
+            if (subscriptionList == null) {
+                logger.warn("No subscription List found");
             }
 
+            // Iterating throw subscriptionIDs to check whose TH value has been reached
+            for (int indexOfSubscriptionList = 0; indexOfSubscriptionList < subscriptionList.size(); indexOfSubscriptionList++) {
 
-            // Iterating throw list and getting all subscriptionID related to that snssais
-            // i = indexOfsnssaisList || j = indexOfSubscriptionList
+                // Checking currentLoadLevel Of that snsssais if  current Load level greater than required TH Value
+                // then send notification
+                subThValue = repository.getLoadLevelThreshold(String.valueOf(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()));
 
-            for (int indexOfSnssaisList = 0; indexOfSnssaisList < list.size(); indexOfSnssaisList++) {
-
-                // checking current Threshold value
-                currentLoadLevel = repository.currentLoadLevel(list.get(indexOfSnssaisList).getSnssais());
-
-                if (repository.getALLsnssais() == null) {
-                    logger.warn("Null object!");
-                }
-                //    if (currentLoadLevel == 0)
-                //      continue;
-
-                // Fetching all subscription ID of a particular snssais
-                List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionList = getAllSubscriptionIds(list.get(indexOfSnssaisList).getSnssais());
-
-                if (subscriptionList == null) {
-                    logger.warn("No subscription List found");
-                }
-
-                // Iterating throw subscriptionIDs to check whose TH value has been reached
-                for (int indexOfSubscriptionList = 0; indexOfSubscriptionList < subscriptionList.size(); indexOfSubscriptionList++) {
-
-                    // Checking currentLoadLevel Of that snsssais if  current Load level greater than required TH Value
-                    // then send notification
-                    if (currentLoadLevel > subThValue) {
+                if (currentLoadLevel > subThValue) {
 
                         /* Checking Hash SET if notification has been sent on that particular subscriptionID/
                        Then we do not have to send the notification again.
                         */
 
-                        if (!(subID_SET.contains(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()))) {
-                            subID_SET.add(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
+                    if (!(subID_SET.contains(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()))) {
+                        subID_SET.add(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
 
-                            if (subscriptionList.get(indexOfSubscriptionList).getSubscriptionID() == null) {
-                                logger.warn("Null Object Found! [ No subscription ID is present ]");
-                            } else {
+                        if (subscriptionList.get(indexOfSubscriptionList).getSubscriptionID() == null) {
+                            logger.warn("Null Object Found! [ No subscription ID is present ]");
+                        } else {
 
-                                // Fetching notification URL on which NWDAF will send notification
-                                String NotificationURI = repository.getNotificationURI(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
+                            // Fetching notification URL on which NWDAF will send notification
+                            String NotificationURI = repository.getNotificationURI(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
 
-                                if (repository.getNotificationURI(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()) == null) {
-                                    logger.warn("No subscription ID is present -> can't get Notification URI ");
-                                }
-
-                                // Calling sendNotification Function
-                                sendNotificationToNF(NotificationURI);
-
+                            if (repository.getNotificationURI(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()) == null) {
+                                logger.warn("No subscription ID is present -> can't get Notification URI ");
                             }
+
+                            // Calling sendNotification Function
+                            send_notificaiton_to_NF(NotificationURI);
 
                         }
 
@@ -524,89 +589,95 @@ public class Nnwdaf_controller {
 
         }
 
-        //Fetching all subscriptionID of particular snssais
-        private List<NwdafSliceLoadLevelSubscriptionDataModel> getAllSubscriptionIds(String snssais) {
-            logger.debug("Enter getALLSubscriptionIDs");
-
-            List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionIDList = repository.getAllSubIdsbysnssais(snssais);
-
-            if (subscriptionIDList == null) {
-                logger.warn("No subscription List present");
-            }
-
-            logger.debug("Exit getALLsubscirptionIDs");
-            return subscriptionIDList;
-        }
-
-        private void sendNotificationToNF(String notificationURI) throws IOException {
-            logger.debug("Entered sendNotificationToNF");
-
-            Counters.incrementSubscriptionNotifications();
-            showCounters();
-
-            URL url = null;
-            try {
-                url = new URL(notificationURI);
-            } catch (MalformedURLException e) {
-                logger.warn("http connect exception found");
-                e.printStackTrace();
-            }
-
-            // Opening connection;
-            HttpURLConnection con = null;
-            try {
-                con = (HttpURLConnection) url.openConnection();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            try {
-                con.setRequestMethod("POST");
-            } catch (ProtocolException e) {
-                e.printStackTrace();
-            }
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
-            con.setRequestProperty("Accept", "application/json");
-            con.setDoOutput(true);
-
-            // JSON  String sending to M1
-            // String jsonInputString = "{\"id\":10000,\"name\":\" [ M2 -> M1 ]\"}";
-
-            String jsonInputString = "Hey I am Notification";
-
-            //    System.out.println("\n\nSending Notification From  NWDAF TO NF  - " + jsonInputString);
-
-            try (OutputStream os = con.getOutputStream()) {
-                byte[] input = jsonInputString.getBytes("utf-8");
-
-                os.write(input, 0, input.length);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-            // Read the response from input stream;
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(con.getInputStream(), "utf-8"))) {
-                StringBuilder response = new StringBuilder();
-
-                String responseLine = null;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
-                }
-
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-        }
-
     }
 
 
+    /**
+     * @param snssais
+     * @return
+     * @desc this function will fetch all subscription IDs of a particular snssais
+     */
+    //Fetching all subscriptionID of particular snssais
+    private List<NwdafSliceLoadLevelSubscriptionDataModel> fetch_all_subscitpionID(String snssais) {
+
+        List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionIDList = repository.getAllSubIdsbysnssais(snssais);
+
+        if (subscriptionIDList == null) {
+            logger.warn("No subscription List present");
+        }
+
+        logger.debug("Exit getALLsubscirptionIDs");
+        return subscriptionIDList;
+    }
+
+    /**
+     * @param notificationURI
+     * @throws IOException
+     * @desc this function will send notification to network function
+     */
+    private void send_notificaiton_to_NF(String notificationURI) throws IOException {
+        logger.debug("Entered sendNotificationToNF");
+
+        Counters.incrementSubscriptionNotifications();
+        showCounters();
+
+        URL url = null;
+        try {
+            url = new URL(notificationURI);
+        } catch (MalformedURLException e) {
+            logger.warn("http connect exception found");
+            e.printStackTrace();
+        }
+
+        // Opening connection;
+        HttpURLConnection con = null;
+        try {
+            con = (HttpURLConnection) url.openConnection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            con.setRequestMethod("POST");
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        }
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+        con.setDoOutput(true);
+
+        String jsonInputString = "Hey I am Notification";
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+
+            os.write(input, 0, input.length);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        // Read the response from input stream;
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(con.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * @desc this function holds details of counters
+     */
     public void showCounters() {
         logger.debug("Enter showCounters");
 
@@ -624,9 +695,14 @@ public class Nnwdaf_controller {
     }
 
 
-    // Mapping to get all the counters
-    @GetMapping("/stats/get")
-    public HashMap<String, BigInteger> getStats() throws Exception {
+    /**
+     * this function shows counters
+     *
+     * @return
+     * @throws Exception
+     */
+    @GetMapping("/nwdaf/counter")
+    public HashMap<String, BigInteger> nwdaf_counters() throws Exception {
 
         logger.debug("Entered getStats");
 
@@ -646,10 +722,12 @@ public class Nnwdaf_controller {
         return map;
     }
 
-
-    // Mapping to reset all the counters
-    @PostMapping("/stats/clear")
-    public String resetCounters() {
+    /**
+     * @return String
+     * @desc this function will reset all the counters
+     */
+    @PostMapping("/nwdaf/counter")
+    public String nwdaf_reset_counter() {
 
         logger.debug("Entere resetCounters");
 
@@ -660,7 +738,7 @@ public class Nnwdaf_controller {
     }
 
 
-    @RequestMapping("/apiDetails")
+   /* @RequestMapping("/apiDetails")
     public Object getNwdafAPIInformation() throws IOException {
 
 
@@ -685,6 +763,6 @@ public class Nnwdaf_controller {
 
         return apiBuildInformation;
 
-    }
+    }*/
 
 }
