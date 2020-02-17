@@ -1,6 +1,7 @@
 package com.nwdaf.Analytics;
 
 import com.nwdaf.Analytics.MetaData.Counters;
+import com.nwdaf.Analytics.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.APIBuildInformation;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelInformationModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionDataModel;
@@ -130,9 +131,7 @@ public class Nnwdaf_controller {
      * @desc this will hold functions to for event subscriptions
      */
     @PostMapping(PATH + "/subscriptions")
-    @ApiOperation(value = "Consumers can subscribe for an event by providing eventID ",
-            notes = "Provide Event-Id to subscribe for a particular event",
-            response = String.class)
+    @ApiOperation(value = OperationInfo.SUBSCRIBE_INFO, notes = OperationInfo.SUBSCRIBE_NOTES, response = Object.class)
     public ResponseEntity<String> nwdaf_subscription(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
         logger.debug("NF Subscription | Entered subscribeNF()");
@@ -414,6 +413,7 @@ public class Nnwdaf_controller {
      * @desc this function will update network function subscription
      */
     @PutMapping(PATH + "/subscriptions/{subscriptionID}")
+    @ApiOperation(value = OperationInfo.UPDATE_SUBSCRIPTION_INFO, notes = OperationInfo.UPDATE_SUBSCRIPTION_NOTES, response = Object.class)
     public ResponseEntity<?> update_nf_subscription(@PathVariable("subscriptionID") String subscriptionID, @RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) {
 
         logger.debug("Entered update_nf_subscription() ");
@@ -444,6 +444,7 @@ public class Nnwdaf_controller {
      * @desc this function unsubscribe network function
      */
     @DeleteMapping(value = PATH + "/subscriptions/{subscriptionID}")
+    @ApiOperation(value = OperationInfo.UNSUBSCRICE_INFO, notes = OperationInfo.UNSUBSCRIBE_NOTES, response = Object.class)
     public ResponseEntity<?> unsubscription_nf(@PathVariable("subscriptionID") String subscriptionID) {
 
         logger.debug("Entered UnsubscribeNf()");
@@ -734,6 +735,7 @@ public class Nnwdaf_controller {
      * @throws Exception
      */
     @GetMapping("/nwdaf/counter")
+    @ApiOperation(value = OperationInfo.COUNTERS_INFO, notes = OperationInfo.COUNTERS_NOTES, response = Object.class)
     public HashMap<String, BigInteger> nwdaf_counters() throws Exception {
 
         logger.debug("Entered nwdaf_counters()");
@@ -759,6 +761,7 @@ public class Nnwdaf_controller {
      * @desc this function will reset all the counters
      */
     @PostMapping("/nwdaf/counter")
+    @ApiOperation(value = OperationInfo.COUNTERS_ZERO_INFO, notes = OperationInfo.COUNTERS_ZERO_NOTES, response = Object.class)
     public String nwdaf_reset_counter() {
 
         logger.debug("Enter resetCounters()");
