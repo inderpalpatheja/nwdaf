@@ -6,9 +6,10 @@ import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionDataModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSubscriptionTableModel;
 import com.nwdaf.Analytics.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 import io.swagger.annotations.ApiOperation;
-import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -33,7 +34,7 @@ import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 public class Nnwdaf_controller {
 
-    public static Logger logger = Logger.getLogger(Nnwdaf_controller.class.getName());
+    private static final Logger logger= LoggerFactory.getLogger(Nnwdaf_controller.class);
 
     Boolean getAnalytics = true;
     Set<String> subID_SET = new HashSet<String>();
@@ -95,6 +96,8 @@ public class Nnwdaf_controller {
                                   @PathVariable("anySlice") Boolean anySlice,
                                   @PathVariable("eventID") int eventID) throws IOException, JSONException {
 
+
+
         getAnalytics = true;
         logger.debug("Entered getAllAnalyticsInformation");
 
@@ -104,6 +107,7 @@ public class Nnwdaf_controller {
 
         Object snssaisDataList = check_For_data(nnwdafEventsSubscription, getAnalytics);
 
+        logger.debug("Exit getAllAnalyticsInformation");
         return snssaisDataList;
 
     }
@@ -175,6 +179,8 @@ public class Nnwdaf_controller {
      */
     private void add_values_into_subscriptionData(UUID subscriptionID, String snssais, int loadLevelThreshold) {
 
+
+       logger.debug("enter add_values_into_subscriptionData");
         NwdafSliceLoadLevelSubscriptionDataModel nwdafSliceLoadLevelSubscriptionDataModel = new
                 NwdafSliceLoadLevelSubscriptionDataModel();
 
@@ -185,6 +191,8 @@ public class Nnwdaf_controller {
 
         // Adding nwdafSliceLoadLevelSubscriptionDatamodel into NwdafSliceLoadLevelSubscriptionData Table [ Database ]
         repository.addDataIntoNwdafSliceLoadLevelSubscriptionDataTable(nwdafSliceLoadLevelSubscriptionDataModel);
+        logger.debug("enter add_values_into_subscriptionData");
+
     }
 
     /**
@@ -195,9 +203,14 @@ public class Nnwdaf_controller {
      */
     private HttpHeaders send_response_header_to_NF(UUID subscriptionID) throws URISyntaxException {
 
+        logger.debug("enter send_response_header_to_NF ");
+
         URI location = new URI(URI + "subscriptions/" + String.valueOf(subscriptionID));
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setLocation(location);
+
+
+        logger.debug("Exit enter send_response_header_to_NF  ");
         return responseHeaders;
     }
 
@@ -208,6 +221,8 @@ public class Nnwdaf_controller {
      * @desc function to check snssais data
      */
     private Object check_For_data(NnwdafEventsSubscription nnwdafEventsSubscription, Boolean getAnalytics) throws IOException, JSONException {
+
+        logger.debug("Enter check_For_data()");
 
         if (getAnalytics.equals(true)) {
 
@@ -250,6 +265,8 @@ public class Nnwdaf_controller {
                 repository.increment_ref_count(nnwdafEventsSubscription.getSnssais());
             }
         }
+
+        logger.debug("Exit check_For_data()");
         return null;
     }
 
@@ -291,7 +308,7 @@ public class Nnwdaf_controller {
 
         response_handler(nnwdafEventsSubscription, responseCode, correlationID, con);
 
-
+        logger.debug("Exit Collector Function");
         return correlationID;
     }
 
@@ -307,6 +324,8 @@ public class Nnwdaf_controller {
     private void response_handler(NnwdafEventsSubscription nnwdafEventsSubscription,
                                   int responseCode, UUID correlationID,
                                   HttpURLConnection con) throws IOException {
+
+        logger.debug("Enter response_handler()");
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
             // incrementing Counter
@@ -338,6 +357,7 @@ public class Nnwdaf_controller {
             }
             in.close();
         } else {
+
             logger.error(" POST request not worked");
         }
     }
@@ -386,7 +406,7 @@ public class Nnwdaf_controller {
     @PutMapping(PATH + "/subscriptions/{subscriptionID}")
     public ResponseEntity<?> update_nf_subscription(@PathVariable("subscriptionID") String subscriptionID, @RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) {
 
-        logger.debug("Entered UpdateNF() ");
+        logger.debug("Entered update_nf_subscription() ");
         logger.info(" eventID  " + nnwdafEventsSubscription.getEventID() + " snssais  " + nnwdafEventsSubscription.getSnssais() +
                 " notifMethod  " + nnwdafEventsSubscription.getNotifMethod() + " repetitionPeriod  " + nnwdafEventsSubscription.getRepetitionPeriod() +
                 " loadLevelThreshold " + nnwdafEventsSubscription.getLoadLevelThreshold());
@@ -404,7 +424,7 @@ public class Nnwdaf_controller {
         Counters.incrementSubscriptionUpdates();
         showCounters();
 
-        logger.debug("Exit UpdateNF()");
+        logger.debug("Exit update_nf_subscription()");
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.OK);
     }
 
@@ -518,7 +538,7 @@ public class Nnwdaf_controller {
      */
     private void nwdaf_notification_manager() throws IOException {
 
-        //logger.debug("Entered callNotificationManagerFunction()");
+        logger.debug("Entered nwdaf_notification_manager()");
 
         // Fetching all snssais list
         List<NwdafSliceLoadLevelInformationModel> list = repository.getALLsnssais();
@@ -600,13 +620,15 @@ public class Nnwdaf_controller {
     //Fetching all subscriptionID of particular snssais
     private List<NwdafSliceLoadLevelSubscriptionDataModel> fetch_all_subscitpionID(String snssais) {
 
+        logger.debug("Enter fetch_all_subscitpionID");
+
         List<NwdafSliceLoadLevelSubscriptionDataModel> subscriptionIDList = repository.getAllSubIdsbysnssais(snssais);
 
         if (subscriptionIDList == null) {
             logger.warn("No subscription List present");
         }
 
-        logger.debug("Exit getALLsubscirptionIDs");
+        logger.debug("Exit fetch_all_subscitpionID");
         return subscriptionIDList;
     }
 
@@ -616,7 +638,7 @@ public class Nnwdaf_controller {
      * @desc this function will send notification to network function
      */
     private void send_notificaiton_to_NF(String notificationURI) throws IOException {
-        logger.debug("Entered sendNotificationToNF");
+        logger.debug("Entered send_notificaiton_to_NF()");
 
         Counters.incrementSubscriptionNotifications();
         showCounters();
@@ -679,7 +701,7 @@ public class Nnwdaf_controller {
      * @desc this function holds details of counters
      */
     public void showCounters() {
-        logger.debug("Enter showCounters");
+        logger.debug("Enter showCounters()");
 
         logger.info("> # Event_Subscriptions: " + Counters.getSubscriptions());
         logger.info("> # Event_UnSubscriptions: " + Counters.getUnSubscriptions());
@@ -691,7 +713,7 @@ public class Nnwdaf_controller {
         logger.info("> # Collector_AnalyticsSubscriptions: " + Counters.getAnalyticsSubscriptions());
         logger.info("> # Collector_AnalyticsNotifications: " + Counters.getAnalyticsNotifications());
 
-        logger.debug("Exit sendNotificationToNF");
+        logger.debug("Exit showCounters()");
     }
 
 
@@ -704,7 +726,7 @@ public class Nnwdaf_controller {
     @GetMapping("/nwdaf/counter")
     public HashMap<String, BigInteger> nwdaf_counters() throws Exception {
 
-        logger.debug("Entered getStats");
+        logger.debug("Entered nwdaf_counters()");
 
         HashMap<String, BigInteger> map = new HashMap<String, BigInteger>();
 
@@ -718,7 +740,7 @@ public class Nnwdaf_controller {
         map.put("Collector_AnalyticsSubscriptions", Counters.getAnalyticsSubscriptions());
         map.put("Collector_AnalyticsNotifications", Counters.getAnalyticsNotifications());
 
-        logger.debug("Exit getStats");
+        logger.debug("Exit nwdaf_counters()");
         return map;
     }
 
@@ -729,11 +751,11 @@ public class Nnwdaf_controller {
     @PostMapping("/nwdaf/counter")
     public String nwdaf_reset_counter() {
 
-        logger.debug("Entere resetCounters");
+        logger.debug("Enter resetCounters()");
 
         Counters.reset();
 
-        logger.debug("Exit resetCounters");
+        logger.debug("Exit resetCounters()");
         return "Counters set to 0.";
     }
 

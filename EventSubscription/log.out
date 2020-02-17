@@ -1,0 +1,32 @@
+2020-02-17 11:06:06 DEBUG Nnwdaf_controller:50 - Entered Nnwdaf_controller()
+2020-02-17 11:06:06 INFO  Nnwdaf_controller:51 - Thread started
+2020-02-17 11:06:06 DEBUG Nnwdaf_controller:58 - Exit Nnwdaf_controller()
+2020-02-17 11:06:46 DEBUG Nnwdaf_controller:50 - Entered Nnwdaf_controller()
+2020-02-17 11:06:46 INFO  Nnwdaf_controller:51 - Thread started
+2020-02-17 11:06:46 DEBUG Nnwdaf_controller:58 - Exit Nnwdaf_controller()
+2020-02-17 11:07:13 DEBUG Nnwdaf_controller:50 - Entered Nnwdaf_controller()
+2020-02-17 11:07:13 INFO  Nnwdaf_controller:51 - Thread started
+2020-02-17 11:07:13 DEBUG Nnwdaf_controller:58 - Exit Nnwdaf_controller()
+2020-02-17 11:07:14 DEBUG EvenSubscriptionApplication:30 - In EventSubscriptionApplication Class
+2020-02-17 11:16:40 DEBUG Nnwdaf_controller:50 - Entered Nnwdaf_controller()
+2020-02-17 11:16:40 INFO  Nnwdaf_controller:51 - Thread started
+2020-02-17 11:16:40 DEBUG Nnwdaf_controller:58 - Exit Nnwdaf_controller()
+2020-02-17 11:16:41 DEBUG EvenSubscriptionApplication:30 - In EventSubscriptionApplication Class
+2020-02-17 11:17:29 DEBUG Nnwdaf_controller:50 - Entered Nnwdaf_controller()
+2020-02-17 11:17:29 INFO  Nnwdaf_controller:51 - Thread started
+2020-02-17 11:17:29 DEBUG Nnwdaf_controller:58 - Exit Nnwdaf_controller()
+2020-02-17 11:17:29 DEBUG EvenSubscriptionApplication:30 - In EventSubscriptionApplication Class
+2020-02-17 11:27:45 DEBUG Nnwdaf_controller:50 - Entered Nnwdaf_controller()
+2020-02-17 11:27:45 INFO  Nnwdaf_controller:51 - Thread started
+2020-02-17 11:27:45 DEBUG Nnwdaf_controller:58 - Exit Nnwdaf_controller()
+2020-02-17 11:27:45 DEBUG EvenSubscriptionApplication:30 - In EventSubscriptionApplication Class
+2020-02-17 11:27:58 DEBUG Nnwdaf_controller:50 - Entered Nnwdaf_controller()
+2020-02-17 11:27:58 INFO  Nnwdaf_controller:51 - Thread started
+2020-02-17 11:27:58 DEBUG Nnwdaf_controller:58 - Exit Nnwdaf_controller()
+2020-02-17 11:27:59 DEBUG EvenSubscriptionApplication:30 - In EventSubscriptionApplication Class
+2020-02-17 11:29:25 DEBUG Nnwdaf_controller:50 - Entered Nnwdaf_controller()
+2020-02-17 11:29:25 INFO  Nnwdaf_controller:51 - Thread started
+2020-02-17 11:29:25 DEBUG Nnwdaf_controller:58 - Exit Nnwdaf_controller()
+2020-02-17 11:30:27 DEBUG Nnwdaf_controller:50 - Entered Nnwdaf_controller()
+2020-02-17 11:30:27 INFO  Nnwdaf_controller:51 - Thread started
+2020-02-17 11:30:27 DEBUG Nnwdaf_controller:58 - Exit Nnwdaf_controller()
