@@ -374,7 +374,7 @@ public class Nnwdaf_repository {
 
         if(getRefCount(snssais) < 1)
         { jdbcTemplate.update("DELETE FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais = ?", snssais);
-            jdbcTemplate.update("DELETE FROM nwdafSliceLoadLevelInformation WHERE snssais = ?", snssais);
+          //jdbcTemplate.update("DELETE FROM nwdafSliceLoadLevelInformation WHERE snssais = ?", snssais);
         }
 
         return 1;
