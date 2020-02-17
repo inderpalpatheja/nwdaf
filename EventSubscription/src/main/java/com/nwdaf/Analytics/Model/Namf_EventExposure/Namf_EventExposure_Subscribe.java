@@ -1,7 +1,7 @@
-package com.nwdaf.Analytics.model.Namf_EventExposure;
+package com.nwdaf.Analytics.Model.Namf_EventExposure;
 
 
-import com.nwdaf.Analytics.model.nestedModel.TargetEventReporting;
+import com.nwdaf.Analytics.Model.nestedModel.TargetEventReporting;
 
 public class Namf_EventExposure_Subscribe {
 

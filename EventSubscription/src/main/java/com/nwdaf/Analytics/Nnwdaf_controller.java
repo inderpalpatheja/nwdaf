@@ -1,10 +1,11 @@
 package com.nwdaf.Analytics;
 
 import com.nwdaf.Analytics.MetaData.Counters;
+import com.nwdaf.Analytics.Model.APIBuildInformation;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelInformationModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionDataModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSubscriptionTableModel;
-import com.nwdaf.Analytics.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
+import com.nwdaf.Analytics.Model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
@@ -26,6 +27,7 @@ import java.util.*;
 import org.springframework.http.HttpHeaders;
 
 import static java.lang.System.out;
+import static java.lang.System.setOut;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 
@@ -43,9 +45,13 @@ public class Nnwdaf_controller {
     int flag = 0;
 
 
+    private final BuildProperties buildProperties;
+
+
     List<UUID> subIDs;
 
-    public Nnwdaf_controller() {
+    public Nnwdaf_controller(BuildProperties buildProperties) {
+        this.buildProperties = buildProperties;
 
         logger.debug("Entered Nnwdaf_controller()");
         logger.info("Thread started");
@@ -765,4 +771,27 @@ public class Nnwdaf_controller {
 
     }*/
 
+
+    @RequestMapping("/apiInfo")
+    public Object check_api_details() throws IOException {
+
+        APIBuildInformation apiBuildInformation = new APIBuildInformation();
+
+        try (InputStream input = new FileInputStream("/Users/sheetalkumar/Desktop/Demo3W/nwdaf/EventSubscription/buildNumber.properties")) {
+
+            Properties prop = new Properties();
+            prop.load(input);
+
+
+            apiBuildInformation.setAPI_VERSION(buildProperties.getVersion() + "." + prop.getProperty("buildNumber"));
+            apiBuildInformation.setAPI_NAME(buildProperties.getArtifact());
+            apiBuildInformation.setAPI_TIME(String.valueOf(buildProperties.getTime()));
+            apiBuildInformation.setGROUP_NAME(buildProperties.getGroup());
+
+
+            return apiBuildInformation;
+
+        }
+    }
 }
+

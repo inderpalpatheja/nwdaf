@@ -1,4 +1,4 @@
-package com.nwdaf.Analytics.model.nestedModel;
+package com.nwdaf.Analytics.Model.nestedModel;
 
 public class TargetEventReporting {
 
