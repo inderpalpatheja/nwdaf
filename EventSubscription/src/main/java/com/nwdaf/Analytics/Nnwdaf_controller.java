@@ -4,7 +4,7 @@ import com.nwdaf.Analytics.MetaData.Counters;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelInformationModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionDataModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSubscriptionTableModel;
-import com.nwdaf.Analytics.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
+import com.nwdaf.Analytics.Model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
@@ -12,7 +12,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +26,9 @@ import org.springframework.http.HttpHeaders;
 
 import static java.lang.System.out;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
+
+
+
 
 
 @RestController

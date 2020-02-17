@@ -1,4 +1,4 @@
-package com.nwdaf.Analytics.model;
+package com.nwdaf.Analytics.Model;
 
 public class CollectorDataModel {
 

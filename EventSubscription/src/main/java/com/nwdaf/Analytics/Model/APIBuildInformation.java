@@ -1,4 +1,4 @@
-package com.nwdaf.Analytics.model;
+package com.nwdaf.Analytics.Model;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

@@ -1,0 +1,4 @@
+2020-02-15 21:17:52 DEBUG Nnwdaf_controller:52 - Entered Nnwdaf_controller()
+2020-02-15 21:17:52 INFO  Nnwdaf_controller:53 - Thread started
+2020-02-15 21:17:52 DEBUG Nnwdaf_controller:60 - Exit Nnwdaf_controller()
+2020-02-15 21:17:54 DEBUG EvenSubscriptionApplication:30 - In EventSubscriptionApplication Class
