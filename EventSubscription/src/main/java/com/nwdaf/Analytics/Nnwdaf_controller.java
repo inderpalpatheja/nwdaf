@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,10 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.*;
 
 import org.springframework.http.HttpHeaders;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
 
 import static java.lang.System.out;
 import static java.lang.System.setOut;
@@ -56,10 +61,6 @@ public class Nnwdaf_controller {
         logger.debug("Entered Nnwdaf_controller()");
         logger.info("Thread started");
 
-        // Object of NwdafNotification Thread
-        //  NwdafNotificationThread nwdafNotificationThread = new NwdafNotificationThread();
-        // Starting thread
-        //   nwdafNotificationThread.start();
 
         logger.debug("Exit Nnwdaf_controller()");
     }
@@ -125,6 +126,9 @@ public class Nnwdaf_controller {
      * @desc this will hold functions to for event subscriptions
      */
     @PostMapping(PATH + "/subscriptions")
+    @ApiOperation(value = "Consumers can subscribe for an event by providing eventID ",
+            notes = "Provide Event-Id to subscribe for a particular event",
+            response = String.class)
     public ResponseEntity<String> nwdaf_subscription(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
         logger.debug("NF Subscription | Entered subscribeNF()");
@@ -498,7 +502,7 @@ public class Nnwdaf_controller {
     }
 
 
-    public class NwdafNotificationThread extends Thread {
+  /*  public class NwdafNotificationThread extends Thread {
 
         public void run() {
 
@@ -516,7 +520,7 @@ public class Nnwdaf_controller {
                 }
             }
         }
-    }
+    }*/
 
     /**
      * @throws IOException
@@ -744,35 +748,10 @@ public class Nnwdaf_controller {
     }
 
 
-   /* @RequestMapping("/apiDetails")
-    public Object getNwdafAPIInformation() throws IOException {
 
 
-        //  JarFile jf = new JarFile("/Users/sheetalkumar/Desktop/Demo3W/nwdaf/Simulator/AMF/target/Collector-0.0.1-SNAPSHOT.jar");
-        //  ZipEntry manifest = jf.getEntry("META-INF/MANIFEST.MF");
-        //  long manifestTime = manifest.getTime();
-        //  Timestamp ts = new Timestamp(manifestTime);
-        //  Date date = new Date(ts.getTime());
-        //  return " Date - " + date;
 
-
-        APIBuildInformation apiBuildInformation = new APIBuildInformation();
-
-        LocalDate date = LocalDateTime.ofInstant(buildProperties.getTime(), ZoneId.systemDefault()).toLocalDate();
-        LocalTime time = LocalDateTime.ofInstant(buildProperties.getTime(), ZoneId.systemDefault()).toLocalTime();
-
-
-        apiBuildInformation.setAPI_VERSION(buildProperties.getVersion());
-        apiBuildInformation.setAPI_NAME(buildProperties.getName());
-        apiBuildInformation.setBUILD_DATE(date);
-        apiBuildInformation.setBUILD_TIME(time);
-
-        return apiBuildInformation;
-
-    }*/
-
-
-    @RequestMapping("/apiInfo")
+    @RequestMapping(method = RequestMethod.GET,value = "/apiInfo")
     public Object check_api_details() throws IOException {
 
         APIBuildInformation apiBuildInformation = new APIBuildInformation();
@@ -793,5 +772,38 @@ public class Nnwdaf_controller {
 
         }
     }
+
+
+
+    // Adding Swagger Configurations
+    @Bean
+    public Docket swaggerConfiguration() throws IOException {
+
+        return new Docket(DocumentationType.SWAGGER_2)
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("com.nwdaf"))
+                .build()
+                .apiInfo(apiDetails());
+
+    }
+
+    private ApiInfo apiDetails() throws IOException {
+
+        InputStream input = new FileInputStream("/Users/sheetalkumar/Desktop/Demo3W/nwdaf/EventSubscription/buildNumber.properties");
+
+        Properties prop = new Properties();
+        prop.load(input);
+
+        return new ApiInfo(
+                "NWDAF API ( Network Data Analytics Function )",
+                " Sample API for NWDAF in 5G",
+                buildProperties.getVersion() + "." + prop.getProperty("buildNumber"),
+                "Free to use",
+                new springfox.documentation.service.Contact("Team NWDAF", "https://truminds.com/home", "sheetal.kumar@truminds.co.in"),
+                "API License",
+                "https://truminds.com/home",
+                Collections.emptyList());
+    }
+
 }
 

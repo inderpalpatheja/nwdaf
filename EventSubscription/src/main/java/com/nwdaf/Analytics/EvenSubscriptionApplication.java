@@ -31,30 +31,6 @@ public class EvenSubscriptionApplication {
     }
 
 
-    // Adding Swagger Configurations
-    @Bean
-    public Docket swaggerConfiguration() {
-
-        return new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.nwdaf"))
-                .build()
-                .apiInfo(apiDetails());
-
-    }
-
-    private ApiInfo apiDetails() {
-
-        return new ApiInfo(
-                "NWDAF API ( Network Data Analytics Function )",
-                " Sample API for NWDAF in 5G",
-                "1.0",
-                "Free to use",
-                new springfox.documentation.service.Contact("Team NWDAF", "https://truminds.com/home", "sheetal.kumar@truminds.co.in"),
-                "API License",
-                "https://truminds.com/home",
-                Collections.emptyList());
-    }
 
 
 }
