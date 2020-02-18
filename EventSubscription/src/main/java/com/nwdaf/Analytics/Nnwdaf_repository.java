@@ -255,7 +255,11 @@ public class Nnwdaf_repository {
         String query = "select  *from nwdafSliceLoadLevelSubscriptionData where snssais ='" + snssais + "'";
 
 
-        return jdbcTemplate.query(query, new SliceLoadLevelSubscriptionDataMapper());
+        try
+        { return jdbcTemplate.query(query, new SliceLoadLevelSubscriptionDataMapper()); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
 
     }
 
