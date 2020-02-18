@@ -5,6 +5,7 @@ import com.nwdaf.Analytics.NwdafMapper.SliceLoadLevelSubscriptionDataMapper;
 import com.nwdaf.Analytics.NwdafMapper.SubscriptionTableMapper;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelInformationModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionDataModel;
+import com.nwdaf.Analytics.NwdafModel.NwdafSliceLoadLevelSubscriptionTableModel;
 import com.nwdaf.Analytics.NwdafModel.NwdafSubscriptionTableModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -182,25 +183,31 @@ public class Nnwdaf_repository {
 
 
 
-    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(UUID correlationId, String unSubCorrelationID, String snssais,Boolean getAnalytics) {
+    public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(NwdafSliceLoadLevelSubscriptionTableModel slice, boolean getAnalytics) {
 
-        if(snsExists(snssais))
+        if(snsExists(slice.getSnssais()))
         {
-            jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", snssais);
+            jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", slice.getSnssais());
             return true;
         }
 
-        String query = "INSERT INTO nwdafSliceLoadLevelSubscriptionTable (snssais,subscriptionID,correlationID,refCount,getAnalytics) VALUES (?,?,?,1,?);";
+
+        String query = "INSERT INTO nwdafSliceLoadLevelSubscriptionTable (snssais,subscriptionID,correlationID,refCount) VALUES (?,?,?,?);";
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
             @Override
             public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
 
-                preparedStatement.setString(1, snssais);
-                preparedStatement.setString(2, unSubCorrelationID);
-                preparedStatement.setString(3, String.valueOf(correlationId));
-                preparedStatement.setBoolean(4, getAnalytics);
+                preparedStatement.setString(1, slice.getSnssais());
+                preparedStatement.setString(2, slice.getSubscriptionID());
+                preparedStatement.setString(3, slice.getCorrelationID());
+
+                if(getAnalytics)
+                { preparedStatement.setInt(4, 0); }
+
+                else
+                { preparedStatement.setInt(4, 1); }
 
                 return preparedStatement.execute();
             }
@@ -430,6 +437,7 @@ public class Nnwdaf_repository {
     }
 
 
+    /*
     public boolean isGetAnalytics(String snssais)
     {
         String query = "SELECT getAnalytics FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais = '" + snssais + "';";
@@ -445,7 +453,7 @@ public class Nnwdaf_repository {
     public Integer setGetAnalytics(String snssais, boolean setVal)
     { return jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET getAnalytics = ? WHERE snssais = ?", new Object[] { setVal, snssais }); }
 
-
+*/
 
 
     public Integer getLoadLevelThreshold(String subID)
