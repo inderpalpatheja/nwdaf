@@ -877,7 +877,7 @@ public class Nnwdaf_controller {
     }
 
     private ApiInfo apiDetails() throws IOException {
-        
+
 
         return new ApiInfo(
                 "NWDAF API ( Network Data Analytics Function )",
