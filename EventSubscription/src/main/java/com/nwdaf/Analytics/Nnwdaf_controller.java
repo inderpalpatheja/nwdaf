@@ -43,7 +43,7 @@ import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 public class Nnwdaf_controller {
 
-    private static final Logger logger= LoggerFactory.getLogger(Nnwdaf_controller.class);
+    private static final Logger logger = LoggerFactory.getLogger(Nnwdaf_controller.class);
 
     Set<String> subID_SET = new HashSet<String>();
     String updated_POST_AMF_URL = null;
@@ -52,13 +52,14 @@ public class Nnwdaf_controller {
     //int flag = 0;
 
 
-    private final BuildProperties buildProperties;
+    @Autowired
+    BuildProperties buildProperties;
 
 
     List<UUID> subIDs;
 
-    public Nnwdaf_controller(BuildProperties buildProperties) {
-        this.buildProperties = buildProperties;
+    public Nnwdaf_controller() {
+
 
         logger.debug("Entered Nnwdaf_controller()");
         //logger.info("Thread started");
@@ -78,9 +79,6 @@ public class Nnwdaf_controller {
     @Autowired
     Nnwdaf_repository repository;
 
-
-    // @Autowired
-    // BuildProperties buildProperties;
 
     @Value("${spring.AMF_EVENT_EXPOSURE_SUBSCRIBE.url}")
     String POST_AMF_URL;
@@ -106,7 +104,11 @@ public class Nnwdaf_controller {
 
 
 
+
         logger.debug("Entered nwdaf_analytics");
+
+        logger.debug("Entered getAllAnalyticsInformation");
+
 
         NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
         nnwdafEventsSubscription.setSnssais(snssais);
@@ -193,7 +195,7 @@ public class Nnwdaf_controller {
     private void add_values_into_subscriptionData(UUID subscriptionID, String snssais, int loadLevelThreshold) {
 
 
-       logger.debug("enter add_values_into_subscriptionData");
+        logger.debug("enter add_values_into_subscriptionData");
         NwdafSliceLoadLevelSubscriptionDataModel nwdafSliceLoadLevelSubscriptionDataModel = new
                 NwdafSliceLoadLevelSubscriptionDataModel();
 
@@ -844,33 +846,22 @@ public class Nnwdaf_controller {
     }
 
 
-
-
-
-    @RequestMapping(method = RequestMethod.GET,value = "/apiInfo")
+    @RequestMapping(method = RequestMethod.GET, value = "/apiInfo")
     public Object check_api_details() throws IOException {
 
         APIBuildInformation apiBuildInformation = new APIBuildInformation();
 
-        // "/Users/sheetalkumar/Desktop/Demo3W/nwdaf/EventSubscription/buildNumber.properties"
-
-        try (InputStream input = new FileInputStream("/Users/nikhil/desktop/github/nwdaf/EventSubscription/buildNumber.properties")) {
-
-            Properties prop = new Properties();
-            prop.load(input);
 
 
-            apiBuildInformation.setAPI_VERSION(buildProperties.getVersion() + "." + prop.getProperty("buildNumber"));
-            apiBuildInformation.setAPI_NAME(buildProperties.getArtifact());
-            apiBuildInformation.setAPI_TIME(String.valueOf(buildProperties.getTime()));
-            apiBuildInformation.setGROUP_NAME(buildProperties.getGroup());
+        apiBuildInformation.setAPI_NAME(buildProperties.getArtifact());
+        apiBuildInformation.setAPI_BUILD_TIME(buildProperties.getTime());
+        apiBuildInformation.setAPI_VERSION(buildProperties.getVersion());
 
 
-            return apiBuildInformation;
+        return apiBuildInformation;
 
-        }
+
     }
-
 
 
     // Adding Swagger Configurations
@@ -886,16 +877,12 @@ public class Nnwdaf_controller {
     }
 
     private ApiInfo apiDetails() throws IOException {
-
-        InputStream input = new FileInputStream("/Users/nikhil/desktop/github/nwdaf/EventSubscription/buildNumber.properties");
-
-        Properties prop = new Properties();
-        prop.load(input);
+        
 
         return new ApiInfo(
                 "NWDAF API ( Network Data Analytics Function )",
                 " Sample API for NWDAF in 5G",
-                buildProperties.getVersion() + "." + prop.getProperty("buildNumber"),
+                buildProperties.getVersion(),
                 "Free to use",
                 new springfox.documentation.service.Contact("Team NWDAF", "https://truminds.com/home", "sheetal.kumar@truminds.co.in"),
                 "API License",
