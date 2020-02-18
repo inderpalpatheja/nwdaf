@@ -776,11 +776,12 @@ public class Nnwdaf_controller {
         APIBuildInformation apiBuildInformation = new APIBuildInformation();
 
 
-            apiBuildInformation.setAPI_NAME(buildProperties.getArtifact());
-            apiBuildInformation.setAPI_BUILD_TIME(buildProperties.getTime());
-            apiBuildInformation.setAPI_VERSION(buildProperties.getVersion());
+        apiBuildInformation.setAPI_NAME(buildProperties.getArtifact());
+        apiBuildInformation.setAPI_BUILD_TIME(buildProperties.getTime());
+        apiBuildInformation.setAPI_VERSION(buildProperties.getVersion());
 
-            return apiBuildInformation;
+
+        return apiBuildInformation;
 
 
     }
@@ -800,10 +801,6 @@ public class Nnwdaf_controller {
 
     private ApiInfo apiDetails() throws IOException {
 
-        // InputStream input = new FileInputStream("/Users/sheetalkumar/Desktop/Demo3W/nwdaf/EventSubscription/buildNumber.properties");
-
-        // Properties prop = new Properties();
-        // prop.load(input);
 
         return new ApiInfo(
                 "NWDAF API ( Network Data Analytics Function )",
