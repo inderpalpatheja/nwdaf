@@ -46,7 +46,7 @@ public class Nnwdaf_controller {
     private static final Logger logger = LoggerFactory.getLogger(Nnwdaf_controller.class);
 
     Set<String> subID_SET = new HashSet<String>();
-    String updated_POST_AMF_URL = null;
+    String updated_POST_NRF_URL = null;
     public int subThValue = 0;
     public int currentLoadLevel = 0;
     //int flag = 0;
@@ -73,15 +73,15 @@ public class Nnwdaf_controller {
     @Value("${spring.MAIN.url}")
     String URI;
 
-    @Value("${spring.NotificationTarget.Url}")
+    @Value("${spring.NRF_NotificationTarget.Url}")
     String notificationTargetUrl;
 
     @Autowired
     Nnwdaf_repository repository;
 
 
-    @Value("${spring.AMF_EVENT_EXPOSURE_SUBSCRIBE.url}")
-    String POST_AMF_URL;
+    @Value("${spring.NRF.Subscribe.url}")
+    String POST_NRF_URL;
 
 
     /**
@@ -321,14 +321,14 @@ public class Nnwdaf_controller {
         namf_eventExposure_subscribe.setCorrelationId(String.valueOf(correlationID));
 
         // POST_AMF_URL : POST_AMF_URL + subId;
-        // POST_AMF_URL : http::/localhost:8082/Namf_EventExposure_Subscribe/subID [ Reading from file ]
+        // POST_AMF_URL : http::/localhost:8082/Nnrf_NFManagement_NFStatusSubscribe/subID [ Reading from file ]
 
         // Updated URL For NWDAF to Subscribe
-        updated_POST_AMF_URL = POST_AMF_URL + "/" + correlationID;
+        updated_POST_NRF_URL = POST_NRF_URL + "/" + correlationID;
 
         try {
 
-            URL obj = new URL(updated_POST_AMF_URL);
+            URL obj = new URL(updated_POST_NRF_URL);
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
             con.setRequestMethod("POST");
@@ -549,7 +549,7 @@ public class Nnwdaf_controller {
 
 
     // Accepting Notification [ from Simulator]
-    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{correlationID}")
+    @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusNotify/{correlationID}")
     public void acceptingNotification(@RequestBody String response) throws JSONException, IOException {
 
         // Here Data will be received and nwdafSliceLoadLevelInformation Table will get populated.
@@ -587,14 +587,14 @@ public class Nnwdaf_controller {
         showCounters();
     }
 
-    @RequestMapping("/Namf_EventExposure_UnSubscribe/{unSubCorrelationId}")
+ /*   @RequestMapping(method = RequestMethod.GET, value = "/Nnrf_NFManagement_NFStatusNotify/{unSubCorrelationId}")
     public String unSubscribeEvent(@PathVariable UUID unSubCorrelationId) {
 
         logger.debug("Enter unSubscribeEvent()");
         logger.debug("Exit unSubscribeEvent()");
         return " Event Deleted";
     }
-
+*/
 
   /*  public class NwdafNotificationThread extends Thread {
 
