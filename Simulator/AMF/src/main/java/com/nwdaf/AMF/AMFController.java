@@ -80,7 +80,7 @@ public class AMFController extends Functionality {
     }*/
 
 
-    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Subscribe/{correlationID}")
+    @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusSubscribe/{correlationID}")
     public ResponseEntity<String> show(@RequestBody String response) throws JSONException, IOException {
 
 
@@ -112,7 +112,7 @@ public class AMFController extends Functionality {
     @GetMapping("/updateCurrentLoadLevel/{correlationID}")
     private ResponseEntity<String> sendData(String notiTargetAddress, @PathVariable("correlationID") String correlationID) throws IOException, JSONException {
 
-        notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
+        notiTargetAddress = "http://localhost:8081/Nnrf_NFManagement_NFStatusNotify";
         //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
 
         // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
