@@ -104,6 +104,21 @@
             <artifactId>jstl</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
+
+        <!-- https://mvnrepository.com/artifact/ru.yaal.maven/write-text-files-maven-plugin -->
+        <dependency>
+            <groupId>ru.yaal.maven</groupId>
+            <artifactId>write-text-files-maven-plugin</artifactId>
+            <version>1.1</version>
+        </dependency>
+
+
 
     </dependencies>
 
@@ -159,11 +174,71 @@
                          </configuration>
                      </plugin> -->
 
+
+
+            <plugin>
+                <groupId>ru.yaal.maven</groupId>
+                <artifactId>write-text-files-maven-plugin</artifactId>
+                <version>1.1</version>
+                <configuration>
+                    <charset>UTF-8</charset>
+                    <files>
+                        <file>
+                            <path>src/main/assembly/start.sh</path>
+                            <lines>
+                                <line>java -jar nwdaf.jar</line>
+                            </lines>
+                        </file>
+                        <file>
+                            <path>src/main/assembly/stop.sh</path>
+                            <lines>
+                                <line>kill $(lsof -t -i:8081)</line>
+                            </lines>
+                        </file>
+                    </files>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>write-text-files</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>write-text-files</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <descriptors>
+                    <descriptor>src/main/assembly/release.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>release</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+
+
         </plugins>
 
 
         <!--  <finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName> -->
         <finalName>nwdaf</finalName>
+
     </build>
 
     <repositories>

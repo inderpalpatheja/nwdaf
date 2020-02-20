@@ -347,7 +347,7 @@ public class Nnwdaf_controller {
         {
             ConnectionStatus connectionStatus = new ConnectionStatus();
             connectionStatus.setCode(String.valueOf(HttpStatus.valueOf(HttpStatus.NOT_FOUND.value())));
-            connectionStatus.setMessage("Simulator Connection Not Found");
+            connectionStatus.setMessage("Data Not Found");
 
             return new ResponseEntity<ConnectionStatus>(connectionStatus, HttpStatus.NOT_FOUND);
         }
