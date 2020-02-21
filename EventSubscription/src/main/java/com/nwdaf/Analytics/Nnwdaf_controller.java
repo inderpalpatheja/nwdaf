@@ -1,5 +1,6 @@
 package com.nwdaf.Analytics;
 
+import com.nwdaf.Analytics.CustomData.EventID;
 import com.nwdaf.Analytics.MetaData.Counters;
 import com.nwdaf.Analytics.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.APIBuildInformation;
@@ -697,10 +698,13 @@ public class Nnwdaf_controller {
                             }
 
                             // Calling sendNotification Function
-                            String snssais = repository.getSnssais(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
+                            String subscriptionID = subscriptionList.get(indexOfSubscriptionList).getSubscriptionID();
+
+                            String eventID = EventID.values()[repository.findById_subscriptionID(subscriptionID).getEventID()].toString();
+                            String snssais = repository.getSnssais(subscriptionID);
                             int currentLoadLevel = repository.getCurrentLoadLevel(snssais);
 
-                            send_notificaiton_to_NF(NotificationURI, snssais, currentLoadLevel);
+                            send_notificaiton_to_NF(NotificationURI, eventID, snssais, currentLoadLevel);
 
                         }
 
@@ -740,7 +744,7 @@ public class Nnwdaf_controller {
      * @throws IOException
      * @desc this function will send notification to network function
      */
-    private void send_notificaiton_to_NF(String notificationURI, String snssais, int currentLoadLevel) throws IOException, JSONException {
+    private void send_notificaiton_to_NF(String notificationURI, String eventID, String snssais, int currentLoadLevel) throws IOException, JSONException {
         logger.debug("Entered send_notificaiton_to_NF()");
 
         Counters.incrementSubscriptionNotifications();
@@ -775,6 +779,7 @@ public class Nnwdaf_controller {
 
         JSONObject json = new JSONObject();
 
+        json.put("eventID", eventID);
         json.put("snssais", snssais);
         json.put("currentLoadLevel", currentLoadLevel);
 

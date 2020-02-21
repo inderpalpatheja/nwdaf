@@ -186,13 +186,13 @@
                         <file>
                             <path>src/main/assembly/start.sh</path>
                             <lines>
-                                <line>java -jar nwdaf.jar</line>
+                                <line>java -jar nwdaf.jar &amp;</line>
                             </lines>
                         </file>
                         <file>
                             <path>src/main/assembly/stop.sh</path>
                             <lines>
-                                <line>kill $(lsof -t -i:8081)</line>
+                                <line>pkill -9 -f nwdaf.jar</line>
                             </lines>
                         </file>
                     </files>
@@ -209,6 +209,7 @@
             </plugin>
 
 
+<!-- kill $(lsof -t -i:8081) -->
 
 
             <plugin>

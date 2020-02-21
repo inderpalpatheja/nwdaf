@@ -45,7 +45,7 @@ public class AMFController extends Functionality {
     // Post Method for HTTP for 8082
     @RequestMapping(method = RequestMethod.POST, value = "/notify")
     public void addData(@RequestBody String string) throws Exception {
-        System.out.println("\n\nReceived From NWDAF -" + string);
+        System.out.println("\n\nNotification Received From NWDAF -" + string);
 
     }
 
@@ -164,9 +164,9 @@ public class AMFController extends Functionality {
         // For POST only - END
 
         int responseCode = con.getResponseCode();
-        String responseMessage = con.getResponseMessage();
-        System.out.println("POST Response Code :: " + responseCode);
-        System.out.println("POST Response Message :: " + responseMessage);
+        //String responseMessage = con.getResponseMessage();
+        System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
+        //System.out.println("POST Response Message :: " + responseMessage);
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
             BufferedReader in = new BufferedReader(new InputStreamReader(
