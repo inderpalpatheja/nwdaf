@@ -76,6 +76,10 @@ public class Nnwdaf_controller {
     @Value("${spring.NRF_NotificationTarget.Url}")
     String notificationTargetUrl;
 
+    @Value("${spring.Simulator.testConnection}")
+    String testConnect_URI;
+
+
     @Autowired
     Nnwdaf_repository repository;
 
@@ -134,6 +138,18 @@ public class Nnwdaf_controller {
     @PostMapping(PATH + "/subscriptions")
     @ApiOperation(value = OperationInfo.SUBSCRIBE_INFO, notes = OperationInfo.SUBSCRIBE_NOTES, response = Object.class)
     public Object nwdaf_subscription(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
+
+
+        //Test Simulator Connection
+        if(!testConnection())
+        {
+            ConnectionStatus connectionStatus = new ConnectionStatus();
+            connectionStatus.setCode(String.valueOf(HttpStatus.valueOf(HttpStatus.NOT_FOUND.value())));
+            connectionStatus.setMessage("Data Not Found");
+
+            return new ResponseEntity<ConnectionStatus>(connectionStatus, HttpStatus.NOT_FOUND);
+        }
+
 
         logger.debug("Enter nwdaf_subscription");
         logger.info("consumer is subscribing for an event and providing these details. eventID:  " + nnwdafEventsSubscription.getEventID() + "\n"+" notificationURI:  " + nnwdafEventsSubscription.getNotificationURI() +"\n"+
@@ -338,12 +354,12 @@ public class Nnwdaf_controller {
 
             int responseCode = send_data_receieve_response(namf_eventExposure_subscribe, con);
 
-            if(responseCode == 404)
-            { throw new ConnectException(); }
+            if(responseCode != HttpStatus.OK.value())
+            { throw new Exception(); }
 
             response_handler(nnwdafEventsSubscription, responseCode, correlationID, con, getAnalytics);
 
-        } catch(ConnectException ex)
+        } catch(Exception ex)
         {
             ConnectionStatus connectionStatus = new ConnectionStatus();
             connectionStatus.setCode(String.valueOf(HttpStatus.valueOf(HttpStatus.NOT_FOUND.value())));
@@ -577,7 +593,7 @@ public class Nnwdaf_controller {
         { repository.decrementRefCount(snssais); }
 
 
-        repository.updateCurrentLoadLevel(snssais);
+        repository.updateCurrentLoadLevel(currentLoadLevel, snssais);
         nwdaf_notification_manager();
 
         //repository.getSnssaisViaSubID(correlationID);
@@ -620,7 +636,7 @@ public class Nnwdaf_controller {
      * @throws IOException
      * @desc this function manages notifications for subscribers
      */
-    private void nwdaf_notification_manager() throws IOException {
+    private void nwdaf_notification_manager() throws IOException, JSONException {
 
         logger.debug("Entered nwdaf_notification_manager()");
 
@@ -681,7 +697,10 @@ public class Nnwdaf_controller {
                             }
 
                             // Calling sendNotification Function
-                            send_notificaiton_to_NF(NotificationURI);
+                            String snssais = repository.getSnssais(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
+                            int currentLoadLevel = repository.getCurrentLoadLevel(snssais);
+
+                            send_notificaiton_to_NF(NotificationURI, snssais, currentLoadLevel);
 
                         }
 
@@ -721,7 +740,7 @@ public class Nnwdaf_controller {
      * @throws IOException
      * @desc this function will send notification to network function
      */
-    private void send_notificaiton_to_NF(String notificationURI) throws IOException {
+    private void send_notificaiton_to_NF(String notificationURI, String snssais, int currentLoadLevel) throws IOException, JSONException {
         logger.debug("Entered send_notificaiton_to_NF()");
 
         Counters.incrementSubscriptionNotifications();
@@ -754,8 +773,13 @@ public class Nnwdaf_controller {
 
         String jsonInputString = "Hey I am Notification";
 
+        JSONObject json = new JSONObject();
+
+        json.put("snssais", snssais);
+        json.put("currentLoadLevel", currentLoadLevel);
+
         try (OutputStream os = con.getOutputStream()) {
-            byte[] input = jsonInputString.getBytes("utf-8");
+            byte[] input = json.toString().getBytes("utf-8");
 
             os.write(input, 0, input.length);
         } catch (IOException e) {
@@ -888,6 +912,30 @@ public class Nnwdaf_controller {
                 "API License",
                 "https://truminds.com/home",
                 Collections.emptyList());
+    }
+
+
+
+
+    public boolean testConnection() {
+
+        try
+        {
+            URL url = new URL(testConnect_URI);
+            HttpURLConnection con = (HttpURLConnection)url.openConnection();
+
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Accept", "application/json");
+
+            if(con.getResponseCode() != HttpStatus.ACCEPTED.value())
+            { return false; }
+        }
+
+        catch(Exception ex)
+        { return false; }
+
+        return true;
     }
 
 }

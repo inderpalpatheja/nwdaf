@@ -1,6 +1,7 @@
 package com.nwdaf.AMF;
 
 
+import com.nwdaf.AMF.model.LoadLevelModel;
 import com.nwdaf.AMF.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 
 import org.json.JSONException;
@@ -43,11 +44,15 @@ public class AMFController extends Functionality {
 
     // Post Method for HTTP for 8082
     @RequestMapping(method = RequestMethod.POST, value = "/notify")
-    public void adddata(@RequestBody String string) throws Exception {
+    public void addData(@RequestBody String string) throws Exception {
         System.out.println("\n\nReceived From NWDAF -" + string);
 
-
     }
+
+    @PostMapping("/testConnection")
+    public ResponseEntity<?> connectionTest()
+    { return new ResponseEntity<String>(HttpStatus.ACCEPTED); }
+
 
 
  /*   @RequestMapping("/NWDAFJarDetails")
@@ -109,8 +114,8 @@ public class AMFController extends Functionality {
     // @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_notify/{correlationID}")
 
 
-    @GetMapping("/updateCurrentLoadLevel/{correlationID}")
-    private ResponseEntity<String> sendData(String notiTargetAddress, @PathVariable("correlationID") String correlationID) throws IOException, JSONException {
+    @PostMapping("/updateCurrentLoadLevel/{correlationID}")
+    private ResponseEntity<String> sendData(String notiTargetAddress, @PathVariable("correlationID") String correlationID, @RequestBody LoadLevelModel obj) throws IOException, JSONException {
 
         notiTargetAddress = "http://localhost:8081/Nnrf_NFManagement_NFStatusNotify";
         //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
@@ -140,7 +145,7 @@ public class AMFController extends Functionality {
 
         JSONObject json = new JSONObject();
 
-        json.put("currentLoadLevel", 50);
+        json.put("currentLoadLevel", obj.getLoadLevel());
         json.put("correlationID", correlationID);
 
         // For POST only - START
