@@ -184,17 +184,29 @@
                     <charset>UTF-8</charset>
                     <files>
                         <file>
-                            <path>src/main/assembly/start.sh</path>
+                            <path>src/main/release/start.sh</path>
                             <lines>
                                 <line>java -jar nwdaf.jar &amp;</line>
                             </lines>
                         </file>
                         <file>
-                            <path>src/main/assembly/stop.sh</path>
+                            <path>src/main/release/stop.sh</path>
                             <lines>
                                 <line>pkill -9 -f nwdaf.jar</line>
                             </lines>
                         </file>
+
+                        <file>
+                            <path>src/main/release/install.sh</path>
+                            <lines>
+                                <line>/usr/local/mysql/bin/mysql -uroot -pMyNewPass &lt;nwdafSchema.sql &amp;&amp;</line>
+                                <line>mkdir -p /opt/nwdaf/bin &amp;&amp;</line>
+                                <line>cp start.sh /opt/nwdaf/bin &amp;&amp;</line>
+                                <line>cp stop.sh /opt/nwdaf/bin &amp;&amp;</line>
+                                <line>cp nwdaf.jar /opt/nwdaf/bin</line>
+                            </lines>
+                        </file>
+
                     </files>
                 </configuration>
                 <executions>
