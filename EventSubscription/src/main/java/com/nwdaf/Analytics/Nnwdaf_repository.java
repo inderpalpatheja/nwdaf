@@ -420,8 +420,8 @@ public class Nnwdaf_repository {
     }
 
 
-    public Integer updateCurrentLoadLevel(String snssais)
-    { return jdbcTemplate.update("UPDATE nwdafSliceLoadLeveLInformation SET currentLoadLevel = currentLoadLevel + ? WHERE snssais = ?", new Object[] { 50 + random.nextInt(10), snssais }); }
+    public Integer updateCurrentLoadLevel(int loadLevel, String snssais)
+    { return jdbcTemplate.update("UPDATE nwdafSliceLoadLeveLInformation SET currentLoadLevel = currentLoadLevel + ? WHERE snssais = ?", new Object[] { loadLevel, snssais }); }
 
 
     public String getSnssaisByCorrelationID(String correlationID)
@@ -467,4 +467,17 @@ public class Nnwdaf_repository {
             }
         });
     }
+
+    public Integer getCurrentLoadLevel(String snssais)
+    {
+        String query = "SELECT currentLoadLevel FROM nwdafSliceLoadLevelInformation WHERE snssais = '" + snssais + "';";
+
+        return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
+            @Override
+            public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getInt("currentLoadLevel");
+            }
+        });
+    }
+
 }
