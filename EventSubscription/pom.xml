@@ -199,11 +199,43 @@
                         <file>
                             <path>src/main/release/install.sh</path>
                             <lines>
+                                <line>#! /bin/bash</line>
+
                                 <line>/usr/local/mysql/bin/mysql -uroot -pMyNewPass &lt;nwdafSchema.sql &amp;&amp;</line>
-                                <line>mkdir -p /opt/nwdaf/bin &amp;&amp;</line>
-                                <line>cp start.sh /opt/nwdaf/bin &amp;&amp;</line>
-                                <line>cp stop.sh /opt/nwdaf/bin &amp;&amp;</line>
-                                <line>cp nwdaf.jar /opt/nwdaf/bin</line>
+
+                                <line>addr="/opt/nwdaf/bin"</line>
+
+                                <line>if [ $# -eq 0 ]</line>
+                                <line>then</line>
+
+                                <line>dir="/opt/nwdaf"</line>
+
+                                <line>if [ -d "$dir" ]</line>
+                                <line>then</line>
+                                <line>rm -rf $dir</line>
+                                <line>fi</line>
+
+                                <line>mkdir -p $addr &amp;&amp;</line>
+                                <line>cp start.sh $addr &amp;&amp;</line>
+                                <line>cp stop.sh $addr &amp;&amp;</line>
+                                <line>cp nwdaf.jar $addr</line>
+
+                                <line>else</line>
+                                <line>custom_addr=$1</line>
+                                <line>custom_addr+="$addr"</line>
+
+                                <line>dir="$1/opt"</line>
+
+                                <line>if [ -d "$dir" ]</line>
+                                <line>then</line>
+                                <line>rm -rf $dir</line>
+                                <line>fi</line>
+
+                                <line>mkdir -p $custom_addr &amp;&amp;</line>
+                                <line>cp start.sh $custom_addr &amp;&amp;</line>
+                                <line>cp stop.sh $custom_addr &amp;&amp;</line>
+                                <line>cp nwdaf.jar $custom_addr</line>
+                                <line>fi</line>
                             </lines>
                         </file>
 
