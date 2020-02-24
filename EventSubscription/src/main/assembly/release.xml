@@ -24,7 +24,7 @@
     <fileSets>
         <fileSet>
             <directory>${project.basedir}/src/main/release</directory>
-            <outputDirectory>/release</outputDirectory>
+            <outputDirectory>release</outputDirectory>
             <fileMode>0755</fileMode>
         </fileSet>
     </fileSets>
@@ -32,12 +32,12 @@
     <files>
         <file>
             <source>${project.basedir}/target/nwdaf.jar</source>
-            <outputDirectory>/release</outputDirectory>
+            <outputDirectory>release</outputDirectory>
         </file>
 
         <file>
             <source>${project.basedir}/schema/nwdafSchema.sql</source>
-            <outputDirectory>/release</outputDirectory>
+            <outputDirectory>release</outputDirectory>
         </file>
     </files>
 
