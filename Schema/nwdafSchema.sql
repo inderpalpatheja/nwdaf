@@ -1,3 +1,4 @@
+DROP SCHEMA IF EXISTS `NWDAF`;
 CREATE SCHEMA `NWDAF` ;
 CREATE TABLE `NWDAF`.`nwdafSubscriptionTable` (
   `subscriptionID` VARCHAR(128) NOT NULL,
