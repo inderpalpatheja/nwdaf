@@ -1,7 +1,10 @@
 package com.nwdaf.AMF;
 
 import org.json.JSONObject;
+
 import static java.lang.System.out;
+import static java.lang.System.setOut;
+
 import java.io.OutputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -17,13 +20,17 @@ public class Functionality {
     final String NWDAF = "http://localhost:8081/nnwdaf-eventssubscription/v1/";
 
 
-    public String subscribe(int eventID, int notifMethod, int repPeriod, int ldLevel) throws Exception
-    {
+    public String subscribe(int eventID,
+                            String notificatoinURI,
+                            String snssais,
+                            int notifMethod,
+                            int repPeriod,
+                            int ldLevel) throws Exception {
         String line;
         StringBuffer responseContent = new StringBuffer();
 
         URL url = new URL(NWDAF + "/subscriptions");
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -33,17 +40,18 @@ public class Functionality {
         JSONObject json = new JSONObject();
 
         json.put("eventID", eventID);
-        json.put("notificationURI", "http://localhost:8082/");
+        json.put("notificationURI", notificatoinURI);
+        json.put("snssais", snssais);
         json.put("notifMethod", notifMethod);
         json.put("repetitionLevel", repPeriod);
         json.put("loadLevelThreshold", ldLevel);
 
-        try(OutputStream os = con.getOutputStream()) {
+        try (OutputStream os = con.getOutputStream()) {
             byte[] input = json.toString().getBytes("utf-8");
             os.write(input, 0, input.length);
         }
 
-        try(BufferedReader br = new BufferedReader(
+        try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(con.getInputStream(), "utf-8"))) {
             StringBuilder response = new StringBuilder();
             String responseLine = null;
@@ -58,15 +66,13 @@ public class Functionality {
     }
 
 
-
-    public void update(String subID, int eventID, int notifMethod, int repLevel, int ldLevel) throws Exception
-    {
+    public void update(String subID, int eventID, int notifMethod, int repLevel, int ldLevel) throws Exception {
 
         String line;
         StringBuffer responseContent = new StringBuffer();
 
         URL url = new URL(subID);
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
         con.setRequestMethod("PUT");
         con.setRequestProperty("Content-Type", "application/json; utf-8");
@@ -81,12 +87,12 @@ public class Functionality {
         json.put("loadLevelThreshold", ldLevel);
 
 
-        try(OutputStream os = con.getOutputStream()) {
+        try (OutputStream os = con.getOutputStream()) {
             byte[] input = json.toString().getBytes("utf-8");
             os.write(input, 0, input.length);
         }
 
-        try(BufferedReader br = new BufferedReader(
+        try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(con.getInputStream(), "utf-8"))) {
             StringBuilder response = new StringBuilder();
             String responseLine = null;
@@ -100,13 +106,17 @@ public class Functionality {
     }
 
 
-    public void unsubscribe(String subID) throws Exception
-    {
+    public void unsubscribe(String notificationURI, String subID) throws Exception {
+        out.println("SubscriptionID to be deleted - " + subID);
         String line;
+        out.println("unSubscribe URL" + notificationURI + "/" + subID);
+
+        String updatedURL = notificationURI + "/" + subID;
+
         StringBuffer responseContent = new StringBuffer();
 
-        URL url = new URL(subID);
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        URL url = new URL(updatedURL);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
         con.setRequestMethod("DELETE");
         con.setRequestProperty("Content-Type", "application/json; utf-8");
