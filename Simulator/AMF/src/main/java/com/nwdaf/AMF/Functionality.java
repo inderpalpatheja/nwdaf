@@ -99,17 +99,17 @@ public class Functionality {
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
             }
-            out.println("Status: " + con.getResponseCode());
-            out.println("Message: " + response.toString());
+            // out.println("Status: " + con.getResponseCode());
+            //  out.println("Message: " + response.toString());
         }
 
     }
 
 
     public void unsubscribe(String notificationURI, String subID) throws Exception {
-        out.println("SubscriptionID to be deleted - " + subID);
+        // out.println("SubscriptionID to be deleted - " + subID);
         String line;
-        out.println("unSubscribe URL" + notificationURI + "/" + subID);
+        // out.println("unSubscribe URL" + notificationURI + "/" + subID);
 
         String updatedURL = notificationURI + "/" + subID;
 
@@ -123,7 +123,7 @@ public class Functionality {
         con.setRequestProperty("Accept", "application/json");
         con.setDoOutput(true);
 
-        out.println("Status: " + con.getResponseCode());
+         out.println("Status: " + con.getResponseCode());
     }
 
 }

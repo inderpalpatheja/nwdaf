@@ -6,6 +6,7 @@ import com.nwdaf.AMF.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +23,10 @@ import static org.springframework.http.HttpHeaders.USER_AGENT;
 import static java.lang.System.out;
 
 @RestController
-public class AMFController extends Functionality{
+public class AMFController extends Functionality {
 
-    // public AMFController(CallBackForCorrelationID backForCorrelationID) {
-    //   this.backForCorrelationID = backForCorrelationID;
-    // }
+
+    Random rand = new Random();
 
     public static List<String> correlationIDList = new ArrayList<>();
 
@@ -52,7 +52,7 @@ public class AMFController extends Functionality{
         String snssais = jsonObject.getString("snssais");
 
         System.out.println("\n\nNotification Received From NWDAF -" + string);
-        out.println(subId + " loadLevel " + loadLevel + "snssais" + snssais + "NotifcaionURI" + notificationURI);
+        //  out.println(subId + " loadLevel " + loadLevel + "snssais" + snssais + "NotifcaionURI" + notificationURI);
 
         // Unsubscribe
         unsubscribe(notificationURI, subId);
@@ -75,7 +75,7 @@ public class AMFController extends Functionality{
         // out.println();
 
         // list.delete();
-        out.println("Unsubscribed from NWDAF WORKED for " + response);
+        //     out.println("Unsubscribed from NWDAF WORKED for " + response);
 
 
         return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
@@ -93,7 +93,7 @@ public class AMFController extends Functionality{
         obj.setNotificationTargetAddress(json.getString("notificationTargetAddress"));
 
 
-        out.println("Correlation ID Received From nwdaf as JSON - " + obj.getCorrelationId());
+        //   out.println("Correlation ID Received From nwdaf as JSON - " + obj.getCorrelationId());
 
         // Adding unSubCorrelationId into database;
 
@@ -104,7 +104,7 @@ public class AMFController extends Functionality{
         correlationIDList.add(obj.getCorrelationId());
         // backForCorrelationID.getCorrelationList(correlationIDList);
 
-        out.println("correlationList size - " + correlationIDList.size());
+        //   out.println("correlationList size - " + correlationIDList.size());
 
         //String NOTIFICATOIN_URL = obj.getNotificationTargetAddress() + "/" + obj.getCorrelationId();
 
@@ -122,7 +122,7 @@ public class AMFController extends Functionality{
     public ResponseEntity<String> sendData(String notiTargetAddress,
                                            String correlationID) throws IOException, JSONException {
 
-        out.println("send Data check1");
+        //  out.println("send Data check1");
 
         notiTargetAddress = "http://localhost:8081/Nnrf_NFManagement_NFStatusNotify";
         //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
@@ -133,7 +133,7 @@ public class AMFController extends Functionality{
         // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
 
         String updated_URL = notiTargetAddress + "/" + correlationID;
-        out.println("updated URl - " + updated_URL);
+        //  out.println("updated URl - " + updated_URL);
         URL url = new URL(updated_URL);
 
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -152,10 +152,10 @@ public class AMFController extends Functionality{
 
         JSONObject json = new JSONObject();
 
-        json.put("currentLoadLevel", 200);
+        json.put("currentLoadLevel", rand.nextInt(10) + 20);
         json.put("correlationID", correlationID);
 
-        out.println("check " + correlationID);
+        // out.println("check " + correlationID);
 
         // For POST only - START
         con.setDoOutput(true);
@@ -174,7 +174,7 @@ public class AMFController extends Functionality{
 
         int responseCode = con.getResponseCode();
         //String responseMessage = con.getResponseMessage();
-        System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
+        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
         //System.out.println("POST Response Message :: " + responseMessage);
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
@@ -189,11 +189,11 @@ public class AMFController extends Functionality{
             in.close();
 
             // print result
-            System.out.println("\n\n");
-            System.out.println(response);
+            // System.out.println("\n\n");
+            //  System.out.println(response);
         } else {
-            System.out.println("\n\n");
-            System.out.println("POST request not worked");
+            // System.out.println("\n\n");
+            // System.out.println("POST request not worked");
         }
         //  return "Data send to " + updated_URL;
         return new ResponseEntity<String>("Send", HttpStatus.OK);

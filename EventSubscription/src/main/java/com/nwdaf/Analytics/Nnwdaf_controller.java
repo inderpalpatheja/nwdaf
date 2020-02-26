@@ -41,7 +41,6 @@ import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 
 @RestController
-
 public class Nnwdaf_controller {
 
     private static final Logger logger = LoggerFactory.getLogger(Nnwdaf_controller.class);
@@ -545,6 +544,9 @@ public class Nnwdaf_controller {
     @ApiOperation(value = OperationInfo.UNSUBSCRICE_INFO, notes = OperationInfo.UNSUBSCRIBE_NOTES, response = Object.class)
     public ResponseEntity<?> unsubscription_nf(@PathVariable("subscriptionID") String subscriptionID) throws Exception {
 
+        Counters.incrementUnSubscriptions();
+        showCounters();
+
         logger.debug("Entered UnsubscribeNf()");
         NwdafSubscriptionTableModel sub = repository.findById_subscriptionID(subscriptionID);
         String snssais = repository.getSnssais(subscriptionID);
@@ -558,7 +560,7 @@ public class Nnwdaf_controller {
 
         if (sub == null) {
             logger.warn("subscriptionID= not found");
-            out.println("subscriptionID= not found");
+            //  out.println("subscriptionID= not found");
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NOT_FOUND);
         }
 
@@ -569,8 +571,6 @@ public class Nnwdaf_controller {
             unsubscribeFromNWDAF(snssais);
         }
 
-        Counters.incrementUnSubscriptions();
-        showCounters();
 
         logger.debug("Exit unsubscribe NF");
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
@@ -585,10 +585,10 @@ public class Nnwdaf_controller {
         // String subscriptionID =  repository.getUnSubCorrelationID(snssais);
 
         URL obj = new URL(DELETE_NRF_URL);
-        out.println(DELETE_NRF_URL);
+        //  out.println(DELETE_NRF_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-       String mCorrelationID = repository.getUnSubCorrelationID(snssais);
+        String mCorrelationID = repository.getUnSubCorrelationID(snssais);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("correlationID", mCorrelationID);
 
@@ -783,7 +783,7 @@ public class Nnwdaf_controller {
                             String snssais = repository.getSnssais(subscriptionID);
                             int currentLoadLevel = repository.getCurrentLoadLevel(snssais);
 
-                            send_notificaiton_to_NF(NotificationURI, eventID, snssais, currentLoadLevel,subscriptionID);
+                            send_notificaiton_to_NF(NotificationURI, eventID, snssais, currentLoadLevel, subscriptionID);
 
                         }
 
@@ -864,8 +864,8 @@ public class Nnwdaf_controller {
 
         json.put("eventID", eventID);
         json.put("snssais", snssais);
-        json.put("notificaionURI","http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions");
-        json.put("subscriptionID",subscriptionID);
+        json.put("notificaionURI", "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions");
+        json.put("subscriptionID", subscriptionID);
         json.put("currentLoadLevel", currentLoadLevel);
 
         try (OutputStream os = con.getOutputStream()) {

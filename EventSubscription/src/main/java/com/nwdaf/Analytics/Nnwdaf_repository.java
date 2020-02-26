@@ -381,7 +381,7 @@ public class Nnwdaf_repository {
     public Integer decrementRefCount(String snssais) throws Exception {
         jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount - 1 WHERE snssais = ?", snssais);
 
-        System.out.println("check1");
+       // System.out.println("check1");
         if(getRefCount(snssais) == 0)
         {
              /* time to delete the entry from db, caller shall send the subscribe message towards peer first */
