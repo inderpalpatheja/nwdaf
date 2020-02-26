@@ -1,30 +1,24 @@
 package com.nwdaf.AMF;
 
 
-import com.nwdaf.AMF.model.LoadLevelModel;
 import com.nwdaf.AMF.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.boot.info.BuildProperties;
-import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-
-import java.time.*;
 
 import java.util.*;
 
 
+import static java.lang.System.setOut;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 import static java.lang.System.out;
 
@@ -32,9 +26,13 @@ import static java.lang.System.out;
 public class AMFController extends Functionality {
 
 
-    // @Autowired
-    //  BuildProperties buildProperties;
+    Random rand = new Random();
 
+    public static List<String> correlationIDList = new ArrayList<>();
+
+    public List<String> getCorrelationIDList() {
+        return correlationIDList;
+    }
 
     // testing HTTP2 [ Not working ]
     @RequestMapping("/testHttp2")
@@ -45,64 +43,70 @@ public class AMFController extends Functionality {
     // Post Method for HTTP for 8082
     @RequestMapping(method = RequestMethod.POST, value = "/notify")
     public void addData(@RequestBody String string) throws Exception {
+
+        JSONObject jsonObject = new JSONObject(string);
+
+        String subId = jsonObject.getString("subscriptionID");
+        String notificationURI = jsonObject.getString("notificaionURI");
+        int loadLevel = jsonObject.getInt("currentLoadLevel");
+        String snssais = jsonObject.getString("snssais");
+
         System.out.println("\n\nNotification Received From NWDAF -" + string);
+        //  out.println(subId + " loadLevel " + loadLevel + "snssais" + snssais + "NotifcaionURI" + notificationURI);
+
+        // Unsubscribe
+        unsubscribe(notificationURI, subId);
 
     }
 
+    //  private CallBackForCorrelationID backForCorrelationID;
+
     @PostMapping("/testConnection")
-    public ResponseEntity<?> connectionTest()
-    { return new ResponseEntity<String>(HttpStatus.ACCEPTED); }
+    public ResponseEntity<?> connectionTest() {
+        return new ResponseEntity<String>(HttpStatus.ACCEPTED);
+    }
 
 
+    @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
+    public ResponseEntity<String> unsubScribeFromNWDAF(@RequestBody String response) throws JSONException, IOException {
 
- /*   @RequestMapping("/NWDAFJarDetails")
-    public Object getNwdafAPIInformation() throws IOException {
+        //     JSONObject jsonObject = new JSONObject(response);
+        //   jsonObject.getString("unsubCorrationID");
+        // out.println();
 
-
-        //  JarFile jf = new JarFile("/Users/sheetalkumar/Desktop/Demo3W/nwdaf/Simulator/AMF/target/Collector-0.0.1-SNAPSHOT.jar");
-        //  ZipEntry manifest = jf.getEntry("META-INF/MANIFEST.MF");
-        //  long manifestTime = manifest.getTime();
-        //  Timestamp ts = new Timestamp(manifestTime);
-        //  Date date = new Date(ts.getTime());
-        //  return " Date - " + date;
+        // list.delete();
+        //     out.println("Unsubscribed from NWDAF WORKED for " + response);
 
 
-        APIBuildInformation apiBuildInformation = new APIBuildInformation();
+        return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
+    }
 
 
-        LocalDate date = LocalDateTime.ofInstant(buildProperties.getTime(), ZoneId.systemDefault()).toLocalDate();
-
-        LocalTime time = LocalDateTime.ofInstant(buildProperties.getTime(), ZoneId.systemDefault()).toLocalTime();
-
-
-        apiBuildInformation.setAPI_VERSION(buildProperties.getVersion());
-        apiBuildInformation.setAPI_NAME(buildProperties.getName());
-        apiBuildInformation.setBUILD_DATE(date);
-        apiBuildInformation.setBUILD_TIME(time);
-
-        return apiBuildInformation;
-
-    }*/
-
-
-    @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusSubscribe/{correlationID}")
+    @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusSubscribe")
     public ResponseEntity<String> show(@RequestBody String response) throws JSONException, IOException {
 
+        //  list.add();
 
         JSONObject json = new JSONObject(response);
         Namf_EventExposure_Subscribe obj = new Namf_EventExposure_Subscribe();
-
         obj.setCorrelationId(json.getString("correlationID"));
         obj.setNotificationTargetAddress(json.getString("notificationTargetAddress"));
 
+
+        //   out.println("Correlation ID Received From nwdaf as JSON - " + obj.getCorrelationId());
 
         // Adding unSubCorrelationId into database;
 
         UUID unSubCorrelationId = UUID.randomUUID();
 
-        // sendData(obj.getNotificationTargetAddress(), obj.getCorrelationId());
+        //   sendData(obj.getNotificationTargetAddress(), obj.getCorrelationId());
 
-        String NOTIFICATOIN_URL = obj.getNotificationTargetAddress() + "/" + obj.getCorrelationId();
+        correlationIDList.add(obj.getCorrelationId());
+        // backForCorrelationID.getCorrelationList(correlationIDList);
+
+        //   out.println("correlationList size - " + correlationIDList.size());
+
+        //String NOTIFICATOIN_URL = obj.getNotificationTargetAddress() + "/" + obj.getCorrelationId();
 
         // out.println(NOTIFICATOIN_URL);
 
@@ -114,8 +118,11 @@ public class AMFController extends Functionality {
     // @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_notify/{correlationID}")
 
 
-    @PostMapping("/updateCurrentLoadLevel/{correlationID}")
-    private ResponseEntity<String> sendData(String notiTargetAddress, @PathVariable("correlationID") String correlationID, @RequestBody LoadLevelModel obj) throws IOException, JSONException {
+    // @PostMapping("/updateCurrentLoadLevel/{correlationID}")
+    public ResponseEntity<String> sendData(String notiTargetAddress,
+                                           String correlationID) throws IOException, JSONException {
+
+        //  out.println("send Data check1");
 
         notiTargetAddress = "http://localhost:8081/Nnrf_NFManagement_NFStatusNotify";
         //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
@@ -126,7 +133,7 @@ public class AMFController extends Functionality {
         // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
 
         String updated_URL = notiTargetAddress + "/" + correlationID;
-        out.println("updated URl - " + updated_URL);
+        //  out.println("updated URl - " + updated_URL);
         URL url = new URL(updated_URL);
 
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -145,8 +152,10 @@ public class AMFController extends Functionality {
 
         JSONObject json = new JSONObject();
 
-        json.put("currentLoadLevel", obj.getLoadLevel());
+        json.put("currentLoadLevel", rand.nextInt(10) + 20);
         json.put("correlationID", correlationID);
+
+        // out.println("check " + correlationID);
 
         // For POST only - START
         con.setDoOutput(true);
@@ -165,7 +174,7 @@ public class AMFController extends Functionality {
 
         int responseCode = con.getResponseCode();
         //String responseMessage = con.getResponseMessage();
-        System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
+        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
         //System.out.println("POST Response Message :: " + responseMessage);
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
@@ -180,15 +189,20 @@ public class AMFController extends Functionality {
             in.close();
 
             // print result
-            System.out.println("\n\n");
-            System.out.println(response);
+            // System.out.println("\n\n");
+            //  System.out.println(response);
         } else {
-            System.out.println("\n\n");
-            System.out.println("POST request not worked");
+            // System.out.println("\n\n");
+            // System.out.println("POST request not worked");
         }
         //  return "Data send to " + updated_URL;
         return new ResponseEntity<String>("Send", HttpStatus.OK);
     }
 
+
+    //  @Override
+    //public void getCorrelationList(List<String> correlationList) {
+    //  out.println(correlationList.size());
+    // }
 }
 
