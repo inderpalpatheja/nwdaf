@@ -70,10 +70,11 @@ public class AMFController extends Functionality {
     @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
     public ResponseEntity<String> unsubScribeFromNWDAF(@RequestBody String response) throws JSONException, IOException {
 
-        //     JSONObject jsonObject = new JSONObject(response);
-        //   jsonObject.getString("unsubCorrationID");
-        // out.println();
+        JSONObject jsonObject = new JSONObject(response);
+        String unSubCorrelationID = jsonObject.getString("mSubcorrelationID");
+        String correlationID = jsonObject.getString("correlationID");
 
+        correlationIDList.remove(correlationID);
         // list.delete();
         //     out.println("Unsubscribed from NWDAF WORKED for " + response);
 
@@ -152,7 +153,7 @@ public class AMFController extends Functionality {
 
         JSONObject json = new JSONObject();
 
-        json.put("currentLoadLevel", rand.nextInt(10) + 20);
+        json.put("currentLoadLevel", rand.nextInt(85));
         json.put("correlationID", correlationID);
 
         // out.println("check " + correlationID);
