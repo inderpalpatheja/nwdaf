@@ -589,9 +589,13 @@ public class Nnwdaf_controller {
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
         String mCorrelationID = repository.getUnSubCorrelationID(snssais);
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("correlationID", mCorrelationID);
+     //   String mCorrelationID = repository.getUnSubCorrelationID(snssais);
 
+        String correlationID = repository.getCorrelationID(mCorrelationID);
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("mSubcorrelationID", mCorrelationID);
+        jsonObject.put("correlationID", correlationID);
 
         con.setRequestMethod("DELETE");
         con.setRequestProperty("User-Agent", USER_AGENT);

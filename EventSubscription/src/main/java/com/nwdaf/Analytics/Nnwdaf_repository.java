@@ -361,7 +361,7 @@ public class Nnwdaf_repository {
     public String getSnssaisViaSubID(String correlationID) {
 
         //String query = "select snssais from nwdafSliceLoadLevelSubscriptionTable where subscriptionID "
-        String query = "SELECT snssais FROM nwdafSliceLoadLevelSUbscriptionTable WHERE subscriptionID = '" + correlationID + "';";
+        String query = "SELECT snssais FROM nwdafSliceLoadLevelSubscriptionTable WHERE subscriptionID = '" + correlationID + "';";
 
         return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
             @Override
@@ -402,7 +402,7 @@ public class Nnwdaf_repository {
     public String getUnSubCorrelationID(String snssais) {
 
         //String query = "select snssais from nwdafSliceLoadLevelSubscriptionTable where subscriptionID "
-        String query = "SELECT subscriptionID FROM nwdafSliceLoadLevelSUbscriptionTable WHERE snssais = '" + snssais + "';";
+        String query = "SELECT subscriptionID FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais = '" + snssais + "';";
 
         return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
             @Override
@@ -449,7 +449,7 @@ public class Nnwdaf_repository {
 
 
     public Integer updateCurrentLoadLevel(int loadLevel, String snssais)
-    { return jdbcTemplate.update("UPDATE nwdafSliceLoadLeveLInformation SET currentLoadLevel = currentLoadLevel + ? WHERE snssais = ?", new Object[] { loadLevel, snssais }); }
+    { return jdbcTemplate.update("UPDATE nwdafSliceLoadLevelInformation SET currentLoadLevel = ? WHERE snssais = ?", new Object[] { loadLevel, snssais }); }
 
 
     public String getSnssaisByCorrelationID(String correlationID)
@@ -512,7 +512,7 @@ public class Nnwdaf_repository {
     public Object findby_snssais(String snssais1) {
 
 
-        String query = "SELECT * FROM nwdafsliceloadlevelsubscriptiontable WHERE snssais=?";
+        String query = "SELECT * FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais=?";
 
 
         try {
@@ -521,6 +521,18 @@ public class Nnwdaf_repository {
         catch (EmptyResultDataAccessException ex) {
             return null;
         }
+    }
+
+
+    public String getCorrelationID(String mCorrelationID) {
+        String query = "SELECT correlationID FROM nwdafSliceLoadLevelSubscriptionTable WHERE subscriptionID = '" + mCorrelationID + "';";
+
+        return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+            @Override
+            public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getString("correlationID");
+            }
+        });
     }
 
 }

@@ -24,6 +24,8 @@ public class AmfApplication extends Functionality {
 
     Random rand = new Random();
 
+    String[] snssaisString = {"AMF", "SMF", "PCF"};
+
 
     public void test(int subList) throws Exception {
 
@@ -32,7 +34,7 @@ public class AmfApplication extends Functionality {
         for (int i = 0; i < subList; i++) {
             String subId = subscribe(0,
                     "http://localhost:8082/notify",
-                    "AMF",
+                    snssaisString[rand.nextInt(snssaisString.length)],
                     1,
                     0,
                     rand.nextInt(30) + 40); /// rand.nextInt( high - low ) + low
@@ -56,10 +58,12 @@ public class AmfApplication extends Functionality {
         int subList = Integer.parseInt(subcout);
 
         AmfApplication amfApplication = new AmfApplication();
-        amfApplication.test(subList);
+
 
         while (true) {
             Thread.sleep(5000);
+
+            amfApplication.test(subList);
             //  System.out.println("Main correaltionList - " + amfController.getCorrelationIDList().size());
 
             for (int i = 0; i < amfController.getCorrelationIDList().size(); i++) {
