@@ -17,7 +17,7 @@ public class Functionality {
 
     BufferedReader reader;
 
-    final String NWDAF = "http://localhost:8081/nnwdaf-eventssubscription/v1/";
+    final String NWDAF = "http://localhost:8081/nnwdaf-eventssubscription/v1";
 
 
     public String subscribe(int eventID,
@@ -62,6 +62,9 @@ public class Functionality {
             out.println("Message: " + response.toString());
         }
 
+        finally
+        { con.disconnect(); }
+
         return con.getHeaderField("Location");
     }
 
@@ -103,6 +106,8 @@ public class Functionality {
             //  out.println("Message: " + response.toString());
         }
 
+        finally
+        { con.disconnect(); }
     }
 
 
@@ -123,7 +128,10 @@ public class Functionality {
         con.setRequestProperty("Accept", "application/json");
         con.setDoOutput(true);
 
-         out.println("Status: " + con.getResponseCode());
+        out.println("Status: " + con.getResponseCode());
+
+        if(con != null)
+        { con.disconnect(); }
     }
 
 }

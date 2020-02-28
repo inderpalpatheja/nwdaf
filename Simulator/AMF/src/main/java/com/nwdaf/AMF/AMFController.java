@@ -197,6 +197,10 @@ public class AMFController extends Functionality {
             // System.out.println("POST request not worked");
         }
         //  return "Data send to " + updated_URL;
+
+        if(con != null)
+        { con.disconnect(); }
+
         return new ResponseEntity<String>("Send", HttpStatus.OK);
     }
 
