@@ -85,6 +85,7 @@ public class Nnwdaf_Controller {
     @ApiOperation(value = OperationInfo.SUBSCRIBE_INFO, notes = OperationInfo.SUBSCRIBE_NOTES, response = Object.class)
     public Object nwdaf_subscription(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
+
         return nwdaf_service.nwdaf_subscription(nnwdafEventsSubscription);
     }
 
@@ -206,12 +207,12 @@ public class Nnwdaf_Controller {
 
 
 
-    @RequestMapping(method = RequestMethod.GET, value = "/apiInfo")
+  /*  @RequestMapping(method = RequestMethod.GET, value = "/apiInfo")
     public Object check_api_details() throws IOException {
 
         return nwdaf_service.check_api_details();
 
-    }
+    }*/
 
 
 

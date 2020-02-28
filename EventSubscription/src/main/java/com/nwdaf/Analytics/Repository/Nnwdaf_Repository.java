@@ -19,9 +19,10 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.Random;
-
+import java.util.UUID;
 
 @Repository
 public class Nnwdaf_Repository {
@@ -117,10 +118,10 @@ public class Nnwdaf_Repository {
 
 
 
-        if (snsExists(slice.getSnssais())) {
-            jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", slice.getSnssais());
-            return true;
-        }
+            if (snsExists(slice.getSnssais())) {
+                jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", slice.getSnssais());
+                return true;
+            }
 
 
 
@@ -189,13 +190,13 @@ public class Nnwdaf_Repository {
         String query = "select  *from nwdafSliceLoadLevelSubscriptionData where snssais ='" + snssais + "'";
 
 
-        try {
-            return jdbcTemplate.query(query, new SliceLoadLevelSubscriptionDataMapper());
-        }
-        catch(EmptyResultDataAccessException e){
+       try {
+           return jdbcTemplate.query(query, new SliceLoadLevelSubscriptionDataMapper());
+       }
+       catch(EmptyResultDataAccessException e){
 
-            return null;
-        }
+           return null;
+       }
 
     }
 
@@ -282,15 +283,15 @@ public class Nnwdaf_Repository {
 
 
 
-        String result = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+            String result = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
 
-            @Override
-            public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getString("snssais");
-            }
-        });
+                @Override
+                public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getString("snssais");
+                }
+            });
 
-        return (result != null);
+            return (result != null);
 
     }
 
@@ -327,11 +328,11 @@ public class Nnwdaf_Repository {
     public Integer decrementRefCount(String snssais) throws Exception {
         jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount - 1 WHERE snssais = ?", snssais);
 
-        // System.out.println("check1");
+       // System.out.println("check1");
         if(getRefCount(snssais) == 0)
         {
-            /* time to delete the entry from db, caller shall send the subscribe message towards peer first */
-            return 0;
+             /* time to delete the entry from db, caller shall send the subscribe message towards peer first */
+             return 0;
         }
 
         return 1;
@@ -497,7 +498,7 @@ public class Nnwdaf_Repository {
         try {
             Object obj= (SliceLoadLevelSubscriptionTable) this.jdbcTemplate.queryForObject(query, new Object[]{snssais1}, new SliceLoadLevelSubscriptionTableMapper());
 
-            return obj;
+             return obj;
         }
         catch (EmptyResultDataAccessException ex) {
 
@@ -510,19 +511,19 @@ public class Nnwdaf_Repository {
 
         String query = "SELECT correlationID FROM nwdafSliceLoadLevelSubscriptionTable WHERE subscriptionID = '" + mCorrelationID + "';";
 
-        try {
+         try {
 
-            String correlationID = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-                @Override
-                public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                    return resultSet.getString("correlationID");
-                }
-            });
-            return correlationID;
-        } catch (EmptyResultDataAccessException e) {
+             String correlationID = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+                 @Override
+                 public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                     return resultSet.getString("correlationID");
+                 }
+             });
+             return correlationID;
+         } catch (EmptyResultDataAccessException e) {
 
-            return null;
-        }
+             return null;
+         }
 
     }
 
