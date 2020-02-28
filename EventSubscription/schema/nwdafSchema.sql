@@ -14,10 +14,8 @@ CREATE TABLE `NWDAF`.`nwdafSliceLoadLevelSubscriptionData` (
   `snssais` VARCHAR(128) NULL,
   `loadLevelThreshold` INT NULL,
   PRIMARY KEY (`ID`),
-  INDEX `subscriptionID_idx` (`subscriptionID` ASC) VISIBLE,
-  CONSTRAINT `subscriptionID`
     FOREIGN KEY (`subscriptionID`)
-    REFERENCES `nwdaf`.`nwdafsubscriptiontable` (`subscriptionID`)
+    REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionID`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
     
