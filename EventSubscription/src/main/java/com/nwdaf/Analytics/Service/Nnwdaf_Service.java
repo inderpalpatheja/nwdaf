@@ -49,8 +49,8 @@ public class Nnwdaf_Service {
     @Autowired
     Nnwdaf_Repository repository;
 
-    @Autowired
-    BuildProperties buildProperties;
+    //@Autowired
+    //BuildProperties buildProperties;
 
 
     private static final Logger logger = LoggerFactory.getLogger(Nnwdaf_Service.class);
@@ -337,7 +337,7 @@ public class Nnwdaf_Service {
 
 
 
-    public Object check_api_details() throws IOException {
+   /* public Object check_api_details() throws IOException {
 
         APIBuildInformation apiBuildInformation = new APIBuildInformation();
 
@@ -377,7 +377,7 @@ public class Nnwdaf_Service {
                 "API License",
                 "https://truminds.com/home",
                 Collections.emptyList());
-    }
+    }*/
 
 
 
