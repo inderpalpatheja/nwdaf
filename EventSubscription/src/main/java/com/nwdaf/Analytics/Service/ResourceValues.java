@@ -1,0 +1,22 @@
+package com.nwdaf.Analytics.Service;
+
+import org.springframework.beans.factory.annotation.Value;
+
+public class ResourceValues {
+
+    @Value("${spring.MAIN.url}")
+    String URI;
+
+    @Value("${spring.NRF_NotificationTarget.Url}")
+    String notificationTargetUrl;
+
+    @Value("${spring.Simulator.testConnection}")
+    String testConnect_URI;
+
+    @Value("${spring.NRF.Subscribe.url}")
+    String POST_NRF_URL;
+
+    @Value("${spring.NRF.UnSubscribe.url}")
+    String DELETE_NRF_URL;
+
+}

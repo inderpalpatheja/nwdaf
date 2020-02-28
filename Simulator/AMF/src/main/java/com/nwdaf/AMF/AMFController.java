@@ -48,7 +48,7 @@ public class AMFController extends Functionality {
 
         String subId = jsonObject.getString("subscriptionID");
         String notificationURI = jsonObject.getString("notificaionURI");
-        int loadLevel = jsonObject.getInt("currentLoadLevel");
+        Integer loadLevel = jsonObject.getInt("currentLoadLevel");
         String snssais = jsonObject.getString("snssais");
 
         System.out.println("\n\nNotification Received From NWDAF -" + string);
@@ -153,7 +153,7 @@ public class AMFController extends Functionality {
 
         JSONObject json = new JSONObject();
 
-        json.put("currentLoadLevel", rand.nextInt(85));
+        json.put("currentLoadLevel", 1 + rand.nextInt(85));
         json.put("correlationID", correlationID);
 
         // out.println("check " + correlationID);

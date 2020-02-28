@@ -19,10 +19,9 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
+
 
 @Repository
 public class Nnwdaf_Repository {
@@ -90,11 +89,21 @@ public class Nnwdaf_Repository {
 
         if (anySlice == true) {
             String s = "select *From nwdafSliceLoadLevelInformation";
-            return jdbcTemplate.query(s, new AnalyticsRowMapper());
+            try {
+                return jdbcTemplate.query(s, new AnalyticsRowMapper());
+            }
+            catch (EmptyResultDataAccessException e){
+                return null;
+            }
         }
 
         String s = "select *From nwdafSliceLoadLevelInformation where snssais = '" + snssais + "';";
-        return jdbcTemplate.query(s, new AnalyticsRowMapper());
+        try {
+            return jdbcTemplate.query(s, new AnalyticsRowMapper());
+        }
+        catch (EmptyResultDataAccessException e){
+            return null;
+        }
 
     }
 
@@ -106,11 +115,13 @@ public class Nnwdaf_Repository {
 
     public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(SliceLoadLevelSubscriptionTable slice, boolean getAnalytics) {
 
-        if(snsExists(slice.getSnssais()))
-        {
+
+
+        if (snsExists(slice.getSnssais())) {
             jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", slice.getSnssais());
             return true;
         }
+
 
 
         String query = "INSERT INTO nwdafSliceLoadLevelSubscriptionTable (snssais,subscriptionID,correlationID,refCount) VALUES (?,?,?,?);";
@@ -162,7 +173,12 @@ public class Nnwdaf_Repository {
     public List<SliceLoadLevelInformation> getALLsnssais() {
 
         String query = "Select *from nwdafSliceLoadLevelInformation";
-        return jdbcTemplate.query(query, new SliceLoadLevelInformationMapper());
+        try {
+            return jdbcTemplate.query(query, new SliceLoadLevelInformationMapper());
+        }
+        catch (EmptyResultDataAccessException e){
+            return null;
+        }
     }
 
 
@@ -173,7 +189,13 @@ public class Nnwdaf_Repository {
         String query = "select  *from nwdafSliceLoadLevelSubscriptionData where snssais ='" + snssais + "'";
 
 
-        return jdbcTemplate.query(query, new SliceLoadLevelSubscriptionDataMapper());
+        try {
+            return jdbcTemplate.query(query, new SliceLoadLevelSubscriptionDataMapper());
+        }
+        catch(EmptyResultDataAccessException e){
+
+            return null;
+        }
 
     }
 
@@ -183,13 +205,20 @@ public class Nnwdaf_Repository {
     public Integer currentLoadLevel(String snssais) {
 
         String query = "SELECT currentLoadLevel FROM nwdafSliceLoadLevelInformation WHERE snssais = '" + snssais + "';";
+        try {
 
-        return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
-            @Override
-            public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getInt("currentLoadLevel");
-            }
-        });
+            Integer currentLoad=jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
+                @Override
+                public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getInt("currentLoadLevel");
+                }
+            });
+            return currentLoad;
+        }
+        catch (EmptyResultDataAccessException e){
+
+            return 0;
+        }
     }
 
 
@@ -216,8 +245,10 @@ public class Nnwdaf_Repository {
         String query = "SELECT * FROM nwdafSubscriptionTable WHERE subscriptionID = ?";
 
         try {
+
             return (SubscriptionTable) this.jdbcTemplate.queryForObject(query, new Object[]{subID}, new SubscriptionTableMapper());
         } catch (EmptyResultDataAccessException ex) {
+
             return null;
         }
     }
@@ -227,12 +258,19 @@ public class Nnwdaf_Repository {
     public String getNotificationURI(String subID) {
         String query = "SELECT notificationURI FROM nwdafSubscriptionTable WHERE subscriptionID = '" + subID + "';";
 
-        return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-            @Override
-            public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getString("notificationURI");
-            }
-        });
+        try {
+
+            String notificationURI= jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+                @Override
+                public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getString("notificationURI");
+                }
+            });
+            return notificationURI;
+        }
+        catch (EmptyResultDataAccessException e){
+            return null;
+        }
     }
 
 
@@ -241,6 +279,8 @@ public class Nnwdaf_Repository {
     public boolean snsExists(String snssais)
     {
         String query = "SELECT IFNULL ((SELECT snssais FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais = '" + snssais + "'), null) AS snssais;";
+
+
 
         String result = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
 
@@ -251,6 +291,7 @@ public class Nnwdaf_Repository {
         });
 
         return (result != null);
+
     }
 
 
@@ -259,12 +300,20 @@ public class Nnwdaf_Repository {
         //String query = "select snssais from nwdafSliceLoadLevelSubscriptionTable where subscriptionID "
         String query = "SELECT snssais FROM nwdafSliceLoadLevelSubscriptionTable WHERE subscriptionID = '" + correlationID + "';";
 
-        return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-            @Override
-            public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getString("snssais");
-            }
-        });
+        try {
+
+            String snssViaSubID=jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+                @Override
+                public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getString("snssais");
+                }
+            });
+            return snssViaSubID;
+        }
+        catch (EmptyResultDataAccessException e){
+
+            return null;
+        }
 
     }
 
@@ -278,11 +327,11 @@ public class Nnwdaf_Repository {
     public Integer decrementRefCount(String snssais) throws Exception {
         jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount - 1 WHERE snssais = ?", snssais);
 
-       // System.out.println("check1");
+        // System.out.println("check1");
         if(getRefCount(snssais) == 0)
         {
-             /* time to delete the entry from db, caller shall send the subscribe message towards peer first */
-             return 0;
+            /* time to delete the entry from db, caller shall send the subscribe message towards peer first */
+            return 0;
         }
 
         return 1;
@@ -300,20 +349,28 @@ public class Nnwdaf_Repository {
 
         //String query = "select snssais from nwdafSliceLoadLevelSubscriptionTable where subscriptionID "
         String query = "SELECT subscriptionID FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais = '" + snssais + "';";
+        try {
 
-        return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-            @Override
-            public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getString("subscriptionID");
-            }
-        });
+            String unSubID=jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+                @Override
+                public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getString("subscriptionID");
+                }
+            });
+            return unSubID;
+        }
+        catch (EmptyResultDataAccessException e){
+            return null;
+        }
 
 
 
     }
 
     public Integer incrementRefCount(String snssais)
-    { return jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", snssais);  }
+    {
+        return jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", snssais);
+    }
 
 
 
@@ -323,12 +380,20 @@ public class Nnwdaf_Repository {
     {
         String query = "SELECT snssais FROM nwdafSliceLoadLevelSubscriptionData WHERE subscriptionID = '" + subID  +"';";
 
-        return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-            @Override
-            public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getString("snssais");
-            }
-        });
+        try {
+
+            String snssais1=jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+                @Override
+                public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getString("snssais");
+                }
+            });
+            return snssais1;
+        }
+        catch (EmptyResultDataAccessException e){
+
+            return null;
+        }
     }
 
 
@@ -336,17 +401,28 @@ public class Nnwdaf_Repository {
     {
         String query = "SELECT refCount FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais = '" + snssais + "';";
 
-        return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
-            @Override
-            public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getInt("refCount");
-            }
-        });
+        try {
+
+            Integer refCount1=jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
+                @Override
+                public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getInt("refCount");
+                }
+            });
+            return refCount1;
+        }
+        catch(EmptyResultDataAccessException e){
+
+            return 0;
+        }
     }
 
 
     public Integer updateCurrentLoadLevel(int loadLevel, String snssais)
-    { return jdbcTemplate.update("UPDATE nwdafSliceLoadLevelInformation SET currentLoadLevel = ? WHERE snssais = ?", new Object[] { loadLevel, snssais }); }
+    {
+
+        return jdbcTemplate.update("UPDATE nwdafSliceLoadLevelInformation SET currentLoadLevel = ? WHERE snssais = ?", new Object[] { loadLevel, snssais });
+    }
 
 
 
@@ -354,12 +430,20 @@ public class Nnwdaf_Repository {
     {
         String query = "SELECT snssais FROM nwdafSliceLoadLevelSubscriptionTable WHERE correlationID = '" + correlationID + "';";
 
-        return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-            @Override
-            public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getString("snssais");
-            }
-        });
+        try {
+
+            String s = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+                @Override
+                public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getString("snssais");
+                }
+            });
+            return s;
+        }
+        catch(EmptyResultDataAccessException e){
+
+            return null;
+        }
     }
 
 
@@ -369,12 +453,19 @@ public class Nnwdaf_Repository {
     {
         String query = "SELECT loadLevelThreshold FROM nwdafSliceLoadLevelSubscriptionData WHERE subscriptionID = '" + subID + "';";
 
-        return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
-            @Override
-            public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getInt("loadLevelThreshold");
-            }
-        });
+        try {
+
+            Integer loadThreshold = jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
+                @Override
+                public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getInt("loadLevelThreshold");
+                }
+            });
+            return loadThreshold;
+        }
+        catch(EmptyResultDataAccessException e){
+            return 0;
+        }
     }
 
 
@@ -382,12 +473,20 @@ public class Nnwdaf_Repository {
     {
         String query = "SELECT currentLoadLevel FROM nwdafSliceLoadLevelInformation WHERE snssais = '" + snssais + "';";
 
-        return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
-            @Override
-            public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getInt("currentLoadLevel");
-            }
-        });
+        try {
+
+            Integer currentLoad= jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
+                @Override
+                public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getInt("currentLoadLevel");
+                }
+            });
+            return currentLoad;
+        }
+        catch (EmptyResultDataAccessException e){
+
+            return 0;
+        }
     }
 
 
@@ -396,23 +495,35 @@ public class Nnwdaf_Repository {
         String query = "SELECT * FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssais=?";
 
         try {
-            return (SliceLoadLevelSubscriptionTable) this.jdbcTemplate.queryForObject(query, new Object[]{snssais1}, new SliceLoadLevelSubscriptionTableMapper());
+            Object obj= (SliceLoadLevelSubscriptionTable) this.jdbcTemplate.queryForObject(query, new Object[]{snssais1}, new SliceLoadLevelSubscriptionTableMapper());
+
+            return obj;
         }
         catch (EmptyResultDataAccessException ex) {
+
             return null;
         }
     }
 
 
     public String getCorrelationID(String mCorrelationID) {
+
         String query = "SELECT correlationID FROM nwdafSliceLoadLevelSubscriptionTable WHERE subscriptionID = '" + mCorrelationID + "';";
 
-        return jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-            @Override
-            public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getString("correlationID");
-            }
-        });
+        try {
+
+            String correlationID = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+                @Override
+                public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getString("correlationID");
+                }
+            });
+            return correlationID;
+        } catch (EmptyResultDataAccessException e) {
+
+            return null;
+        }
+
     }
 
 }

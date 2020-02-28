@@ -20,12 +20,12 @@ public class Functionality {
     final String NWDAF = "http://localhost:8081/nnwdaf-eventssubscription/v1";
 
 
-    public String subscribe(int eventID,
+    public String subscribe(Integer eventID,
                             String notificatoinURI,
                             String snssais,
-                            int notifMethod,
-                            int repPeriod,
-                            int ldLevel) throws Exception {
+                            Integer notifMethod,
+                            Integer repPeriod,
+                            Integer ldLevel) throws Exception {
         String line;
         StringBuffer responseContent = new StringBuffer();
 
@@ -43,7 +43,7 @@ public class Functionality {
         json.put("notificationURI", notificatoinURI);
         json.put("snssais", snssais);
         json.put("notifMethod", notifMethod);
-        json.put("repetitionLevel", repPeriod);
+        json.put("repetitionPeriod", repPeriod);
         json.put("loadLevelThreshold", ldLevel);
 
         try (OutputStream os = con.getOutputStream()) {
@@ -69,7 +69,8 @@ public class Functionality {
     }
 
 
-    public void update(String subID, int eventID, int notifMethod, int repLevel, int ldLevel) throws Exception {
+
+    public void update(String subID, Integer eventID, Integer notifMethod, Integer repLevel, Integer ldLevel) throws Exception {
 
         String line;
         StringBuffer responseContent = new StringBuffer();
@@ -86,7 +87,7 @@ public class Functionality {
 
         json.put("eventID", eventID);
         json.put("notifMethod", notifMethod);
-        json.put("repetitionLevel", repLevel);
+        json.put("repetitionPeriod", repLevel);
         json.put("loadLevelThreshold", ldLevel);
 
 

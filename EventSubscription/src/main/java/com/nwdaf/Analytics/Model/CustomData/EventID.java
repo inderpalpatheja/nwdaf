@@ -1,5 +1,7 @@
 package com.nwdaf.Analytics.Model.CustomData;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum EventID {
 
     LOAD_LEVEL_INFORMATION,

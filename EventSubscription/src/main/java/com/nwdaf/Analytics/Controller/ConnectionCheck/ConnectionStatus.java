@@ -7,6 +7,12 @@ public class ConnectionStatus {
     String code;
     String message;
 
+    public ConnectionStatus()
+    {
+        this.code = "Data Not Found";
+        this.message = String.valueOf(HttpStatus.valueOf(HttpStatus.NOT_FOUND.value()));
+    }
+
     public String getCode() {
         return code;
     }
