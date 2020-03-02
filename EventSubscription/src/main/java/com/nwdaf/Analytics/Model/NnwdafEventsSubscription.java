@@ -11,9 +11,10 @@ public class NnwdafEventsSubscription {
     String notificationURI;
     String snssais;
     NotificationMethod notifMethod;
-    int repetitionPeriod;
-    int loadLevelThreshold;
-    boolean anySlice;
+    Integer repetitionPeriod;
+    Integer loadLevelThreshold;
+    Boolean anySlice;
+
 
 
     public String getSubscriptionID() {
@@ -24,12 +25,12 @@ public class NnwdafEventsSubscription {
         this.subscriptionID = UUID.fromString(subscriptionID);
     }
 
-    public int getEventID() {
-        return eventID.ordinal();
+    public Integer getEventID() {
+        return this.eventID != null ? this.eventID.ordinal() : null;
     }
 
-    public void setEventID(int ID) {
-        this.eventID = EventID.values()[ID];
+    public void setEventID(Integer ID) {
+        this.eventID = (ID != null) ? EventID.values()[ID] : null;
     }
 
     public String getNotificationURI() {
@@ -48,35 +49,36 @@ public class NnwdafEventsSubscription {
         this.snssais = snssais;
     }
 
-    public int getNotifMethod() {
-        return notifMethod.ordinal();
+    public Integer getNotifMethod() {
+        return notifMethod != null ? notifMethod.ordinal() : null;
     }
 
-    public void setNotifMethod(int method_no) {
-        this.notifMethod = NotificationMethod.values()[method_no];
+    public void setNotifMethod(Integer method_no) {
+        this.notifMethod = (method_no != null) ? NotificationMethod.values()[method_no] : null;
     }
 
-    public int getRepetitionPeriod() {
+    public Integer getRepetitionPeriod() {
         return repetitionPeriod;
     }
 
-    public void setRepetitionPeriod(int repetitionPeriod) {
+    public void setRepetitionPeriod(Integer repetitionPeriod) {
         this.repetitionPeriod = repetitionPeriod;
     }
 
-    public int getLoadLevelThreshold() {
+    public Integer getLoadLevelThreshold() {
         return loadLevelThreshold;
     }
 
-    public void setLoadLevelThreshold(int loadLevelThreshold) {
+    public void setLoadLevelThreshold(Integer loadLevelThreshold) {
         this.loadLevelThreshold = loadLevelThreshold;
     }
 
-    public boolean isAnySlice() {
+    public Boolean isAnySlice() {
         return anySlice;
     }
 
-    public void setAnySlice(boolean anySlice) {
+    public void setAnySlice(Boolean anySlice) {
         this.anySlice = anySlice;
     }
+
 }

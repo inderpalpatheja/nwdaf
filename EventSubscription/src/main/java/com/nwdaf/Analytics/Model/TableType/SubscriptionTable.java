@@ -12,7 +12,7 @@ public class SubscriptionTable {
     private EventID eventID;
     private String notificationURI;
     private NotificationMethod notifMethod;
-    private int repetitionPeriod;
+    private Integer repetitionPeriod;
 
 
     public SubscriptionTable() {
@@ -27,12 +27,12 @@ public class SubscriptionTable {
         this.subscriptionID = UUID.fromString(subscriptionID);
     }
 
-    public int getEventID() {
-        return eventID.ordinal();
+    public Integer getEventID() {
+        return eventID != null ? eventID.ordinal() : null;
     }
 
-    public void setEventID(int ID) {
-        this.eventID = EventID.values()[ID];
+    public void setEventID(Integer ID) {
+        this.eventID = (ID != null) ? EventID.values()[ID] : null;
     }
 
     public String getNotificationURI() {
@@ -43,23 +43,23 @@ public class SubscriptionTable {
         this.notificationURI = notificationURI;
     }
 
-    public int getNotifMethod() {
-        return notifMethod.ordinal();
+    public Integer getNotifMethod() {
+        return notifMethod != null ? notifMethod.ordinal() : null;
     }
 
-    public void setNotifMethod(int method_no) {
-        this.notifMethod = notifMethod.values()[method_no];
+    public void setNotifMethod(Integer method_no) {
+        this.notifMethod = (method_no != null) ? notifMethod.values()[method_no] : null;
     }
 
-    public int getRepetitionPeriod() {
+    public Integer getRepetitionPeriod() {
         return repetitionPeriod;
     }
 
-    public void setRepetitionPeriod(int repetitionPeriod) {
+    public void setRepetitionPeriod(Integer repetitionPeriod) {
         this.repetitionPeriod = repetitionPeriod;
     }
 
-    public SubscriptionTable(UUID subscriptionID, EventID eventID, String notificationURI, NotificationMethod notifMethod, int repetitionPeriod) {
+    public SubscriptionTable(UUID subscriptionID, EventID eventID, String notificationURI, NotificationMethod notifMethod, Integer repetitionPeriod) {
         this.subscriptionID = subscriptionID;
         this.eventID = eventID;
         this.notificationURI = notificationURI;

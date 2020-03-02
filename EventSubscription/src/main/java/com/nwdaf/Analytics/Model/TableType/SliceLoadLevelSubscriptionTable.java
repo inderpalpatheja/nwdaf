@@ -5,17 +5,17 @@ import java.util.UUID;
 public class SliceLoadLevelSubscriptionTable {
 
 
-    private int ID;
+    private Integer ID;
     private String snssais;
     private UUID subscriptionID;
     private UUID correlationID;
-    private int referenceCount;
+    private Integer referenceCount;
 
-    public int getRefrenceCount() {
+    public Integer getReferenceCount() {
         return referenceCount;
     }
 
-    public void setRefrenceCount(int refrenceCount) {
+    public void setReferenceCount(Integer refrenceCount) {
         this.referenceCount = refrenceCount;
     }
 
@@ -23,11 +23,11 @@ public class SliceLoadLevelSubscriptionTable {
     }
 
 
-    public int getID() {
+    public Integer getID() {
         return ID;
     }
 
-    public void setID(int ID) {
+    public void setID(Integer ID) {
         this.ID = ID;
     }
 

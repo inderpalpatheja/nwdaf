@@ -3,7 +3,7 @@ package com.nwdaf.Analytics.Model.TableType;
 public class SliceLoadLevelInformation {
 
     private String snssais;
-    private int currentLoadLevel;
+    private Integer currentLoadLevel;
 
     public SliceLoadLevelInformation() {
     }
@@ -16,15 +16,15 @@ public class SliceLoadLevelInformation {
         this.snssais = snssais;
     }
 
-    public int getCurrentLoadLevel() {
+    public Integer getCurrentLoadLevel() {
         return currentLoadLevel;
     }
 
-    public void setCurrentLoadLevel(int currentLoadLevel) {
+    public void setCurrentLoadLevel(Integer currentLoadLevel) {
         this.currentLoadLevel = currentLoadLevel;
     }
 
-    public SliceLoadLevelInformation(String snssais, int currentLoadLevel) {
+    public SliceLoadLevelInformation(String snssais, Integer currentLoadLevel) {
         this.snssais = snssais;
         this.currentLoadLevel = currentLoadLevel;
     }

@@ -4,21 +4,21 @@ import java.util.UUID;
 
 public class SliceLoadLevelSubscriptionData {
 
-    private int ID;
+    private Integer ID;
     private UUID subscriptionID;
     private String snssais;
-    private int loadLevelThreshold;
+    private Integer loadLevelThreshold;
 
 
     public SliceLoadLevelSubscriptionData() {
     }
 
 
-    public int getID() {
+    public Integer getID() {
         return ID;
     }
 
-    public void setID(int ID) {
+    public void setID(Integer ID) {
         this.ID = ID;
     }
 
@@ -38,11 +38,11 @@ public class SliceLoadLevelSubscriptionData {
         this.snssais = snssais;
     }
 
-    public int getLoadLevelThreshold() {
+    public Integer getLoadLevelThreshold() {
         return loadLevelThreshold;
     }
 
-    public void setLoadLevelThreshold(int loadLevelThreshold) {
+    public void setLoadLevelThreshold(Integer loadLevelThreshold) {
         this.loadLevelThreshold = loadLevelThreshold;
     }
 }

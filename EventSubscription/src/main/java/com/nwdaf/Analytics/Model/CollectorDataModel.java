@@ -4,13 +4,13 @@ public class CollectorDataModel {
 
 
     private String SnSaai;
-    private int LOAD_LEVEL_INFORMATION;
-    private int eventId;
+    private Integer LOAD_LEVEL_INFORMATION;
+    private Integer eventId;
 
     public CollectorDataModel() {
     }
 
-    public CollectorDataModel(String snSaai, int LOAD_LEVEL_INFORMATION, int eventId) {
+    public CollectorDataModel(String snSaai, Integer LOAD_LEVEL_INFORMATION, Integer eventId) {
         SnSaai = snSaai;
         this.LOAD_LEVEL_INFORMATION = LOAD_LEVEL_INFORMATION;
         this.eventId = eventId;
@@ -24,19 +24,19 @@ public class CollectorDataModel {
         SnSaai = snSaai;
     }
 
-    public int getLOAD_LEVEL_INFORMATION() {
+    public Integer getLOAD_LEVEL_INFORMATION() {
         return LOAD_LEVEL_INFORMATION;
     }
 
-    public void setLOAD_LEVEL_INFORMATION(int LOAD_LEVEL_INFORMATION) {
+    public void setLOAD_LEVEL_INFORMATION(Integer LOAD_LEVEL_INFORMATION) {
         this.LOAD_LEVEL_INFORMATION = LOAD_LEVEL_INFORMATION;
     }
 
-    public int getEventId() {
+    public Integer getEventId() {
         return eventId;
     }
 
-    public void setEventId(int eventId) {
+    public void setEventId(Integer eventId) {
         this.eventId = eventId;
     }
 }
