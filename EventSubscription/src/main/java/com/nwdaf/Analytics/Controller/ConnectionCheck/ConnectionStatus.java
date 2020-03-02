@@ -9,8 +9,14 @@ public class ConnectionStatus {
 
     public ConnectionStatus()
     {
-        this.code = "Data Not Found";
-        this.message = String.valueOf(HttpStatus.valueOf(HttpStatus.NOT_FOUND.value()));
+        this.code = String.valueOf(HttpStatus.valueOf(HttpStatus.NOT_FOUND.value()));
+        this.message = "Data Not Found";
+    }
+
+    public ConnectionStatus(HttpStatus code, String message)
+    {
+        this.code = String.valueOf(HttpStatus.valueOf(code.value()));
+        this.message = message;
     }
 
     public String getCode() {

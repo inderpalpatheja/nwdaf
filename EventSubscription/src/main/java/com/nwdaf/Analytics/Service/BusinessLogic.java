@@ -15,7 +15,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,14 +29,14 @@ import java.util.UUID;
 import static java.lang.System.out;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 
-public class FrameWorkFunctions extends ResourceValues {
+public class BusinessLogic extends ResourceValues {
 
 
     @Autowired
     Nnwdaf_Repository repository;
 
 
-    private static final Logger logger = LoggerFactory.getLogger(FrameWorkFunctions.class);
+    private static final Logger logger = LoggerFactory.getLogger(BusinessLogic.class);
 
     Set<String> subID_SET = new HashSet<String>();
     public int subThValue = 0;
@@ -210,7 +209,6 @@ public class FrameWorkFunctions extends ResourceValues {
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
             // incrementing Counter
             Counters.incrementCollectorSubscriptions();
-            showCounters();
 
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     con.getInputStream()));
@@ -482,7 +480,7 @@ public class FrameWorkFunctions extends ResourceValues {
         logger.debug("Entered send_notificaiton_to_NF()");
 
         Counters.incrementSubscriptionNotifications();
-        showCounters();
+
 
         URL url = null;
         try {
@@ -554,55 +552,7 @@ public class FrameWorkFunctions extends ResourceValues {
 
 
 
-    /**
-     * @desc this function holds details of counters
-     */
-    protected void showCounters() {
 
-        logger.debug("Enter showCounters()");
-
-        logger.info("> # Event_Subscriptions: " + Counters.getSubscriptions());
-        logger.info("> # Event_UnSubscriptions: " + Counters.getUnSubscriptions());
-        logger.info("> # Event_SubscriptionUpdates: " + Counters.getSubscriptionUpdates());
-        logger.info("> # Event_SubscriptionNotifications: " + Counters.getSubscriptionNotifications());
-
-        logger.info("> # Collector_Subscriptions: " + Counters.getCollectorSubscriptions());
-        logger.info("> # Collector_SubscriptionNotifications: " + Counters.getCollectorSubscriptionNotifications());
-        logger.info("> # Collector_AnalyticsSubscriptions: " + Counters.getAnalyticsSubscriptions());
-        logger.info("> # Collector_AnalyticsNotifications: " + Counters.getAnalyticsNotifications());
-
-        logger.debug("Exit showCounters()");
-    }
-
-
-
-    protected boolean testConnection() {
-
-        try {
-            URL url = new URL(testConnect_URI);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
-            con.setRequestProperty("Accept", "application/json");
-
-            if (con.getResponseCode() != HttpStatus.ACCEPTED.value()) {
-
-                if(con != null)
-                { con.disconnect(); }
-
-                return false;
-            }
-
-            if(con != null)
-            { con.disconnect(); }
-
-        } catch (Exception ex) {
-            return false;
-        }
-
-        return true;
-    }
 
 
 
@@ -663,5 +613,38 @@ public class FrameWorkFunctions extends ResourceValues {
         { con.disconnect(); }
 
     }
+
+
+
+
+
+    protected boolean testConnection() {
+
+        try {
+            URL url = new URL(testConnect_URI);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Accept", "application/json");
+
+            if (con.getResponseCode() != HttpStatus.ACCEPTED.value()) {
+
+                if(con != null)
+                { con.disconnect(); }
+
+                return false;
+            }
+
+            if(con != null)
+            { con.disconnect(); }
+
+        } catch (Exception ex) {
+            return false;
+        }
+
+        return true;
+    }
+
 
 }

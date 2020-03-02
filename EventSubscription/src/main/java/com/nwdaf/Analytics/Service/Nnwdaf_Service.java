@@ -7,6 +7,8 @@ import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator;
+import com.nwdaf.Analytics.Service.Validator.UpdateValidator;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -33,14 +35,21 @@ import java.util.*;
 
 
 @Service
-public class Nnwdaf_Service extends FrameWorkFunctions {
+public class Nnwdaf_Service extends BusinessLogic {
 
 
     @Autowired
     Nnwdaf_Repository repository;
 
-    //@Autowired
-    //BuildProperties buildProperties;
+    @Autowired
+    BuildProperties buildProperties;
+
+
+    FrameWorkFunction frameWorkFunction;
+
+
+    public Nnwdaf_Service()
+    { frameWorkFunction = new FrameWorkFunction(); }
 
 
     private static final Logger logger = LoggerFactory.getLogger(Nnwdaf_Service.class);
@@ -90,7 +99,7 @@ public class Nnwdaf_Service extends FrameWorkFunctions {
 
         NnwdafEventsSubscription checkSubscription = nnwdafEventsSubscription;
 
-        if((checkSubscription = Validator.check(checkSubscription)) == null)
+        if((checkSubscription = SubscriptionValidator.check(checkSubscription)) == null)
         { return new ResponseEntity<MissingData>(new MissingData(nnwdafEventsSubscription), HttpStatus.NOT_ACCEPTABLE); }
 
         nnwdafEventsSubscription = checkSubscription;
@@ -112,7 +121,7 @@ public class Nnwdaf_Service extends FrameWorkFunctions {
 
         // Incrementing Subscription Counter
         Counters.incrementSubscriptions();
-        showCounters();
+
 
         // adding values into subscriptionData
         add_values_into_subscriptionData(subscriptionID, nnwdafEventsSubscription.getSnssais(),
@@ -168,12 +177,20 @@ public class Nnwdaf_Service extends FrameWorkFunctions {
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
         }
 
+        NnwdafEventsSubscription checkSubscription = nnwdafEventsSubscription;
+        Integer loadLevelThreshold = repository.getLoadLevelThreshold(subscriptionID);
+
+        if((checkSubscription = UpdateValidator.check(checkSubscription, nwdafSubscriptionTableModel, loadLevelThreshold)) == null)
+        { return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(HttpStatus.NOT_ACCEPTABLE, "Missing Values For Updating Subscription"), HttpStatus.NOT_ACCEPTABLE); }
+
+        nnwdafEventsSubscription = checkSubscription;
+
         // Updating user via subscriptionID
         repository.updateNF(nnwdafEventsSubscription, subscriptionID);
 
         // Incrementing update counter
         Counters.incrementSubscriptionUpdates();
-        showCounters();
+
 
         logger.debug("Exit update_nf_subscription()");
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.OK);
@@ -185,7 +202,7 @@ public class Nnwdaf_Service extends FrameWorkFunctions {
     public ResponseEntity<?> unsubscription_nf(String subscriptionID) throws Exception {
 
         Counters.incrementUnSubscriptions();
-        showCounters();
+
 
         logger.debug("Entered UnsubscribeNf()");
         SubscriptionTable sub = repository.findById_subscriptionID(subscriptionID);
@@ -207,8 +224,8 @@ public class Nnwdaf_Service extends FrameWorkFunctions {
 
         if (0 == repository.unsubscribeNF(subscriptionID)) {
 
-            repository.RemoveNwDafSubscriptionEntry(snssais);
             unsubscribeFromNWDAF(snssais);
+            repository.RemoveNwDafSubscriptionEntry(snssais);
         }
 
 
@@ -272,7 +289,7 @@ public class Nnwdaf_Service extends FrameWorkFunctions {
 
         // incrementing notification Counter
         Counters.incrementCollectorSubscriptionNotifications();
-        showCounters();
+
     }
 
 
@@ -281,22 +298,7 @@ public class Nnwdaf_Service extends FrameWorkFunctions {
 
     public HashMap<String, BigInteger> nwdaf_counters() throws Exception {
 
-        logger.debug("Entered nwdaf_counters()");
-
-        HashMap<String, BigInteger> map = new HashMap<String, BigInteger>();
-
-        map.put("Event_Subscriptions", Counters.getSubscriptions());
-        map.put("Event_UnSubscriptions", Counters.getUnSubscriptions());
-        map.put("Event_SubscriptionUpdates", Counters.getSubscriptionUpdates());
-        map.put("Event_SubscriptionNotifications", Counters.getSubscriptionNotifications());
-
-        map.put("Collector_Subscriptions", Counters.getCollectorSubscriptions());
-        map.put("Collector_SubscriptionNotifications", Counters.getCollectorSubscriptionNotifications());
-        map.put("Collector_AnalyticsSubscriptions", Counters.getAnalyticsSubscriptions());
-        map.put("Collector_AnalyticsNotifications", Counters.getAnalyticsNotifications());
-
-        logger.debug("Exit nwdaf_counters()");
-        return map;
+        return frameWorkFunction.getStats();
     }
 
 
@@ -305,7 +307,7 @@ public class Nnwdaf_Service extends FrameWorkFunctions {
 
         logger.debug("Enter resetCounters()");
 
-        Counters.reset();
+        frameWorkFunction.restCounters();
 
         logger.debug("Exit resetCounters()");
         return "Counters set to 0.";
@@ -314,7 +316,18 @@ public class Nnwdaf_Service extends FrameWorkFunctions {
 
 
 
-   /* public Object check_api_details() throws IOException {
+
+
+
+
+
+    /************************************************************************************************************************/
+
+
+
+    // API info details via Swagger
+    // Adding Swagger Configurations
+    public Object check_api_details() throws IOException {
 
         APIBuildInformation apiBuildInformation = new APIBuildInformation();
 
@@ -329,8 +342,6 @@ public class Nnwdaf_Service extends FrameWorkFunctions {
     }
 
 
-
-    // Adding Swagger Configurations
     @Bean
     public Docket swaggerConfiguration() throws IOException {
 
@@ -354,14 +365,6 @@ public class Nnwdaf_Service extends FrameWorkFunctions {
                 "API License",
                 "https://truminds.com/home",
                 Collections.emptyList());
-    }*/
-
-
-
-
-
-    /************************************************************************************************************************/
-
-
+    }
 
 }

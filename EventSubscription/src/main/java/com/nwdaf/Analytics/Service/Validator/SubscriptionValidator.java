@@ -1,10 +1,10 @@
-package com.nwdaf.Analytics.Service;
+package com.nwdaf.Analytics.Service.Validator;
 
 import com.nwdaf.Analytics.Model.CustomData.NotificationMethod;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 
 
-public class Validator {
+public class SubscriptionValidator {
 
 
     public static NnwdafEventsSubscription check(NnwdafEventsSubscription subscription)

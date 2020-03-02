@@ -207,12 +207,12 @@ public class Nnwdaf_Controller {
 
 
 
-  /*  @RequestMapping(method = RequestMethod.GET, value = "/apiInfo")
+    @RequestMapping(method = RequestMethod.GET, value = "/apiInfo")
     public Object check_api_details() throws IOException {
 
         return nwdaf_service.check_api_details();
 
-    }*/
+    }
 
 
 

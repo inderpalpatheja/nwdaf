@@ -46,7 +46,6 @@ public class Counters {
 
 
 
-
     static private BigInteger collectorSubscriptions = BigInteger.ZERO;
     static private BigInteger collectorSubscriptionNotifications = BigInteger.ZERO;
     static private BigInteger analyticsSubscriptions = BigInteger.ZERO;
@@ -89,7 +88,6 @@ public class Counters {
 
     public static void reset()
     {
-
         subscriptions = BigInteger.ZERO;
         unSubscriptions = BigInteger.ZERO;
         subscriptionUpdates = BigInteger.ZERO;
