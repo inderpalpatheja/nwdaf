@@ -66,11 +66,11 @@ public class AmfApplication extends Functionality {
             amfApplication.test(subList);
             //  System.out.println("Main correaltionList - " + amfController.getCorrelationIDList().size());
 
-          /*  for (int i = 0; i < amfController.getCorrelationIDList().size(); i++) {
+            for (int i = 0; i < amfController.getCorrelationIDList().size(); i++) {
                 amfController.sendData("http://localhost:8081/Nnrf_NFManagement_NFStatusNotify",
                         amfController.getCorrelationIDList().get(i));
                 // amfApplication.unsubscribe(subIDList.get(i));
-            }*/
+            }
 
         }
 
