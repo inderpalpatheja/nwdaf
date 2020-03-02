@@ -45,12 +45,6 @@ public class Nnwdaf_Service extends BusinessLogic {
     BuildProperties buildProperties;
 
 
-    FrameWorkFunction frameWorkFunction;
-
-
-    public Nnwdaf_Service()
-    { frameWorkFunction = new FrameWorkFunction(); }
-
 
     private static final Logger logger = LoggerFactory.getLogger(Nnwdaf_Service.class);
 
@@ -111,7 +105,7 @@ public class Nnwdaf_Service extends BusinessLogic {
                 " repetitionPeriod:  " + nnwdafEventsSubscription.getRepetitionPeriod() + "\n" + " loadLevelThreshold: " + nnwdafEventsSubscription.getLoadLevelThreshold());
 
         // Random generating SubscriptionID
-        UUID subscriptionID = UUID.randomUUID();
+        UUID subscriptionID = FrameWorkFunction.getUniqueID();
 
         // setting subscription ID
         nnwdafEventsSubscription.setSubscriptionID(String.valueOf(subscriptionID));
@@ -298,7 +292,7 @@ public class Nnwdaf_Service extends BusinessLogic {
 
     public HashMap<String, BigInteger> nwdaf_counters() throws Exception {
 
-        return frameWorkFunction.getStats();
+        return FrameWorkFunction.getStats();
     }
 
 
@@ -307,7 +301,7 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         logger.debug("Enter resetCounters()");
 
-        frameWorkFunction.restCounters();
+        FrameWorkFunction.restCounters();
 
         logger.debug("Exit resetCounters()");
         return "Counters set to 0.";

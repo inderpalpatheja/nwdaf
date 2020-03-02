@@ -45,7 +45,6 @@ public class BusinessLogic extends ResourceValues {
 
 
 
-
     /**
      * @param nnwdafEventsSubscription
      * @throws IOException
@@ -141,7 +140,7 @@ public class BusinessLogic extends ResourceValues {
         if (snssais_object == null) {
 
             // Generating CorrelationID
-            UUID correlationID = UUID.randomUUID();
+            UUID correlationID = FrameWorkFunction.getUniqueID();
 
             Nnrf_Model nnrfModel = new Nnrf_Model();
 

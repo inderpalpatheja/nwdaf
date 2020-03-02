@@ -1,33 +1,22 @@
 package com.nwdaf.Analytics.Service;
 
-import com.nwdaf.Analytics.Model.APIBuildInformation;
-import com.nwdaf.Analytics.Model.MetaData.Counters;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.info.BuildProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpStatus;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
 
-import java.io.IOException;
+import com.nwdaf.Analytics.Model.MetaData.Counters;
+
 import java.math.BigInteger;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.UUID;
 
 
 public class FrameWorkFunction {
 
 
 
-    private HashMap<String, BigInteger> counterStats = new HashMap<String, BigInteger>();
+    private static HashMap<String, BigInteger> counterStats = new HashMap<String, BigInteger>();
 
 
     //Returns Counter Statistics
-    public HashMap<String, BigInteger> getStats()
+    public static HashMap<String, BigInteger> getStats()
     {
         counterStats.put("Event_Subscriptions", Counters.getSubscriptions());
         counterStats.put("Event_UnSubscriptions", Counters.getUnSubscriptions());
@@ -45,13 +34,14 @@ public class FrameWorkFunction {
 
 
     // Reset Counters
-    public void restCounters() {
+    public static void restCounters() {
         Counters.reset();
     }
 
 
-
-
+    // Returns Unique generated ID
+    public static UUID getUniqueID()
+    { return UUID.randomUUID(); }
 
 
 }
