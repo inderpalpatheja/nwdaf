@@ -40,12 +40,7 @@ public class BusinessLogic extends ResourceValues {
 
     private static final Logger logger = LoggerFactory.getLogger(BusinessLogic.class);
 
-    Set<String> subID_SET = new HashSet<String>();
-    public int subThValue = 0;
-    public int currentLoadLevel = 0;
-
-
-
+    
 
     /**
      * @param nnwdafEventsSubscription
