@@ -6,10 +6,13 @@ import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.Nnrf.Nnrf_Model;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.Model.NotificationData;
 import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelInformation;
 import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelSubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
+import org.graalvm.compiler.core.common.type.ArithmeticOpTable;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -363,7 +366,7 @@ public class BusinessLogic extends ResourceValues {
      * @throws IOException
      * @desc this function manages notifications for subscribers
      */
-    protected void nwdaf_notification_manager() throws IOException, JSONException {
+   /* protected void nwdaf_notification_manager() throws IOException, JSONException {
 
         logger.debug("Entered nwdaf_notification_manager()");
 
@@ -409,7 +412,7 @@ public class BusinessLogic extends ResourceValues {
                        Then we do not have to send the notification again.
                         */
 
-                    if (!(subID_SET.contains(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()))) {
+               /*     if (!(subID_SET.contains(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()))) {
                         subID_SET.add(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
 
                         if (subscriptionList.get(indexOfSubscriptionList).getSubscriptionID() == null) {
@@ -442,7 +445,7 @@ public class BusinessLogic extends ResourceValues {
 
         }
 
-    }
+    } */
 
 
     /**
@@ -643,6 +646,43 @@ public class BusinessLogic extends ResourceValues {
         }
 
         return true;
+    }
+
+
+
+    // Updated nwdaf_notification_manager 3rd March, 2020
+    protected void nwdaf_notification_manager() throws IOException, JSONException {
+
+        logger.debug("Entered nwdaf_notification_manager()");
+
+        // Fetching all snssais list
+        List<SliceLoadLevelInformation> list = repository.getALLsnssais();
+
+        if (repository.getALLsnssais() == null) {
+            logger.warn("no snssais Found [ Null object ]");
+        }
+
+        for(SliceLoadLevelInformation slice: list)
+        {
+            List<NotificationData> dataSet = repository.getAllNotificationData(slice.getSnssais(), slice.getCurrentLoadLevel());
+
+            if(dataSet != null)
+            {
+                for(NotificationData notifyData: dataSet)
+                {
+                    /*if(!subID_SET.contains(notifyData.getSubscriptionID()))
+                    {
+                        subID_SET.add(notifyData.getSubscriptionID());
+
+                        SubscriptionTable subscriptionData = repository.findById_subscriptionID(notifyData.getSubscriptionID());
+                        send_notificaiton_to_NF(subscriptionData.getNotificationURI(), EventID.values()[subscriptionData.getEventID()].toString(), slice.getSnssais(), slice.getCurrentLoadLevel(), subscriptionData.getSubscriptionID());
+                    } */
+
+                    SubscriptionTable subscriptionData = repository.findById_subscriptionID(notifyData.getSubscriptionID());
+                    send_notificaiton_to_NF(subscriptionData.getNotificationURI(), EventID.values()[subscriptionData.getEventID()].toString(), slice.getSnssais(), slice.getCurrentLoadLevel(), subscriptionData.getSubscriptionID());
+                }
+            }
+        }
     }
 
 

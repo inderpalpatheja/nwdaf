@@ -1,6 +1,7 @@
 package com.nwdaf.Analytics.Repository;
 
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.Model.NotificationData;
 import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelInformation;
 import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelSubscriptionTable;
@@ -525,5 +526,45 @@ public class Nnwdaf_Repository {
          }
     }
 
+
+
+
+
+
+
+    /****************************************************************************************************************/
+
+
+
+    public List<NotificationData> getAllNotificationData(String snssais, Integer currentLoadLevel)
+    {
+        String query = "SELECT subscriptionID, loadLevelThreshold FROM nwdafSliceLoadLevelSubscriptionData WHERE snssais = '" + snssais + "' AND loadLevelThreshold < " + currentLoadLevel + ";";
+
+        try
+        { return jdbcTemplate.query(query, new NotificationDataMapper()); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+
+    }
+
+
+    public Integer getMinLoadLevel(String snssais)
+    {
+        String query = "SELECT MIN(loadLevelThreshold) FROM nwdafSliceLoadLevelSubscriptionData WHERE snssais = '" + snssais + "';";
+
+        try
+        {
+            return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
+                @Override
+                public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getInt("MIN(loadLevelThreshold)");
+                }
+            });
+        }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
 
 }
