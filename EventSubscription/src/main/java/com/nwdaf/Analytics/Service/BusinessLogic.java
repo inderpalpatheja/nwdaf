@@ -12,7 +12,6 @@ import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
-import org.graalvm.compiler.core.common.type.ArithmeticOpTable;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
