@@ -5,9 +5,12 @@ import com.nwdaf.Analytics.Controller.ConnectionCheck.MissingData;
 import com.nwdaf.Analytics.Model.APIBuildInformation;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.Model.RawData;
 import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
+import com.nwdaf.Analytics.Service.Validator.InvalidType;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator;
+import com.nwdaf.Analytics.Service.Validator.TypeChecker;
 import com.nwdaf.Analytics.Service.Validator.UpdateValidator;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -83,20 +86,32 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
 
-    public Object nwdaf_subscription(NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
+    public Object nwdaf_subscription(RawData rawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
         //Test Simulator Connection
         if (!testConnection()) {
             return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(), HttpStatus.NOT_FOUND);
         }
 
+        NnwdafEventsSubscription nnwdafEventsSubscription;
+        Object checkForData;
 
-        NnwdafEventsSubscription checkSubscription = nnwdafEventsSubscription;
 
-        if((checkSubscription = SubscriptionValidator.check(checkSubscription)) == null)
-        { return new ResponseEntity<MissingData>(new MissingData(nnwdafEventsSubscription), HttpStatus.NOT_ACCEPTABLE); }
+        // Check for DataType
+        if((checkForData = TypeChecker.checkForSubscription(rawData)) instanceof NnwdafEventsSubscription)
+        { nnwdafEventsSubscription = (NnwdafEventsSubscription)checkForData; }
 
-        nnwdafEventsSubscription = checkSubscription;
+        else
+        { return new ResponseEntity<InvalidType>((InvalidType)checkForData, HttpStatus.NOT_ACCEPTABLE); }
+
+
+        //Check for Validity
+        Object checkSubscription;
+
+        if((checkSubscription = SubscriptionValidator.check(nnwdafEventsSubscription, rawData)) instanceof MissingData)
+        { return new ResponseEntity<MissingData>((MissingData)checkSubscription, HttpStatus.NOT_ACCEPTABLE); }
+
+        nnwdafEventsSubscription = (NnwdafEventsSubscription)checkSubscription;
 
 
         logger.debug("Enter nwdaf_subscription");

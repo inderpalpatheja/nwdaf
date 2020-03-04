@@ -3,6 +3,7 @@ package com.nwdaf.Analytics.Service.Validator;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
 
+
 public class UpdateValidator {
 
     public static NnwdafEventsSubscription check(NnwdafEventsSubscription subscription, SubscriptionTable subEntry, Integer loadLevelThreshold)
