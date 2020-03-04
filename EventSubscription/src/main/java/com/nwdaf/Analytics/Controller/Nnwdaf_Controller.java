@@ -3,6 +3,7 @@ package com.nwdaf.Analytics.Controller;
 
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.Model.RawData;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
 import io.swagger.annotations.ApiOperation;
 import org.json.JSONException;
@@ -72,7 +73,7 @@ public class Nnwdaf_Controller {
     }
 
 
-    /**
+  /*  /**
      * @param nnwdafEventsSubscription
      * @return
      * @throws SQLIntegrityConstraintViolationException
@@ -83,10 +84,10 @@ public class Nnwdaf_Controller {
      */
     @PostMapping(PATH + "/subscriptions")
     @ApiOperation(value = OperationInfo.SUBSCRIBE_INFO, notes = OperationInfo.SUBSCRIBE_NOTES, response = Object.class)
-    public Object nwdaf_subscription(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
+    public Object nwdaf_subscription(@RequestBody RawData rawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_subscription(nnwdafEventsSubscription);
+        return nwdaf_service.nwdaf_subscription(rawData);
     }
 
 

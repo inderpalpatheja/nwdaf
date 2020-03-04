@@ -1,24 +1,22 @@
-package com.nwdaf.Analytics.Controller.ConnectionCheck;
+package com.nwdaf.Analytics.Service.Validator;
 
-import com.nwdaf.Analytics.Model.RawData;
 import org.springframework.http.HttpStatus;
 
-public class MissingData {
+public class InvalidType {
 
     String code;
     String message;
-    RawData values;
+    Object values;
     int error_count;
 
 
-    public MissingData(RawData values, int error_count)
+    public InvalidType(Object rawData, int error_count)
     {
-        code = String.valueOf(HttpStatus.valueOf(HttpStatus.NOT_ACCEPTABLE.value()));
-        message = "Missing Values";
-        this.values = values;
+        this.code = String.valueOf(HttpStatus.valueOf(HttpStatus.NOT_ACCEPTABLE.value()));
+        this.message = "Invalid DataType";
+        this.values = rawData;
         this.error_count = error_count;
     }
-
 
     public String getCode() {
         return code;
@@ -36,12 +34,11 @@ public class MissingData {
         this.message = message;
     }
 
-
-    public RawData getValues() {
+    public Object getValues() {
         return values;
     }
 
-    public void setValues(RawData values) {
+    public void setValues(Object values) {
         this.values = values;
     }
 

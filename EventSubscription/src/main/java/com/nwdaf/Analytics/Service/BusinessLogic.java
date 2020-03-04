@@ -60,7 +60,7 @@ public class BusinessLogic extends ResourceValues {
         if (getAnalytics) {
 
             List<EventConnection> snssaisDataList = repository.checkForData(nnwdafEventsSubscription.getSnssais(),
-                    nnwdafEventsSubscription.isAnySlice());
+                    nnwdafEventsSubscription.getAnySlice());
 
             // if data is not found -> calling collector function to collect data
             if (snssaisDataList.isEmpty()) {

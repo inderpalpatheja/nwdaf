@@ -6,31 +6,30 @@ import com.nwdaf.Analytics.Model.CustomData.NotificationMethod;
 
 public class NnwdafEventsSubscription {
 
-    UUID subscriptionID;
-    EventID eventID;
+    String subscriptionID;
+    Integer eventID;
     String notificationURI;
     String snssais;
-    NotificationMethod notifMethod;
+    Integer notifMethod;
     Integer repetitionPeriod;
     Integer loadLevelThreshold;
     Boolean anySlice;
 
 
-
     public String getSubscriptionID() {
-        return String.valueOf(subscriptionID);
+        return subscriptionID;
     }
 
     public void setSubscriptionID(String subscriptionID) {
-        this.subscriptionID = UUID.fromString(subscriptionID);
+        this.subscriptionID = subscriptionID;
     }
 
     public Integer getEventID() {
-        return this.eventID != null ? this.eventID.ordinal() : null;
+        return eventID;
     }
 
-    public void setEventID(Integer ID) {
-        this.eventID = (ID != null) ? EventID.values()[ID] : null;
+    public void setEventID(Integer eventID) {
+        this.eventID = eventID;
     }
 
     public String getNotificationURI() {
@@ -50,11 +49,11 @@ public class NnwdafEventsSubscription {
     }
 
     public Integer getNotifMethod() {
-        return notifMethod != null ? notifMethod.ordinal() : null;
+        return notifMethod;
     }
 
-    public void setNotifMethod(Integer method_no) {
-        this.notifMethod = (method_no != null) ? NotificationMethod.values()[method_no] : null;
+    public void setNotifMethod(Integer notifMethod) {
+        this.notifMethod = notifMethod;
     }
 
     public Integer getRepetitionPeriod() {
@@ -73,12 +72,11 @@ public class NnwdafEventsSubscription {
         this.loadLevelThreshold = loadLevelThreshold;
     }
 
-    public Boolean isAnySlice() {
+    public Boolean getAnySlice() {
         return anySlice;
     }
 
     public void setAnySlice(Boolean anySlice) {
         this.anySlice = anySlice;
     }
-
 }
