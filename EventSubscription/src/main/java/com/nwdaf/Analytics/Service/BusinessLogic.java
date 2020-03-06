@@ -55,7 +55,8 @@ public class BusinessLogic extends ResourceValues {
      */
     protected Object check_For_data(NnwdafEventsSubscription nnwdafEventsSubscription, boolean getAnalytics) throws IOException, JSONException {
 
-        logger.debug("Enter check_For_data()");
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         if (getAnalytics) {
 
@@ -119,7 +120,7 @@ public class BusinessLogic extends ResourceValues {
             }
         }
 
-        logger.debug("Exit check_For_data()");
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return null;
     }
 
@@ -135,7 +136,8 @@ public class BusinessLogic extends ResourceValues {
      */
     protected Object nwdaf_data_collector(NnwdafEventsSubscription nnwdafEventsSubscription, boolean getAnalytics) throws IOException, JSONException {
 
-        logger.debug("Entered Collector Function");
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         Object snssais_object = repository.findby_snssais(nnwdafEventsSubscription.getSnssais());
 
@@ -181,7 +183,7 @@ public class BusinessLogic extends ResourceValues {
                 return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(), HttpStatus.NOT_FOUND);
             }
 
-            logger.debug("Exit Collector Function");
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
             return correlationID;
         } else {
             repository.increment_ref_count(nnwdafEventsSubscription.getSnssais());
@@ -205,7 +207,8 @@ public class BusinessLogic extends ResourceValues {
                                     int responseCode, UUID correlationID,
                                     HttpURLConnection con, boolean getAnalytics) throws IOException {
 
-        logger.debug("Enter response_handler()");
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
             // incrementing Counter
@@ -261,6 +264,8 @@ public class BusinessLogic extends ResourceValues {
 
             logger.error(" POST request not worked");
         }
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
 
 
@@ -277,7 +282,9 @@ public class BusinessLogic extends ResourceValues {
     protected void add_values_into_subscriptionData(UUID subscriptionID, String snssais, int loadLevelThreshold) {
 
 
-        logger.debug("enter add_values_into_subscriptionData");
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
         SliceLoadLevelSubscriptionData nwdafSliceLoadLevelSubscriptionDataModel = new
                 SliceLoadLevelSubscriptionData();
 
@@ -288,8 +295,9 @@ public class BusinessLogic extends ResourceValues {
 
         // Adding nwdafSliceLoadLevelSubscriptionDatamodel into NwdafSliceLoadLevelSubscriptionData Table [ Database ]
         repository.addDataIntoNwdafSliceLoadLevelSubscriptionDataTable(nwdafSliceLoadLevelSubscriptionDataModel);
-        logger.debug("enter add_values_into_subscriptionData");
+        //logger.debug("enter add_values_into_subscriptionData");
 
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
 
     /**
@@ -300,14 +308,15 @@ public class BusinessLogic extends ResourceValues {
      */
     protected HttpHeaders send_response_header_to_NF(UUID subscriptionID) throws URISyntaxException {
 
-        logger.debug("enter send_response_header_to_NF ");
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         URI location = new URI(URI + "subscriptions/" + String.valueOf(subscriptionID));
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setLocation(location);
 
 
-        logger.debug("Exit enter send_response_header_to_NF  ");
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return responseHeaders;
     }
 
@@ -455,7 +464,8 @@ public class BusinessLogic extends ResourceValues {
     //Fetching all subscriptionID of particular snssais
     protected List<SliceLoadLevelSubscriptionData> fetch_all_subscitpionID(String snssais) {
 
-        logger.debug("Enter fetch_all_subscitpionID");
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         List<SliceLoadLevelSubscriptionData> subscriptionIDList = repository.getAllSubIdsbysnssais(snssais);
 
@@ -463,7 +473,7 @@ public class BusinessLogic extends ResourceValues {
             logger.warn("No subscriber found");
         }
 
-        logger.debug("Exit fetch_all_subscitpionID");
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return subscriptionIDList;
     }
 
@@ -478,7 +488,8 @@ public class BusinessLogic extends ResourceValues {
                                            int currentLoadLevel,
                                            String subscriptionID) throws IOException, JSONException {
 
-        logger.debug("Entered send_notificaiton_to_NF()");
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         Counters.incrementSubscriptionNotifications();
 
@@ -545,6 +556,8 @@ public class BusinessLogic extends ResourceValues {
 
         finally
         { con.disconnect(); }
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
 
 
@@ -652,7 +665,8 @@ public class BusinessLogic extends ResourceValues {
     // Updated nwdaf_notification_manager 3rd March, 2020
     protected void nwdaf_notification_manager() throws IOException, JSONException {
 
-        logger.debug("Entered nwdaf_notification_manager()");
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         // Fetching all snssais list
         List<SliceLoadLevelInformation> list = repository.getALLsnssais();
@@ -682,6 +696,8 @@ public class BusinessLogic extends ResourceValues {
                 }
             }
         }
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
 
 
