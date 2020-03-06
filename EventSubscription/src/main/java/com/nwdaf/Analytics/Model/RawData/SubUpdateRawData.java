@@ -1,17 +1,11 @@
-package com.nwdaf.Analytics.Model;
+package com.nwdaf.Analytics.Model.RawData;
 
-
-
-public class RawData {
+public class SubUpdateRawData {
 
     Object eventID;
-    Object notificationURI;
-    Object snssais;
     Object notifMethod;
     Object repetitionPeriod;
     Object loadLevelThreshold;
-    Object anySlice;
-
 
 
     public Object getEventID() {
@@ -20,22 +14,6 @@ public class RawData {
 
     public void setEventID(Object eventID) {
         this.eventID = eventID;
-    }
-
-    public Object getNotificationURI() {
-        return notificationURI;
-    }
-
-    public void setNotificationURI(Object notificationURI) {
-        this.notificationURI = notificationURI;
-    }
-
-    public Object getSnssais() {
-        return snssais;
-    }
-
-    public void setSnssais(Object snssais) {
-        this.snssais = snssais;
     }
 
     public Object getNotifMethod() {
@@ -60,13 +38,5 @@ public class RawData {
 
     public void setLoadLevelThreshold(Object loadLevelThreshold) {
         this.loadLevelThreshold = loadLevelThreshold;
-    }
-
-    public Object getAnySlice() {
-        return anySlice;
-    }
-
-    public void setAnySlice(Object anySlice) {
-        this.anySlice = anySlice;
     }
 }

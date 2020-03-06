@@ -5,7 +5,8 @@ import com.nwdaf.Analytics.Controller.ConnectionCheck.MissingData;
 import com.nwdaf.Analytics.Model.APIBuildInformation;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
-import com.nwdaf.Analytics.Model.RawData;
+import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
+import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
 import com.nwdaf.Analytics.Service.Validator.InvalidType;
@@ -86,7 +87,7 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
 
-    public Object nwdaf_subscription(RawData rawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
+    public Object nwdaf_subscription(SubscriptionRawData subscriptionRawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
         //Test Simulator Connection
         if (!testConnection()) {
@@ -98,7 +99,7 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
         // Check for DataType
-        if((checkForData = TypeChecker.checkForSubscription(rawData)) instanceof NnwdafEventsSubscription)
+        if((checkForData = TypeChecker.checkForSubscription(subscriptionRawData)) instanceof NnwdafEventsSubscription)
         { nnwdafEventsSubscription = (NnwdafEventsSubscription)checkForData; }
 
         else
@@ -108,7 +109,7 @@ public class Nnwdaf_Service extends BusinessLogic {
         //Check for Validity
         Object checkSubscription;
 
-        if((checkSubscription = SubscriptionValidator.check(nnwdafEventsSubscription, rawData)) instanceof MissingData)
+        if((checkSubscription = SubscriptionValidator.check(nnwdafEventsSubscription, subscriptionRawData)) instanceof MissingData)
         { return new ResponseEntity<MissingData>((MissingData)checkSubscription, HttpStatus.NOT_ACCEPTABLE); }
 
         nnwdafEventsSubscription = (NnwdafEventsSubscription)checkSubscription;
@@ -171,13 +172,12 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
 
-    public ResponseEntity<?> update_nf_subscription(String subscriptionID, NnwdafEventsSubscription nnwdafEventsSubscription) {
+    public ResponseEntity<?> update_nf_subscription(String subscriptionID, SubUpdateRawData updateData) {
 
-        logger.info("subscriptionID:  " + nnwdafEventsSubscription.getSubscriptionID() + "\n" +
-                "eventID:  " + nnwdafEventsSubscription.getEventID() + "\n" +
-                "notificationURI:  " + nnwdafEventsSubscription.getNotificationURI() + "\n" +
-                "notifMethod:  " + nnwdafEventsSubscription.getNotifMethod() + "\n" +
-                "repetitionPeriod:  " + nnwdafEventsSubscription.getRepetitionPeriod());
+        logger.info("subscriptionID:  " + subscriptionID + "\n" +
+                "eventID:  " + updateData.getEventID() + "\n" +
+                "notifMethod:  " + updateData.getNotifMethod() + "\n" +
+                "repetitionPeriod:  " + updateData.getRepetitionPeriod());
 
         SubscriptionTable nwdafSubscriptionTableModel = repository.findById_subscriptionID(subscriptionID);
 
@@ -186,13 +186,23 @@ public class Nnwdaf_Service extends BusinessLogic {
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
         }
 
-        NnwdafEventsSubscription checkSubscription = nnwdafEventsSubscription;
+        NnwdafEventsSubscription nnwdafEventsSubscription;
+        Object checkForData;
+
+
+        if((checkForData = TypeChecker.checkForUpdateSub(updateData)) instanceof NnwdafEventsSubscription)
+        { nnwdafEventsSubscription = (NnwdafEventsSubscription)checkForData; }
+
+        else
+        { return new ResponseEntity<InvalidType>((InvalidType)checkForData, HttpStatus.NOT_ACCEPTABLE); }
+
+
         Integer loadLevelThreshold = repository.getLoadLevelThreshold(subscriptionID);
 
-        if((checkSubscription = UpdateValidator.check(checkSubscription, nwdafSubscriptionTableModel, loadLevelThreshold)) == null)
-        { return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(HttpStatus.NOT_ACCEPTABLE, "Missing Values For Updating Subscription"), HttpStatus.NOT_ACCEPTABLE); }
+        if((checkForData = UpdateValidator.check(nnwdafEventsSubscription, updateData, nwdafSubscriptionTableModel, loadLevelThreshold)) instanceof MissingData)
+        { return new ResponseEntity<MissingData>((MissingData)checkForData, HttpStatus.NOT_ACCEPTABLE); }
 
-        nnwdafEventsSubscription = checkSubscription;
+        nnwdafEventsSubscription = (NnwdafEventsSubscription)checkForData;
 
         // Updating user via subscriptionID
         repository.updateNF(nnwdafEventsSubscription, subscriptionID);

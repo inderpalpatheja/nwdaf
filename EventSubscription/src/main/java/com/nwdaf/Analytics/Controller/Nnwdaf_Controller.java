@@ -3,7 +3,8 @@ package com.nwdaf.Analytics.Controller;
 
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
-import com.nwdaf.Analytics.Model.RawData;
+import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
+import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
 import io.swagger.annotations.ApiOperation;
 import org.json.JSONException;
@@ -84,15 +85,16 @@ public class Nnwdaf_Controller {
      */
     @PostMapping(PATH + "/subscriptions")
     @ApiOperation(value = OperationInfo.SUBSCRIBE_INFO, notes = OperationInfo.SUBSCRIBE_NOTES, response = Object.class)
-    public Object nwdaf_subscription(@RequestBody RawData rawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
+    public Object nwdaf_subscription(@RequestBody SubscriptionRawData subscriptionRawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_subscription(rawData);
+        return nwdaf_service.nwdaf_subscription(subscriptionRawData);
     }
 
 
 
 
+    /*
     /**
      * @param subscriptionID
      * @param nnwdafEventsSubscription
@@ -101,9 +103,9 @@ public class Nnwdaf_Controller {
      */
     @PutMapping(PATH + "/subscriptions/{subscriptionID}")
     @ApiOperation(value = OperationInfo.UPDATE_SUBSCRIPTION_INFO, notes = OperationInfo.UPDATE_SUBSCRIPTION_NOTES, response = Object.class)
-    public ResponseEntity<?> update_nf_subscription(@PathVariable("subscriptionID") String subscriptionID, @RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) {
+    public ResponseEntity<?> update_nf_subscription(@PathVariable("subscriptionID") String subscriptionID, @RequestBody SubUpdateRawData updateData) {
 
-        return nwdaf_service.update_nf_subscription(subscriptionID, nnwdafEventsSubscription);
+        return nwdaf_service.update_nf_subscription(subscriptionID, updateData);
     }
 
 
