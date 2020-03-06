@@ -50,7 +50,6 @@ public class AmfApplication extends Functionality {
 
         AMFController amfController = new AMFController();
 
-
         // Reading subscriber list From file
         ApplicationPropertiesValue properties = new ApplicationPropertiesValue();
         String subcout = properties.getPropValues();
