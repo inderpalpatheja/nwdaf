@@ -13,6 +13,8 @@ public class FrameWorkFunction {
 
 
     private static HashMap<String, BigInteger> counterStats = new HashMap<String, BigInteger>();
+    public static final String ENTER = "ENTER ";
+    public static final String EXIT = "EXIT ";
 
 
     //Returns Counter Statistics

@@ -67,10 +67,8 @@ public class Nnwdaf_Service extends BusinessLogic {
 
     public Object nwdaf_analytics(String snssais, boolean anySlice, int eventID) throws IOException, JSONException {
 
-        logger.debug("Entered nwdaf_analytics");
-
-        logger.debug("Entered getAllAnalyticsInformation");
-
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
         nnwdafEventsSubscription.setSnssais(snssais);
@@ -78,7 +76,7 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         Object snssaisDataList = check_For_data(nnwdafEventsSubscription, true);
 
-        logger.debug("Exit nwdaf_analytics");
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return snssaisDataList;
     }
 
@@ -88,6 +86,9 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
     public Object nwdaf_subscription(SubscriptionRawData subscriptionRawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         //Test Simulator Connection
         if (!testConnection()) {
@@ -115,7 +116,6 @@ public class Nnwdaf_Service extends BusinessLogic {
         nnwdafEventsSubscription = (NnwdafEventsSubscription)checkSubscription;
 
 
-        logger.debug("Enter nwdaf_subscription");
         logger.info("consumer is subscribing for an event and providing these details. eventID:  " + nnwdafEventsSubscription.getEventID() + "\n" + " notificationURI:  " + nnwdafEventsSubscription.getNotificationURI() + "\n" +
                 " snssais:  " + nnwdafEventsSubscription.getSnssais() + "\n" + " notifMethod:  " + nnwdafEventsSubscription.getNotifMethod() + "\n" +
                 " repetitionPeriod:  " + nnwdafEventsSubscription.getRepetitionPeriod() + "\n" + " loadLevelThreshold: " + nnwdafEventsSubscription.getLoadLevelThreshold());
@@ -163,7 +163,7 @@ public class Nnwdaf_Service extends BusinessLogic {
         // function to send response header to NF
         HttpHeaders responseHeaders = send_response_header_to_NF(subscriptionID);
 
-        logger.debug("Exit nwdaf_subscription");
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
     }
 
@@ -173,6 +173,9 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
     public ResponseEntity<?> update_nf_subscription(String subscriptionID, SubUpdateRawData updateData) {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         logger.info("subscriptionID:  " + subscriptionID + "\n" +
                 "eventID:  " + updateData.getEventID() + "\n" +
@@ -211,7 +214,7 @@ public class Nnwdaf_Service extends BusinessLogic {
         Counters.incrementSubscriptionUpdates();
 
 
-        logger.debug("Exit update_nf_subscription()");
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.OK);
     }
 
@@ -220,10 +223,11 @@ public class Nnwdaf_Service extends BusinessLogic {
 
     public ResponseEntity<?> unsubscription_nf(String subscriptionID) throws Exception {
 
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
         Counters.incrementUnSubscriptions();
 
-
-        logger.debug("Entered UnsubscribeNf()");
         SubscriptionTable sub = repository.findById_subscriptionID(subscriptionID);
         String snssais = repository.getSnssais(subscriptionID);
         //String unsubId = repository.getUnSubCorrelationID(snssais);
@@ -248,7 +252,7 @@ public class Nnwdaf_Service extends BusinessLogic {
         }
 
 
-        logger.debug("Exit unsubscribe NF");
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
     }
 
@@ -258,14 +262,16 @@ public class Nnwdaf_Service extends BusinessLogic {
 
     public ResponseEntity<?> get_all_network_function(String id) {
 
-        logger.debug("Entered getNF()");
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
         SubscriptionTable user = repository.findById_subscriptionID(id);
 
         if (user == null) {
             logger.warn("subscriptionID= not found");
             return new ResponseEntity<SubscriptionTable>(HttpStatus.NOT_FOUND);
         }
-        logger.debug("Exit getNF()");
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return new ResponseEntity<SubscriptionTable>(user, HttpStatus.OK);
     }
 
@@ -273,10 +279,10 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
 
-    public void acceptingNotification(String response) throws Exception {
+    public void notificationHandler(String response) throws Exception {
 
-        // Here Data will be received and nwdafSliceLoadLevelInformation Table will get populated.
-        logger.debug("Entered Accepting Notification");
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         // here subID == correlationID
 
@@ -309,6 +315,7 @@ public class Nnwdaf_Service extends BusinessLogic {
         // incrementing notification Counter
         Counters.incrementCollectorSubscriptionNotifications();
 
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
 
 
@@ -324,11 +331,12 @@ public class Nnwdaf_Service extends BusinessLogic {
 
     public String nwdaf_reset_counter() {
 
-        logger.debug("Enter resetCounters()");
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         FrameWorkFunction.restCounters();
 
-        logger.debug("Exit resetCounters()");
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return "Counters set to 0.";
     }
 

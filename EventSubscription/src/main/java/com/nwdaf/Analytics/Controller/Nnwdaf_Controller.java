@@ -2,7 +2,6 @@ package com.nwdaf.Analytics.Controller;
 
 
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
-import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
@@ -32,7 +31,8 @@ public class Nnwdaf_Controller {
 
     private final Nnwdaf_Service nwdaf_service;
 
-    final String PATH = "/nnwdaf-eventssubscription/v1";
+    final String EVENT_SUB = "/nnwdaf-eventssubscription/v1";
+    final String ANALYTICS ="/apiroot/nnwdaf-analyticsinfo/v1";
 
 
     @Autowired
@@ -60,7 +60,7 @@ public class Nnwdaf_Controller {
      * @desc this will hold functions for Analytics information
      */
 
-    @GetMapping("apiroot/nnwdaf-analyticsinfo/v1/{snssais}/{anySlice}/{eventID}")
+    @GetMapping(ANALYTICS + "/{snssais}/{anySlice}/{eventID}")
     @ApiOperation(value = "Get Analytics Details By snssais or anySlice Details",
             notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
             response = Object.class)
@@ -83,7 +83,7 @@ public class Nnwdaf_Controller {
      * @throws JSONException
      * @desc this will hold functions to for event subscriptions
      */
-    @PostMapping(PATH + "/subscriptions")
+    @PostMapping(EVENT_SUB + "/subscriptions")
     @ApiOperation(value = OperationInfo.SUBSCRIBE_INFO, notes = OperationInfo.SUBSCRIBE_NOTES, response = Object.class)
     public Object nwdaf_subscription(@RequestBody SubscriptionRawData subscriptionRawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
@@ -101,7 +101,7 @@ public class Nnwdaf_Controller {
      * @return
      * @desc this function will update network function subscription
      */
-    @PutMapping(PATH + "/subscriptions/{subscriptionID}")
+    @PutMapping(EVENT_SUB + "/subscriptions/{subscriptionID}")
     @ApiOperation(value = OperationInfo.UPDATE_SUBSCRIPTION_INFO, notes = OperationInfo.UPDATE_SUBSCRIPTION_NOTES, response = Object.class)
     public ResponseEntity<?> update_nf_subscription(@PathVariable("subscriptionID") String subscriptionID, @RequestBody SubUpdateRawData updateData) {
 
@@ -116,7 +116,7 @@ public class Nnwdaf_Controller {
      * @return
      * @desc this function unsubscribe network function
      */
-    @DeleteMapping(value = PATH + "/subscriptions/{subscriptionID}")
+    @DeleteMapping(value = EVENT_SUB + "/subscriptions/{subscriptionID}")
     @ApiOperation(value = OperationInfo.UNSUBSCRICE_INFO, notes = OperationInfo.UNSUBSCRIBE_NOTES, response = Object.class)
     public ResponseEntity<?> unsubscription_nf(@PathVariable("subscriptionID") String subscriptionID) throws Exception {
 
@@ -126,7 +126,7 @@ public class Nnwdaf_Controller {
 
 
 
-    @GetMapping(PATH + "/subscriptions/{subscriptionID}")
+    @GetMapping(EVENT_SUB + "/subscriptions/{subscriptionID}")
     public ResponseEntity<?> get_all_network_function(@PathVariable("subscriptionID") String id) {
 
         return nwdaf_service.get_all_network_function(id);
@@ -139,7 +139,7 @@ public class Nnwdaf_Controller {
     @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusNotify/{correlationID}")
     public void acceptingNotification(@RequestBody String response) throws Exception {
 
-        nwdaf_service.acceptingNotification(response);
+        nwdaf_service.notificationHandler(response);
 
     }
 
