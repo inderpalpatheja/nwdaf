@@ -68,7 +68,22 @@ public class AMFController extends Functionality {
 
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
-    public ResponseEntity<String> unsubScribeFromNWDAF(@RequestBody String response) throws JSONException, IOException {
+    public ResponseEntity<String> unsubScribeFromNWDAFForSliceLoadLevel(@RequestBody String response) throws JSONException, IOException {
+
+        JSONObject jsonObject = new JSONObject(response);
+        String unSubCorrelationID = jsonObject.getString("mSubcorrelationID");
+        String correlationID = jsonObject.getString("correlationID");
+
+        correlationIDList.remove(correlationID);
+        // list.delete();
+        //     out.println("Unsubscribed from NWDAF WORKED for " + response);
+
+
+        return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
+    public ResponseEntity<String> unsubScribeFromNWDAFForUEMobility(@RequestBody String response) throws JSONException, IOException {
 
         JSONObject jsonObject = new JSONObject(response);
         String unSubCorrelationID = jsonObject.getString("mSubcorrelationID");
@@ -83,8 +98,9 @@ public class AMFController extends Functionality {
     }
 
 
+
     @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusSubscribe")
-    public ResponseEntity<String> show(@RequestBody String response) throws JSONException, IOException {
+    public ResponseEntity<String> sliceLoadLevelDataFunction(@RequestBody String response) throws JSONException, IOException {
 
         //  list.add();
 
@@ -93,28 +109,30 @@ public class AMFController extends Functionality {
         obj.setCorrelationId(json.getString("correlationID"));
         obj.setNotificationTargetAddress(json.getString("notificationTargetAddress"));
 
-
-        //   out.println("Correlation ID Received From nwdaf as JSON - " + obj.getCorrelationId());
-
         // Adding unSubCorrelationId into database;
-
         UUID unSubCorrelationId = UUID.randomUUID();
-
-        //   sendData(obj.getNotificationTargetAddress(), obj.getCorrelationId());
-
         correlationIDList.add(obj.getCorrelationId());
-        // backForCorrelationID.getCorrelationList(correlationIDList);
-
-        //   out.println("correlationList size - " + correlationIDList.size());
-
-        //String NOTIFICATOIN_URL = obj.getNotificationTargetAddress() + "/" + obj.getCorrelationId();
-
-        // out.println(NOTIFICATOIN_URL);
-
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
     }
 
+
+    @RequestMapping(method = RequestMethod.POST, value = "/Namf_Event_Exposure_Subscribe")
+    public ResponseEntity<String> UE_MobilityDataFunction(@RequestBody String response) throws JSONException, IOException {
+
+        //  list.add();
+
+        JSONObject json = new JSONObject(response);
+        Namf_EventExposure_Subscribe obj = new Namf_EventExposure_Subscribe();
+        obj.setCorrelationId(json.getString("correlationID"));
+        obj.setNotificationTargetAddress(json.getString("notificationTargetAddress"));
+
+        // Adding unSubCorrelationId into database;
+        UUID unSubCorrelationId = UUID.randomUUID();
+        correlationIDList.add(obj.getCorrelationId());
+
+        return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
+    }
 
     // @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_notify/{correlationID}")
 

@@ -2,6 +2,7 @@ package com.nwdaf.Analytics.Service;
 
 import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnection;
+import com.nwdaf.Analytics.Model.AMFModel.AMFModel;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.Nnrf.Nnrf_Model;
@@ -43,8 +44,6 @@ public class BusinessLogic extends ResourceValues {
     Set<String> subID_SET = new HashSet<String>();
     public int subThValue = 0;
     public int currentLoadLevel = 0;
-
-
 
 
     /**
@@ -105,14 +104,6 @@ public class BusinessLogic extends ResourceValues {
 
         } else {
 
-            /*
-            if (!repository.snsExists(nnwdafEventsSubscription.getSnssais())) {
-                getAnalytics = true;
-                UUID correlationID = nwdaf_data_collector(nnwdafEventsSubscription, getAnalytics);
-            } else {
-                repository.increment_ref_count(nnwdafEventsSubscription.getSnssais());
-            } */
-
             Object obj = nwdaf_data_collector(nnwdafEventsSubscription, getAnalytics);
 
             if (obj instanceof ResponseEntity) {
@@ -123,7 +114,6 @@ public class BusinessLogic extends ResourceValues {
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return null;
     }
-
 
 
     /**
@@ -143,20 +133,22 @@ public class BusinessLogic extends ResourceValues {
 
         if (snssais_object == null) {
 
+
             // Generating CorrelationID
             UUID correlationID = FrameWorkFunction.getUniqueID();
+            // if Event Id is UE-Mobility nwdaf will subscribe to AMF;
+            if (nnwdafEventsSubscription.getEventID().toString() == "UE_MOBILITY") {
+                subscribeAMFfromNWDAF(nnwdafEventsSubscription, correlationID, getAnalytics);
+            }
+
 
             Nnrf_Model nnrfModel = new Nnrf_Model();
 
             // Adding correlationID to object and send to SIMULATOR
             nnrfModel.setCorrelationId(String.valueOf(correlationID));
-
-
             // Updated URL For NWDAF to Subscribe
             // updated_POST_NRF_URL = POST_NRF_URL + "/" + correlationID;
-
             // POST_NRF_URL = NRF URL ------> [ Reading from ]application.properties
-
             try {
 
                 URL obj = new URL(POST_NRF_URL);
@@ -176,8 +168,9 @@ public class BusinessLogic extends ResourceValues {
 
                 response_handler(nnwdafEventsSubscription, responseCode, correlationID, con, getAnalytics);
 
-                if(con != null)
-                { con.disconnect(); }
+                if (con != null) {
+                    con.disconnect();
+                }
 
             } catch (Exception ex) {
                 return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(), HttpStatus.NOT_FOUND);
@@ -191,9 +184,73 @@ public class BusinessLogic extends ResourceValues {
         return null;
     }
 
+    /**
+     * Function for UEMobility Data;
+     */
+    private Object subscribeAMFfromNWDAF(NnwdafEventsSubscription nnwdafEventsSubscription,
+                                         UUID correlationID, boolean getAnalytics) {
+        try {
+
+            URL obj = new URL(POST_AMF_URL);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+            con.setRequestMethod("POST");
+            con.setRequestProperty("User-Agent", USER_AGENT);
+            con.setRequestProperty("Content-Type", "application/json; utf-8");
+            con.setRequestProperty("Accept", "application/json");
+
+            // Function To Send CorrelationID to SIMULATOR
+            AMFModel amfModel = new AMFModel();
+            int responseCode = send_data_receieve_response_AMF(amfModel, con);
+
+            if (responseCode != HttpStatus.OK.value()) {
+                throw new Exception();
+            }
+
+            response_handler(nnwdafEventsSubscription, responseCode, correlationID, con, getAnalytics);
+
+            if (con != null) {
+                con.disconnect();
+            }
+
+        } catch (Exception ex) {
+            return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(), HttpStatus.NOT_FOUND);
+        }
+        return null;
+    }
+
+    // For UE-Mobility
+    private int send_data_receieve_response_AMF(AMFModel amfModel, HttpURLConnection con) throws JSONException, IOException {
+
+        JSONObject json = new JSONObject();
+
+        json.put("correlationID", amfModel.getCorrelationId());
+        json.put("unSubCorrelationId", amfModel.getUnSubCorrelationId());
 
 
+        logger.info("correlationID:  " + amfModel.getCorrelationId() + "\n" +
+                "unSubCorrelationId", amfModel.getUnSubCorrelationId());
 
+
+        // notificationTargetUrl = Namf_EventExposure_Notify
+        json.put("notificationTargetAddress", notificationTargetUrl);
+
+        // For POST only - START
+        con.setDoOutput(true);
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = json.toString().getBytes("utf-8");
+            os.write(input, 0, input.length);
+            os.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // For POST only - END
+        int responseCode = con.getResponseCode();
+        String responseMessage = con.getResponseMessage();
+        System.out.println("\n");
+
+        return responseCode;
+    }
 
     /**
      * @param nnwdafEventsSubscription
@@ -225,24 +282,7 @@ public class BusinessLogic extends ResourceValues {
 
             try {
 
-               /* if (!repository.snsExists(nnwdafEventsSubscription.getSnssais())) {
-
-                    NwdafSliceLoadLevelSubscriptionTableModel slice = new NwdafSliceLoadLevelSubscriptionTableModel();
-
-                    slice.setCorrelationID(String.valueOf(correlationID));
-                    slice.setSubscriptionID(response.toString());
-                    slice.setSnssais(nnwdafEventsSubscription.getSnssais());
-
-                    repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(slice);
-
-                } else {
-                    if (!repository.isGetAnalytics(nnwdafEventsSubscription.getSnssais())) {
-                        repository.setGetAnalytics(nnwdafEventsSubscription.getSnssais(), true);
-                        repository.increment_ref_count(nnwdafEventsSubscription.getSnssais());
-                    } */
-
                 SliceLoadLevelSubscriptionTable slice = new SliceLoadLevelSubscriptionTable();
-
                 slice.setCorrelationID(String.valueOf(correlationID));
                 slice.setSubscriptionID(response.toString());
                 slice.setSnssais(nnwdafEventsSubscription.getSnssais());
@@ -320,11 +360,6 @@ public class BusinessLogic extends ResourceValues {
         return responseHeaders;
     }
 
-
-
-
-
-
     /**
      * @param nnrfModel
      * @param con
@@ -365,97 +400,6 @@ public class BusinessLogic extends ResourceValues {
         return responseCode;
 
     }
-
-
-
-
-
-    /**
-     * @throws IOException
-     * @desc this function manages notifications for subscribers
-     */
-   /* protected void nwdaf_notification_manager() throws IOException, JSONException {
-
-        logger.debug("Entered nwdaf_notification_manager()");
-
-        // Fetching all snssais list
-        List<SliceLoadLevelInformation> list = repository.getALLsnssais();
-
-        if (repository.getALLsnssais() == null) {
-            logger.warn("no snssais Found [ Null object ]");
-        }
-
-
-        // Iterating throw list and getting all subscriptionID related to that snssais
-        // i = indexOfsnssaisList || j = indexOfSubscriptionList
-
-        for (int indexOfSnssaisList = 0; indexOfSnssaisList < list.size(); indexOfSnssaisList++) {
-
-            // checking current Threshold value
-            currentLoadLevel = repository.currentLoadLevel(list.get(indexOfSnssaisList).getSnssais());
-
-            if (repository.getALLsnssais() == null) {
-                logger.warn("Null object!");
-            }
-            //    if (currentLoadLevel == 0)
-            //      continue;
-
-            // Fetching all subscription ID of a particular snssais
-            List<SliceLoadLevelSubscriptionData> subscriptionList = fetch_all_subscitpionID(list.get(indexOfSnssaisList).getSnssais());
-
-            if (subscriptionList == null) {
-                logger.warn("No subscription List found");
-            }
-
-            // Iterating throw subscriptionIDs to check whose TH value has been reached
-            for (int indexOfSubscriptionList = 0; indexOfSubscriptionList < subscriptionList.size(); indexOfSubscriptionList++) {
-
-                // Checking currentLoadLevel Of that snsssais if  current Load level greater than required TH Value
-                // then send notification
-                subThValue = repository.getLoadLevelThreshold(String.valueOf(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()));
-
-                if (currentLoadLevel > subThValue) {
-
-                        /* Checking Hash SET if notification has been sent on that particular subscriptionID/
-                       Then we do not have to send the notification again.
-                        */
-
-               /*     if (!(subID_SET.contains(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()))) {
-                        subID_SET.add(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
-
-                        if (subscriptionList.get(indexOfSubscriptionList).getSubscriptionID() == null) {
-                            logger.warn("Null Object Found! [ No subscription ID is present ]");
-                        } else {
-
-                            // Fetching notification URL on which NWDAF will send notification
-                            String NotificationURI = repository.getNotificationURI(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID());
-
-                            if (repository.getNotificationURI(subscriptionList.get(indexOfSubscriptionList).getSubscriptionID()) == null) {
-                                logger.warn("No subscription ID is present -> can't get Notification URI ");
-                            }
-
-                            // Calling sendNotification Function
-                            String subscriptionID = subscriptionList.get(indexOfSubscriptionList).getSubscriptionID();
-
-                            String eventID = EventID.values()[repository.findById_subscriptionID(subscriptionID).getEventID()].toString();
-                            String snssais = repository.getSnssais(subscriptionID);
-                            int currentLoadLevel = repository.getCurrentLoadLevel(snssais);
-
-                            send_notificaiton_to_NF(NotificationURI, eventID, snssais, currentLoadLevel, subscriptionID);
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-        }
-
-    } */
-
-
     /**
      * @param snssais
      * @return
@@ -525,6 +469,9 @@ public class BusinessLogic extends ResourceValues {
 
         json.put("eventID", eventID);
         json.put("snssais", snssais);
+
+
+        // This value will be fetched from nwdafSliceLoadLevelSubscriptionData send by NF
         json.put("notificaionURI", "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions");
         json.put("subscriptionID", subscriptionID);
         json.put("currentLoadLevel", currentLoadLevel);
@@ -536,7 +483,6 @@ public class BusinessLogic extends ResourceValues {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
 
         // Read the response from input stream;
         try (BufferedReader br = new BufferedReader(
@@ -559,17 +505,6 @@ public class BusinessLogic extends ResourceValues {
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
-
-
-
-
-
-
-
-
-
-
-
 
     // @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
     // @RequestMapping("/t")
