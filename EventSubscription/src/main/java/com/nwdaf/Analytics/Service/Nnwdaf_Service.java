@@ -48,22 +48,11 @@ public class Nnwdaf_Service extends BusinessLogic {
     @Autowired
     BuildProperties buildProperties;
 
-
-
     private static final Logger logger = LoggerFactory.getLogger(Nnwdaf_Service.class);
-
-
     List<UUID> subIDs;
     String updated_POST_NRF_URL = null;
 
-
-
-
-
-
     /************************************************************************************************************************/
-
-
 
     public Object nwdaf_analytics(String snssais, boolean anySlice, int eventID) throws IOException, JSONException {
 
@@ -79,11 +68,6 @@ public class Nnwdaf_Service extends BusinessLogic {
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return snssaisDataList;
     }
-
-
-
-
-
 
     public Object nwdaf_subscription(SubscriptionRawData subscriptionRawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
@@ -138,6 +122,9 @@ public class Nnwdaf_Service extends BusinessLogic {
                 nnwdafEventsSubscription.getLoadLevelThreshold());
 
 
+        // if eventId is set to UEMobility then add values into UEMobility Table;
+        repository.add_data_into_UE_mobilityTable();
+
         // Storing data into loadlevelInformation Table
         repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
 
@@ -147,9 +134,7 @@ public class Nnwdaf_Service extends BusinessLogic {
                 " snssais : " + nnwdafEventsSubscription.getSnssais() + " anySlice : " + nnwdafEventsSubscription.getAnySlice() +
                 " notifMethod : " + nnwdafEventsSubscription.getNotifMethod() + " repetition Method : " + nnwdafEventsSubscription.getRepetitionPeriod() +
                 " LoadLevelThreshold : " + nnwdafEventsSubscription.getLoadLevelThreshold()); */
-
         //getAnalytics = false;
-
         // function to check snssais data
 
         Object obj = check_For_data(nnwdafEventsSubscription, false);
@@ -157,7 +142,6 @@ public class Nnwdaf_Service extends BusinessLogic {
         if (obj instanceof ResponseEntity) {
             return obj;
         }
-
 
         logger.info("sending response to NF");
         // function to send response header to NF
@@ -339,13 +323,6 @@ public class Nnwdaf_Service extends BusinessLogic {
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return "Counters set to 0.";
     }
-
-
-
-
-
-
-
 
 
     /************************************************************************************************************************/

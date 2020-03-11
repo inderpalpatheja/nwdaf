@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+            href="https://fonts.googleapis.com/css?family=Montserrat&display=swap"
+            rel="stylesheet"
+    />
+    <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+            crossorigin="anonymous"
+    />
+
+    <!-- Script -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
+
+    <script src="app.js"></script>
+    <title>NWDAF MEMORY CHART</title>
+</head>
+<body class="bg-warning py-5">
+<div style="padding: 250px;">
+    <div class="card">
+        <div class="card-body" style="font-family: 'Montserrat'" ,>
+            <h1 style="font-size: 20px; text-align: center; font-weight: bold;">
+                NWDAF MEMORY GRAPH [ VIRTUAL AND RESIDENT MEMORY ]
+            </h1>
+            <div class="text-center" style="padding: 22px;">
+                <button
+                        type="button"
+                        class="btn btn-outline-info"
+                        onclick="updateChart()"
+                >
+                    Reload
+                </button>
+                <button
+                        type="button"
+                        class="btn btn-outline-info"
+                        onclick="LoadData()"
+                >
+                    LoadData
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Optional JavaScript -->
+
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script>
+// readFile function is defined.
+const fs = require("fs");
+
+// Reading data in utf-8 format
+// which is a type of character set.
+// Instead of 'utf-8' it can be
+// other character set also like 'ascii'
+fs.readFile("data.txt", "utf-8", (err, data) => {
+if (err) throw err;
+
+// Converting Raw Buffer to text
+// data using tostring function.
+console.log(data);
+});
+</script>
+
+<script>
+// Here Read Data from txt file. for now adding static values for testing
+var VIRT_PreviousData = [0, 1000, 5000, 2000, 20000, 30000, 45000];
+var VIRT_UpdatedData = [1200, 7200, 1300, 1600, 4300, 6800, 5100];
+var RES_PreviousData = [1000, 7000, 10000, 12000, 13000, 18000, 51000];
+var RES_UpdatedData = [1150, 1240, 6330, 3601, 3380, 1840, 2103];
+
+var ctx = document.getElementById("myChart").getContext("2d");
+Chart.defaults.global.defaultFontFamily = "Montserrat";
+Chart.defaults.global.defaultFontColor = "Black";
+var chart = new Chart(ctx, {
+// The type of chart we want to create
+type: "line",
+
+// The data for our dataset
+data: {
+labels: [
+"FRI | 5 PM",
+"FRI | 10 PM",
+"FRI | 12 PM",
+"SAT | 1 AM",
+"SAT | 5 AM",
+"SAT | 8 AM",
+"SAT | 10 AM"
+],
+datasets: [
+{
+label: "VIRT | Virtual Memory ",
+borderColor: "rgb(0, 99, 132)",
+data: VIRT_PreviousData,
+backgroundColor: ["rgba(255, 159, 64, 0.6)"],
+borderWidth: 1,
+borderColor: "#777",
+hoverBorderWidth: 3,
+hoverBorderColor: "#000"
+},
+{
+label: "RES | Resident Memory",
+// borderColor: "rgb(0, 200, 0)",
+data: RES_PreviousData,
+backgroundColor: ["rgba(255, 219, 64, 0.6)"],
+borderWidth: 1,
+borderColor: "#777",
+hoverBorderWidth: 3,
+hoverBorderColor: "#000"
+}
+]
+},
+
+// Configuration options go here
+options: {
+scales: {
+yAxes: [
+{
+scaleLabel: {
+display: true,
+labelString: "Memory in Mega Bytes [MB]"
+}
+}
+]
+}
+}
+});
+
+//JavaScript Fucntions
+function updateChart() {
+chart.data.datasets[0].data = VIRT_UpdatedData;
+chart.data.datasets[1].data = RES_UpdatedData;
+(chart.data.labels = [
+"SAT | 1 PM",
+"SAT | 5 PM",
+"SUN | 12 AM",
+"SUN | 2 AM",
+"SUN | 5 PM",
+"MON | 8 AM",
+"MON | 10 AM"
+]),
+chart.update();
+}
+</script>
+
+<script
+        src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"
+></script>
+<script
+        src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"
+></script>
+<script
+        src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"
+></script>
+</body>
+</html>
