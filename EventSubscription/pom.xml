@@ -242,7 +242,7 @@
                             <lines>
                                 <line>#! /bin/bash</line>
 
-                                <line>/usr/local/mysql/bin/mysql -uroot -pMyNewPass &lt;nwdafSchema.sql &amp;&amp;</line>
+                                <line>mysql -uroot -pMyNewPass &lt;nwdafSchema.sql &amp;&amp;</line>
 
                                 <line>addr="/opt/nwdaf/bin"</line>
 
