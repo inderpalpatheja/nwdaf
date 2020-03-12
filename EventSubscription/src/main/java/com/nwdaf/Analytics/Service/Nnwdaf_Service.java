@@ -45,8 +45,8 @@ public class Nnwdaf_Service extends BusinessLogic {
     @Autowired
     Nnwdaf_Repository repository;
 
-    @Autowired
-    BuildProperties buildProperties;
+   // @Autowired
+    //BuildProperties buildProperties;
 
 
 

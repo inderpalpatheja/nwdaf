@@ -23,6 +23,21 @@
     <dependencies>
 
 
+        <!-- sonar -->
+        <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/sonar-maven-plugin -->
+        <dependency>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>sonar-maven-plugin</artifactId>
+            <version>3.4.0.905</version>
+            <type>pom</type>
+        </dependency>
+
+        <!-- sonar -->
+
+
+
+
+
         <!-- https://mvnrepository.com/artifact/log4j/log4j -->
         <dependency>
             <groupId>log4j</groupId>
@@ -121,6 +136,32 @@
 
 
     </dependencies>
+
+    <!-- sonar -->
+    <profiles>
+        <profile>
+            <id>sonar</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <sonar.host.url>http://localhost:9000</sonar.host.url>
+
+                <sonar.jdbc.url>jdbc:mysql://localhost:3306/sonar?useUnicode=true&amp;characterEncoding=utf&amp;rewriteBatchedStatements=true</sonar.jdbc.url>
+                <sonar.jdbc.driver>com.mysql.jdbc.Driver</sonar.jdbc.driver>
+                <sonar.jdbc.username>root</sonar.jdbc.username>
+                <sonar.jdbc.password>root123</sonar.jdbc.password>
+            </properties>
+
+        </profile>
+    </profiles>
+    <!-- sonar -->
+
+
+
+
+
+
 
     <!--  auto increment jar-->
     <!--  <scm>

@@ -36,7 +36,7 @@ public class BusinessLogic extends ResourceValues {
 
     @Autowired
     Nnwdaf_Repository repository;
-
+    //checking
 
     private static final Logger logger = LoggerFactory.getLogger(BusinessLogic.class);
 
@@ -494,21 +494,23 @@ public class BusinessLogic extends ResourceValues {
         Counters.incrementSubscriptionNotifications();
 
 
-        URL url = null;
-        try {
-            url = new URL(notificationURI);
-        } catch (MalformedURLException e) {
-            logger.warn("http connect exception found");
-            e.printStackTrace();
-        }
+
+       // URL url = null;
+        //try {
+           URL url = new URL(notificationURI);
+        //} catch (MalformedURLException e) {
+           // logger.warn("http connect exception found");
+            //e.printStackTrace();
+        //}
 
         // Opening connection;
-        HttpURLConnection con = null;
-        try {
-            con = (HttpURLConnection) url.openConnection();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+       // HttpURLConnection con = null;
+        ///try {
+         HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        //} catch (IOException e) {
+            //e.printStackTrace();
+
+        //}
 
         try {
             con.setRequestMethod("POST");
@@ -525,6 +527,9 @@ public class BusinessLogic extends ResourceValues {
 
         json.put("eventID", eventID);
         json.put("snssais", snssais);
+
+
+        // This value will be fetched from nwdafSliceLoadLevelSubscriptionData send by NF
         json.put("notificaionURI", "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions");
         json.put("subscriptionID", subscriptionID);
         json.put("currentLoadLevel", currentLoadLevel);
@@ -536,7 +541,6 @@ public class BusinessLogic extends ResourceValues {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
 
         // Read the response from input stream;
         try (BufferedReader br = new BufferedReader(
@@ -558,6 +562,10 @@ public class BusinessLogic extends ResourceValues {
         { con.disconnect(); }
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+
+
+
+
     }
 
 
