@@ -4,7 +4,7 @@
         <file>EventSubscriptionApplicationLog.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
             <!--<fileNamePattern>C:/Users/Sadaf/Desktop/nwdafSonar/nwdaf/nwdafLog/EventSubscriptionApplicationLog.log.%i.log</fileNamePattern>-->
-            <fileNamePattern>EventSubscriptionApplicationLog.log.%i.log</fileNamePattern>
+            <fileNamePattern>logs/EventSubscriptionApplicationLog.log.%i.log</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>5</maxIndex>
         </rollingPolicy>
