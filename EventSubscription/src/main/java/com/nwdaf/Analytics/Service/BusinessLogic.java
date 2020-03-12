@@ -37,7 +37,7 @@ public class BusinessLogic extends ResourceValues {
 
     @Autowired
     Nnwdaf_Repository repository;
-
+    //checking
 
     private static final Logger logger = LoggerFactory.getLogger(BusinessLogic.class);
 
@@ -438,21 +438,23 @@ public class BusinessLogic extends ResourceValues {
         Counters.incrementSubscriptionNotifications();
 
 
-        URL url = null;
-        try {
-            url = new URL(notificationURI);
-        } catch (MalformedURLException e) {
-            logger.warn("http connect exception found");
-            e.printStackTrace();
-        }
+
+       // URL url = null;
+        //try {
+           URL url = new URL(notificationURI);
+        //} catch (MalformedURLException e) {
+           // logger.warn("http connect exception found");
+            //e.printStackTrace();
+        //}
 
         // Opening connection;
-        HttpURLConnection con = null;
-        try {
-            con = (HttpURLConnection) url.openConnection();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+       // HttpURLConnection con = null;
+        ///try {
+         HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        //} catch (IOException e) {
+            //e.printStackTrace();
+
+        //}
 
         try {
             con.setRequestMethod("POST");
@@ -504,6 +506,10 @@ public class BusinessLogic extends ResourceValues {
         { con.disconnect(); }
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+
+
+
+
     }
 
     // @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")

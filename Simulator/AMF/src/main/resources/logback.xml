@@ -1,8 +1,10 @@
 <configuration>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--<file>C:/Users/Sadaf/Desktop/nwdafSonar/nwdaf/nwdafLog/AmfApplicationLog.log</file>-->
         <file>AmfApplicationLog.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>Logs/AmfApplicationLog.log.%i.log</fileNamePattern>
+            <!--<fileNamePattern>C:/Users/Sadaf/Desktop/nwdafSonar/nwdaf/nwdafLog/AmfApplicationLog.log.%i.log</fileNamePattern>-->
+            <fileNamePattern>AmfApplicationLog.log.%i.log</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>5</maxIndex>
         </rollingPolicy>
