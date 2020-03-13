@@ -32,12 +32,8 @@ CREATE TABLE `NWDAF`.`nwdafSliceLoadLevelSubscriptionData` (
   `refCount` int NOT NULL,
   PRIMARY KEY (`ID`));
   
-  
-  
-  
-  
-  
-  CREATE TABLE `NWDAF`.`nwdafUeMobility` (
+    
+  CREATE TABLE `NWDAF`.`nwdafUEmobility` (
   `supi` VARCHAR(128) NOT NULL,
   `ts` DATETIME NULL,
   `duration` INT NULL,

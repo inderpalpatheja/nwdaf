@@ -82,7 +82,7 @@ public class AMFController extends Functionality {
         return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
+ /*   @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
     public ResponseEntity<String> unsubScribeFromNWDAFForUEMobility(@RequestBody String response) throws JSONException, IOException {
 
         JSONObject jsonObject = new JSONObject(response);
@@ -95,7 +95,7 @@ public class AMFController extends Functionality {
 
 
         return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
-    }
+    } */
 
 
 

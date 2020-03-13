@@ -45,8 +45,9 @@ public class Nnwdaf_Service extends BusinessLogic {
     @Autowired
     Nnwdaf_Repository repository;
 
-   // @Autowired
-    //BuildProperties buildProperties;
+    @Autowired
+    BuildProperties buildProperties;
+
 
     private static final Logger logger = LoggerFactory.getLogger(Nnwdaf_Service.class);
     List<UUID> subIDs;
