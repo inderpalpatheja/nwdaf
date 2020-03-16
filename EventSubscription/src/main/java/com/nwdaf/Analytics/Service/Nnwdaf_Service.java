@@ -124,7 +124,7 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
         // if eventId is set to UEMobility then add values into UEMobility Table;
-        repository.add_data_into_UE_mobilityTable();
+       // repository.add_data_into_UE_mobilityTable();
 
         // Storing data into loadlevelInformation Table
         repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
