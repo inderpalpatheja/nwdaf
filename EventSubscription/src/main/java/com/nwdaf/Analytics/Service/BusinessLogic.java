@@ -63,7 +63,7 @@ public class BusinessLogic extends ResourceValues {
                     nnwdafEventsSubscription.getAnySlice());
 
             // if data is not found -> calling collector function to collect data
-            if (snssaisDataList.isEmpty()) {
+            if (snssaisDataList == null) {
                 logger.warn("Data not found ");
 
                 // Calling collector function
@@ -129,9 +129,8 @@ public class BusinessLogic extends ResourceValues {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        Object snssais_object = repository.findby_snssais(nnwdafEventsSubscription.getSnssais());
 
-        if (snssais_object == null) {
+        if (!repository.snsExists(nnwdafEventsSubscription.getSnssais())) {
 
 
             // Generating CorrelationID
@@ -149,7 +148,7 @@ public class BusinessLogic extends ResourceValues {
             // Updated URL For NWDAF to Subscribe
             // updated_POST_NRF_URL = POST_NRF_URL + "/" + correlationID;
             // POST_NRF_URL = NRF URL ------> [ Reading from ]application.properties
-            try {
+           try {
 
                 URL obj = new URL(POST_NRF_URL);
                 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -178,8 +177,10 @@ public class BusinessLogic extends ResourceValues {
 
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
             return correlationID;
-        } else {
-            repository.increment_ref_count(nnwdafEventsSubscription.getSnssais());
+         }  else {
+
+            if(!getAnalytics)
+            { repository.increment_ref_count(nnwdafEventsSubscription.getSnssais()); }
         }
         return null;
     }
