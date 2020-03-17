@@ -84,7 +84,7 @@ public class Nnwdaf_Repository {
     public List<EventConnection> checkForData(String snssais, Boolean anySlice) {
 
         if (anySlice == true) {
-            String s = "select *From nwdafSliceLoadLevelInformation";
+            String s = "select * From nwdafSliceLoadLevelInformation";
             try {
                 return jdbcTemplate.query(s, new AnalyticsRowMapper());
             } catch (EmptyResultDataAccessException e) {
