@@ -63,7 +63,7 @@ public class BusinessLogic extends ResourceValues {
                     nnwdafEventsSubscription.getAnySlice());
 
             // if data is not found -> calling collector function to collect data
-            if (snssaisDataList == null) {
+            if (snssaisDataList == null || snssaisDataList.isEmpty()) {
                 logger.warn("Data not found ");
 
                 // Calling collector function
@@ -136,9 +136,9 @@ public class BusinessLogic extends ResourceValues {
             // Generating CorrelationID
             UUID correlationID = FrameWorkFunction.getUniqueID();
             // if Event Id is UE-Mobility nwdaf will subscribe to AMF;
-            if (nnwdafEventsSubscription.getEventID().toString() == "UE_MOBILITY") {
+         /*   if (nnwdafEventsSubscription.getEventID().toString() == "UE_MOBILITY") {
                 subscribeAMFfromNWDAF(nnwdafEventsSubscription, correlationID, getAnalytics);
-            }
+            } */
 
 
             Nnrf_Model nnrfModel = new Nnrf_Model();

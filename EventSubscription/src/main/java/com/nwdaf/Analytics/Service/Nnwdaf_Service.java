@@ -288,7 +288,7 @@ public class Nnwdaf_Service extends BusinessLogic {
         } */
 
         if (repository.getRefCount(snssais) == 0) {
-            repository.decrementRefCount(snssais);
+            repository.RemoveNwDafSubscriptionEntry(snssais);
         }
 
 
