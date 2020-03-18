@@ -137,9 +137,9 @@ public class AMFController extends Functionality {
     // @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_notify/{correlationID}")
 
 
-    // @PostMapping("/updateCurrentLoadLevel/{correlationID}")
+    @PostMapping("/updateCurrentLoadLevel/{correlationID}")
     public ResponseEntity<String> sendData(String notiTargetAddress,
-                                           String correlationID) throws IOException, JSONException {
+                                           @PathVariable("correlationID") String correlationID) throws IOException, JSONException {
 
         //  out.println("send Data check1");
 
