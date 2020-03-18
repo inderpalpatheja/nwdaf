@@ -55,7 +55,7 @@ public class AMFController extends Functionality {
         //  out.println(subId + " loadLevel " + loadLevel + "snssais" + snssais + "NotifcaionURI" + notificationURI);
 
         // Unsubscribe
-        unsubscribe(notificationURI, subId);
+        //unsubscribe(notificationURI, subId);
 
     }
 

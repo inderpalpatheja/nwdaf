@@ -3,11 +3,12 @@ package com.nwdaf.Analytics.Service;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.MissingData;
 import com.nwdaf.Analytics.Model.APIBuildInformation;
+import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
-import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
 import com.nwdaf.Analytics.Service.Validator.InvalidType;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator;
@@ -117,32 +118,57 @@ public class Nnwdaf_Service extends BusinessLogic {
         // Incrementing Subscription Counter
         Counters.incrementSubscriptions();
 
-
-        // adding values into subscriptionData
-        add_values_into_subscriptionData(subscriptionID, nnwdafEventsSubscription.getSnssais(),
-                nnwdafEventsSubscription.getLoadLevelThreshold());
+        int eventID = nnwdafEventsSubscription.getEventID();
 
 
-        // if eventId is set to UEMobility then add values into UEMobility Table;
-       // repository.add_data_into_UE_mobilityTable();
+        if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+        {
+            // adding values into subscriptionData
+            add_values_into_subscriptionData(subscriptionID, nnwdafEventsSubscription.getSnssais(),
+                    nnwdafEventsSubscription.getLoadLevelThreshold());
 
-        // Storing data into loadlevelInformation Table
-        repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
+
+            // if eventId is set to UEMobility then add values into UEMobility Table;
+            // repository.add_data_into_UE_mobilityTable();
+
+            // Storing data into loadlevelInformation Table
+            repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
 
 
-        // JSON payload send by NF to NWDAF
+            // JSON payload send by NF to NWDAF
         /* logger.info("\n" + "SubID : " + nnwdafEventsSubscription.getSubscriptionID() + " NotificationURI : " + nnwdafEventsSubscription.getEventID() +
                 " snssais : " + nnwdafEventsSubscription.getSnssais() + " anySlice : " + nnwdafEventsSubscription.getAnySlice() +
                 " notifMethod : " + nnwdafEventsSubscription.getNotifMethod() + " repetition Method : " + nnwdafEventsSubscription.getRepetitionPeriod() +
                 " LoadLevelThreshold : " + nnwdafEventsSubscription.getLoadLevelThreshold()); */
-        //getAnalytics = false;
-        // function to check snssais data
+            //getAnalytics = false;
+            // function to check snssais data
 
-        Object obj = check_For_data(nnwdafEventsSubscription, false);
+            Object obj = check_For_data(nnwdafEventsSubscription, false);
 
-        if (obj instanceof ResponseEntity) {
-            return obj;
+            if (obj instanceof ResponseEntity) {
+                return obj;
+            }
+
         }
+
+
+        else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
+        {
+            nnwdafEventsSubscription.set_5Qi((Integer)subscriptionRawData.get_5Qi());
+            nnwdafEventsSubscription.setMcc((String)subscriptionRawData.getMcc());
+            nnwdafEventsSubscription.setMnc((String)subscriptionRawData.getMnc());
+            nnwdafEventsSubscription.setPlmnID(nnwdafEventsSubscription.getMcc(), nnwdafEventsSubscription.getMnc());
+            nnwdafEventsSubscription.setTac((String)subscriptionRawData.getTac());
+
+            if(subscriptionRawData.getRanUeThroughputThreshold() != null)
+            { nnwdafEventsSubscription.setRanUeThroughputThreshold((Integer)subscriptionRawData.getRanUeThroughputThreshold()); }
+
+            if(nnwdafEventsSubscription.getQosFlowRetainThreshold() != null)
+            { nnwdafEventsSubscription.setQosFlowRetainThreshold((Integer)subscriptionRawData.getQosFlowRetainThreshold());; }
+
+        }
+
+
 
         logger.info("sending response to NF");
         // function to send response header to NF

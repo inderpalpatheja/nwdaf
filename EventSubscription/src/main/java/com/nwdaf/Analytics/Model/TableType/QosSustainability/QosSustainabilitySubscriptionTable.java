@@ -1,26 +1,14 @@
-package com.nwdaf.Analytics.Model.TableType;
+package com.nwdaf.Analytics.Model.TableType.QosSustainability;
 
 import java.util.UUID;
 
-public class SliceLoadLevelSubscriptionTable {
-
+public class QosSustainabilitySubscriptionTable {
 
     private Integer ID;
     private String snssais;
     private UUID subscriptionID;
     private UUID correlationID;
-    private Integer referenceCount;
-
-    public Integer getReferenceCount() {
-        return referenceCount;
-    }
-
-    public void setReferenceCount(Integer refrenceCount) {
-        this.referenceCount = refrenceCount;
-    }
-
-    public SliceLoadLevelSubscriptionTable() {
-    }
+    private Integer refCount;
 
 
     public Integer getID() {
@@ -53,5 +41,13 @@ public class SliceLoadLevelSubscriptionTable {
 
     public void setCorrelationID(String correlationID) {
         this.correlationID = UUID.fromString(correlationID);
+    }
+
+    public Integer getRefCount() {
+        return refCount;
+    }
+
+    public void setRefCount(Integer refCount) {
+        this.refCount = refCount;
     }
 }

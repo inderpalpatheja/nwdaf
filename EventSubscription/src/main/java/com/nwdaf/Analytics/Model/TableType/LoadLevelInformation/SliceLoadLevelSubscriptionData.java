@@ -1,4 +1,4 @@
-package com.nwdaf.Analytics.Model.TableType;
+package com.nwdaf.Analytics.Model.TableType.LoadLevelInformation;
 
 import java.util.UUID;
 

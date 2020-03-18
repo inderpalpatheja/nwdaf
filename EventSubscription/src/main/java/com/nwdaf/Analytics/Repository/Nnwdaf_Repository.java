@@ -2,13 +2,18 @@ package com.nwdaf.Analytics.Repository;
 
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.NotificationData;
-import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelInformation;
-import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelSubscriptionData;
-import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelSubscriptionTable;
-import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelInformation;
+import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnection;
+import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainability;
 import com.nwdaf.Analytics.Repository.Mapper.AnalyticsRowMapper;
 import com.nwdaf.Analytics.Repository.Mapper.*;
+import com.nwdaf.Analytics.Repository.Mapper.LoadLevelInformationMapper.SliceLoadLevelInformationMapper;
+import com.nwdaf.Analytics.Repository.Mapper.LoadLevelInformationMapper.SliceLoadLevelSubscriptionDataMapper;
+import com.nwdaf.Analytics.Repository.Mapper.LoadLevelInformationMapper.SliceLoadLevelSubscriptionTableMapper;
+import com.nwdaf.Analytics.Repository.Mapper.LoadLevelInformationMapper.SubscriptionTableMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -20,10 +25,8 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 @Repository
 public class Nnwdaf_Repository {
@@ -329,9 +332,8 @@ public class Nnwdaf_Repository {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
-
-
     }
+
 
     public Integer incrementRefCount(String snssais) {
         return jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", snssais);
@@ -509,6 +511,75 @@ public class Nnwdaf_Repository {
     // Here we will insert values in to UE-mobility table;
     public void add_data_into_UE_mobilityTable() {
     }
+
+
+
+    /***************************************Qos_Sustainability***************************************/
+
+
+
+    public Boolean addDataQosSustainability(NnwdafEventsSubscription nnwdafEventsSubscription) {
+
+        String query = "INSERT INTO nwdafQosSustainability (subscriptionID, 5Qi, plmnID, tac) VALUES(?, ?, ?, ?)";
+
+        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+
+            @Override
+            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+
+                preparedStatement.setString(1, nnwdafEventsSubscription.getSubscriptionID());
+                preparedStatement.setInt(2, nnwdafEventsSubscription.get_5Qi());
+                preparedStatement.setString(3, nnwdafEventsSubscription.getPlmnID());
+                preparedStatement.setString(4, nnwdafEventsSubscription.getTac());
+
+                return preparedStatement.execute();
+            }
+        });
+    }
+
+
+    public Boolean addDataQosSustainabilitySubscriptionData(NnwdafEventsSubscription nnwdafEventsSubscription)
+    {
+        String query = "INSERT INTO nwdafQosSustainabilitySubscriptionData (subscriptionID, snssais, ranUeThroughputThreshold, qosFlowRetainThreshold) VALUES(?, ?, ?, ?)";
+
+        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+
+            @Override
+            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+
+                preparedStatement.setString(1, nnwdafEventsSubscription.getSubscriptionID());
+                preparedStatement.setString(2, nnwdafEventsSubscription.getSnssais());
+                preparedStatement.setInt(3, nnwdafEventsSubscription.getRanUeThroughputThreshold());
+                preparedStatement.setInt(4, nnwdafEventsSubscription.getQosFlowRetainThreshold());
+
+                return preparedStatement.execute();
+            }
+        });
+    }
+
+
+    public Boolean setNwdafQosSustainabilityInformation(NnwdafEventsSubscription nnwdafEventsSubscription)
+    {
+        String query = "INSERT INTO nwdafQosSustainabilityInformation VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE snssais = snssais";
+
+        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+
+            @Override
+            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+
+                preparedStatement.setString(1, nnwdafEventsSubscription.getSnssais());
+                preparedStatement.setInt(2, 0);
+                preparedStatement.setInt(3, 0);
+
+                return preparedStatement.execute();
+            }
+        });
+    }
+
+
+
+
+    /************************************************************************************************/
 
 
 }
