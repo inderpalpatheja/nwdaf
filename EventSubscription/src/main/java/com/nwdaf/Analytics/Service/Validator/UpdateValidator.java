@@ -4,7 +4,7 @@ import com.nwdaf.Analytics.Controller.ConnectionCheck.MissingData;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
-import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
 
 
 public class UpdateValidator {

@@ -14,6 +14,75 @@ public class SubscriptionRawData {
 
 
 
+
+
+    /**********************Qos_Sustainability*************************************************/
+
+
+    Object _5Qi;
+    Object mcc;
+    Object mnc;
+    Object tac;
+
+    Object ranUeThroughputThreshold;
+    Object qosFlowRetainThreshold;
+
+
+    public Object get_5Qi() {
+        return _5Qi;
+    }
+
+    public void set_5Qi(Object _5Qi) {
+        this._5Qi = _5Qi;
+    }
+
+    public Object getMcc() {
+        return mcc;
+    }
+
+    public void setMcc(Object mcc) {
+        this.mcc = mcc;
+    }
+
+    public Object getMnc() {
+        return mnc;
+    }
+
+    public void setMnc(Object mnc) {
+        this.mnc = mnc;
+    }
+
+    public Object getTac() {
+        return tac;
+    }
+
+    public void setTac(Object tac) {
+        this.tac = tac;
+    }
+
+    public Object getRanUeThroughputThreshold() {
+        return ranUeThroughputThreshold;
+    }
+
+    public void setRanUeThroughputThreshold(Object ranUeThroughputThreshold) {
+        this.ranUeThroughputThreshold = ranUeThroughputThreshold;
+    }
+
+    public Object getQosFlowRetainThreshold() {
+        return qosFlowRetainThreshold;
+    }
+
+    public void setQosFlowRetainThreshold(Object qosFlowRetainThreshold) {
+        this.qosFlowRetainThreshold = qosFlowRetainThreshold;
+    }
+
+
+    /*******************************************************************************************/
+
+
+
+
+
     public Object getEventID() {
         return eventID;
     }
@@ -69,4 +138,5 @@ public class SubscriptionRawData {
     public void setAnySlice(Object anySlice) {
         this.anySlice = anySlice;
     }
+
 }

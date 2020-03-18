@@ -1,6 +1,6 @@
-package com.nwdaf.Analytics.Repository.Mapper;
+package com.nwdaf.Analytics.Repository.Mapper.LoadLevelInformationMapper;
 
-import com.nwdaf.Analytics.Model.TableType.SliceLoadLevelInformation;
+import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelInformation;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;

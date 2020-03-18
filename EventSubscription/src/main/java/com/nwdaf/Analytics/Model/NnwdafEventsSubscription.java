@@ -1,8 +1,5 @@
 package com.nwdaf.Analytics.Model;
 
-import java.util.UUID;
-import com.nwdaf.Analytics.Model.CustomData.EventID;
-import com.nwdaf.Analytics.Model.CustomData.NotificationMethod;
 
 public class NnwdafEventsSubscription {
 
@@ -14,6 +11,81 @@ public class NnwdafEventsSubscription {
     Integer repetitionPeriod;
     Integer loadLevelThreshold;
     Boolean anySlice;
+
+
+    /*****************QOS_SUSTAINABILITY parameters*********************/
+
+
+    Integer _5Qi;
+    String mcc;
+    String mnc;
+    String tac;
+    String plmnID;
+
+    Integer ranUeThroughputThreshold;
+    Integer qosFlowRetainThreshold;
+
+
+    public Integer get_5Qi() {
+        return _5Qi;
+    }
+
+    public void set_5Qi(Integer _5Qi) {
+        this._5Qi = _5Qi;
+    }
+
+    public String getMcc() {
+        return mcc;
+    }
+
+    public void setMcc(String mcc) {
+        this.mcc = mcc;
+    }
+
+    public String getMnc() {
+        return mnc;
+    }
+
+    public void setMnc(String mnc) {
+        this.mnc = mnc;
+    }
+
+    public String getTac() {
+        return tac;
+    }
+
+    public void setTac(String tac) {
+        this.tac = tac;
+    }
+
+    public Integer getRanUeThroughputThreshold() {
+        return ranUeThroughputThreshold;
+    }
+
+    public void setRanUeThroughputThreshold(Integer ranUeThroughputThreshold) {
+        this.ranUeThroughputThreshold = ranUeThroughputThreshold;
+    }
+
+    public Integer getQosFlowRetainThreshold() {
+        return qosFlowRetainThreshold;
+    }
+
+    public void setQosFlowRetainThreshold(Integer qosFlowRetainThreshold) {
+        this.qosFlowRetainThreshold = qosFlowRetainThreshold;
+    }
+
+
+    public String getPlmnID() {
+        return plmnID;
+    }
+
+    public void setPlmnID(String mcc, String mnc) {
+        this.plmnID = mcc + "-" + mnc;
+    }
+
+    /*******************************************************************/
+
+
 
 
     public String getSubscriptionID() {
@@ -79,4 +151,5 @@ public class NnwdafEventsSubscription {
     public void setAnySlice(Boolean anySlice) {
         this.anySlice = anySlice;
     }
+
 }
