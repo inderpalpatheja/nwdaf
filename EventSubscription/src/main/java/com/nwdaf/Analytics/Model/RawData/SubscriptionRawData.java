@@ -1,6 +1,7 @@
 package com.nwdaf.Analytics.Model.RawData;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SubscriptionRawData {
 
@@ -19,7 +20,9 @@ public class SubscriptionRawData {
     /**********************Qos_Sustainability*************************************************/
 
 
+    @JsonProperty("5Qi")
     Object _5Qi;
+
     Object mcc;
     Object mnc;
     Object tac;

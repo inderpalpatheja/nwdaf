@@ -62,14 +62,17 @@ public class Nnwdaf_Service extends BusinessLogic {
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
+
         nnwdafEventsSubscription.setSnssais(snssais);
         nnwdafEventsSubscription.setAnySlice(anySlice);
+        nnwdafEventsSubscription.setEventID(eventID);
 
         Object snssaisDataList = check_For_data(nnwdafEventsSubscription, true);
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return snssaisDataList;
     }
+
 
     public Object nwdaf_subscription(SubscriptionRawData subscriptionRawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
@@ -142,13 +145,6 @@ public class Nnwdaf_Service extends BusinessLogic {
                 " LoadLevelThreshold : " + nnwdafEventsSubscription.getLoadLevelThreshold()); */
             //getAnalytics = false;
             // function to check snssais data
-
-            Object obj = check_For_data(nnwdafEventsSubscription, false);
-
-            if (obj instanceof ResponseEntity) {
-                return obj;
-            }
-
         }
 
 
@@ -163,11 +159,20 @@ public class Nnwdaf_Service extends BusinessLogic {
             if(subscriptionRawData.getRanUeThroughputThreshold() != null)
             { nnwdafEventsSubscription.setRanUeThroughputThreshold((Integer)subscriptionRawData.getRanUeThroughputThreshold()); }
 
-            if(nnwdafEventsSubscription.getQosFlowRetainThreshold() != null)
+            if(subscriptionRawData.getQosFlowRetainThreshold() != null)
             { nnwdafEventsSubscription.setQosFlowRetainThreshold((Integer)subscriptionRawData.getQosFlowRetainThreshold());; }
+
+            repository.addDataQosSustainability(nnwdafEventsSubscription);
+            repository.addDataQosSustainabilitySubscriptionData(nnwdafEventsSubscription);
+            repository.setNwdafQosSustainabilityInformation(nnwdafEventsSubscription);
 
         }
 
+        Object obj = check_For_data(nnwdafEventsSubscription, false);
+
+        if (obj instanceof ResponseEntity) {
+            return obj;
+        }
 
 
         logger.info("sending response to NF");
@@ -239,8 +244,8 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         Counters.incrementUnSubscriptions();
 
-        SubscriptionTable sub = repository.findById_subscriptionID(subscriptionID);
-        String snssais = repository.getSnssais(subscriptionID);
+        SubscriptionTable subscriber = repository.findById_subscriptionID(subscriptionID);
+        //String snssais = repository.getSnssais_LoadLevelSubscriptionData(subscriptionID);
         //String unsubId = repository.getUnSubCorrelationID(snssais);
 
        /* if(repository.getRefCount(snssais) < 1){
@@ -249,17 +254,26 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         }*/
 
-        if (sub == null) {
+        if (subscriber == null) {
             logger.warn("subscriptionID= not found");
             //  out.println("subscriptionID= not found");
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NOT_FOUND);
         }
 
+        String snssais;
 
-        if (0 == repository.unsubscribeNF(subscriptionID)) {
+        if ((snssais = repository.unsubscribeNF(subscriber)) != null) {
 
-            unsubscribeFromNWDAF(snssais);
-            repository.RemoveNwDafSubscriptionEntry(snssais);
+            Integer eventID = subscriber.getEventID();
+
+            unsubscribeFromNWDAF(snssais, eventID);
+
+            if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+            { repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais); }
+
+            else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
+            { repository.deleteEntry_QosSustainabilitySubscriptionTable(snssais); }
+
         }
 
 
@@ -313,8 +327,8 @@ public class Nnwdaf_Service extends BusinessLogic {
             repository.setGetAnalytics(snssais, false);
         } */
 
-        if (repository.getRefCount(snssais) == 0) {
-            repository.RemoveNwDafSubscriptionEntry(snssais);
+        if (repository.getRefCount_LoadLevelSubscriptionTable(snssais) == 0) {
+            repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais);
         }
 
 

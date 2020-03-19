@@ -2,6 +2,7 @@ package com.nwdaf.Analytics.Service;
 
 
 import com.nwdaf.Analytics.Model.MetaData.Counters;
+import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -45,5 +46,14 @@ public class FrameWorkFunction {
     public static UUID getUniqueID()
     { return UUID.randomUUID(); }
 
+
+    public static void showQosInfo(NnwdafEventsSubscription nnwdafEventsSubscription)
+    {
+        System.out.println("5Qi: " + nnwdafEventsSubscription.get_5Qi());
+        System.out.println("plmnID: " + nnwdafEventsSubscription.getPlmnID());
+        System.out.println("tac: " + nnwdafEventsSubscription.getTac());
+        System.out.println("ranUeThroughtThreshold: " + nnwdafEventsSubscription.getRanUeThroughputThreshold());
+        System.out.println("qosFlowRetainThreshold: " + nnwdafEventsSubscription.getQosFlowRetainThreshold());
+    }
 
 }
