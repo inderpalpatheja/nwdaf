@@ -218,6 +218,18 @@ public class Nnwdaf_Controller {
     }
 
 
+    // Accepting Notification UE-Mobility [ from Simulator]
+    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{correlationID}")
+    public void acceptingNotificationFromUEMobility(@RequestBody String response) throws Exception {
+
+
+
+        nwdaf_service.notificationHandlerForUEMobility(response);
+
+
+
+    }
+
 
 
 }

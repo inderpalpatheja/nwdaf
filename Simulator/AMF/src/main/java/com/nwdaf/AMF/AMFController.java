@@ -3,6 +3,7 @@ package com.nwdaf.AMF;
 
 import com.nwdaf.AMF.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,6 +35,17 @@ public class AMFController extends Functionality {
         return correlationIDList;
     }
 
+
+    @GetMapping("/sendDataToUEMobility")
+    public void sendUEData() throws IOException, JSONException {
+        for (int i = 0; i < correlationIDList.size(); i++) {
+            sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
+                    correlationIDList.get(i));
+
+        }
+    }
+
+
     // testing HTTP2 [ Not working ]
     @RequestMapping("/testHttp2")
     public String testHttp2() {
@@ -58,6 +70,9 @@ public class AMFController extends Functionality {
         //unsubscribe(notificationURI, subId);
 
     }
+
+
+
 
     //  private CallBackForCorrelationID backForCorrelationID;
 
@@ -223,9 +238,114 @@ public class AMFController extends Functionality {
     }
 
 
-    //  @Override
-    //public void getCorrelationList(List<String> correlationList) {
-    //  out.println(correlationList.size());
-    // }
+    public ResponseEntity<String> sendDataForUEMobility(String notiTargetAddress,
+                                                        String correlationID) throws IOException, JSONException {
+
+        out.println("In send Data for UE-Mobility");
+
+        notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
+
+
+        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
+
+        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
+
+        String updated_URL = notiTargetAddress + "/" + correlationID;
+        //  out.println("updated URl - " + updated_URL);
+        URL url = new URL(updated_URL);
+
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+
+
+        JSONObject plmnObject = new JSONObject();
+        plmnObject.put("MNC", "921");
+        plmnObject.put("MCC", "21");
+
+        JSONObject EcqiObject = new JSONObject();
+        EcqiObject.put("plmn", plmnObject);
+        EcqiObject.put("cellID", "cellID-String-value");
+
+
+        JSONObject taiObject = new JSONObject();
+        taiObject.put("plmn", plmnObject);
+        taiObject.put("Tac", "TacID-value");
+
+
+        JSONObject userLocation = new JSONObject();
+        // userLocation.put("correlationID", correlationID);
+        userLocation.put("timeDuration",12);
+        userLocation.put("Tai", taiObject);
+        userLocation.put("Ecqi", EcqiObject);
+
+        JSONObject plmnObject1 = new JSONObject();
+        plmnObject1.put("MNC", "322");
+        plmnObject1.put("MCC", "57");
+
+        JSONObject EcqiObject1 = new JSONObject();
+        EcqiObject1.put("plmn", plmnObject1);
+        EcqiObject1.put("cellID", "cellID-String-value-1");
+
+
+        JSONObject taiObject1 = new JSONObject();
+        taiObject1.put("plmn", plmnObject1);
+        taiObject1.put("Tac", "TacID-value-1");
+
+
+        JSONObject userLocation1 = new JSONObject();
+        userLocation1.put("timeDuration",25);
+        userLocation1.put("Tai", taiObject1);
+        userLocation1.put("Ecqi", EcqiObject1);
+
+        JSONArray USER_LOCATION_ARRAY = new JSONArray();
+        USER_LOCATION_ARRAY.put(correlationID);
+        USER_LOCATION_ARRAY.put(userLocation);
+        USER_LOCATION_ARRAY.put(userLocation1);
+
+        //out.println(USER_LOCATION_ARRAY);
+
+
+        // For POST only - START
+        con.setDoOutput(true);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = USER_LOCATION_ARRAY.toString().getBytes("utf-8");
+
+
+            os.write(input, 0, input.length);
+            os.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // For POST only - END
+
+        int responseCode = con.getResponseCode();
+
+        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+        }
+
+
+        if (con != null) {
+            con.disconnect();
+        }
+
+        // return new ResponseEntity<String>(USER_LOCATION_ARRAY.toString(), HttpStatus.OK);
+        return new ResponseEntity<>("Created", HttpStatus.OK);
+    }
+
 }
 

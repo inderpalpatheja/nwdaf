@@ -9,11 +9,13 @@ import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.UEMobility.UE_MobilitySubscriptionModel;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
 import com.nwdaf.Analytics.Service.Validator.InvalidType;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator;
 import com.nwdaf.Analytics.Service.Validator.TypeChecker;
 import com.nwdaf.Analytics.Service.Validator.UpdateValidator;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -112,6 +114,9 @@ public class Nnwdaf_Service extends BusinessLogic {
         // setting subscription ID
         nnwdafEventsSubscription.setSubscriptionID(String.valueOf(subscriptionID));
 
+        // setting setSupi value
+        nnwdafEventsSubscription.setSupi((String) subscriptionRawData.getSupi());
+
         // Adding data into NwdafSubscriptionTable   [ Database ]
         repository.subscribeNF(nnwdafEventsSubscription);
 
@@ -141,14 +146,26 @@ public class Nnwdaf_Service extends BusinessLogic {
                 " notifMethod : " + nnwdafEventsSubscription.getNotifMethod() + " repetition Method : " + nnwdafEventsSubscription.getRepetitionPeriod() +
                 " LoadLevelThreshold : " + nnwdafEventsSubscription.getLoadLevelThreshold()); */
             //getAnalytics = false;
-            // function to check snssais data
 
+
+            // function to check snssais data
             Object obj = check_For_data(nnwdafEventsSubscription, false);
 
             if (obj instanceof ResponseEntity) {
                 return obj;
             }
 
+        } else if (nnwdafEventsSubscription.getEventID() == EventID.UE_MOBILITY.ordinal()) {
+
+            // If Event Id is set to UE-Mobility
+            perform_UEMobility(nnwdafEventsSubscription);
+
+            logger.info("sending response to NF");
+            // function to send response header to NF
+            HttpHeaders responseHeaders = send_response_header_to_NF(subscriptionID);
+
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+            return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
         }
 
 
@@ -396,6 +413,85 @@ public class Nnwdaf_Service extends BusinessLogic {
                 "API License",
                 "https://truminds.com/home",
                 Collections.emptyList());
+    }
+
+
+
+
+    public ResponseEntity<?> perform_UEMobility(NnwdafEventsSubscription nnwdafEventsSubscription) throws IOException, JSONException, URISyntaxException {
+
+        System.out.println("in UE-Mobility");
+
+        System.out.println(nnwdafEventsSubscription.getSupi());
+
+        // updating UE-Mobility Table if event id UE_mobility
+        UE_MobilitySubscriptionModel ue_mobilitySubscriptionModel = new UE_MobilitySubscriptionModel();
+
+        ue_mobilitySubscriptionModel.setSubscriptionID(nnwdafEventsSubscription.getSubscriptionID());
+        ue_mobilitySubscriptionModel.setEventID(nnwdafEventsSubscription.getEventID());
+        ue_mobilitySubscriptionModel.setNotificationURI(nnwdafEventsSubscription.getNotificationURI());
+        ue_mobilitySubscriptionModel.setNotifMethod(nnwdafEventsSubscription.getNotifMethod());
+        ue_mobilitySubscriptionModel.setRepetitionPeriod(nnwdafEventsSubscription.getRepetitionPeriod());
+        ue_mobilitySubscriptionModel.setSupi(nnwdafEventsSubscription.getSupi());
+
+
+        //  System.out.println(ue_mobilitySubscriptionModel.toString());
+
+        repository.add_data_into_nwdaf_UeMobilitySubscriptionData(ue_mobilitySubscriptionModel);
+        repository.add_data_into_nwdafUEmobility(ue_mobilitySubscriptionModel);
+
+
+        Object obj = check_For_data_for_UE_Mobility(nnwdafEventsSubscription, false);
+
+        if (obj instanceof ResponseEntity) {
+            return (ResponseEntity<?>) obj;
+        }
+
+        logger.info("sending response to NF");
+
+        // function to send response header to NF
+        HttpHeaders responseHeaders = send_response_header_to_NF(UUID.fromString(nnwdafEventsSubscription.getSubscriptionID()));
+
+        return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
+
+
+    }
+
+    public void notificationHandlerForUEMobility(String response) throws JSONException, IOException {
+
+        // System.out.println("In-Notification-Handler-for-UE-Mobility");
+
+        //JSONArray jsonArray = new JSONArray(response);
+        JSONArray jsonArray = new JSONArray(response);
+        String correlationID = jsonArray.get(0).toString();
+
+        // At 0 position I am sending CorrelationID;
+        for (int i = 1; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            // String correlationID = jsonObject.getString("correlationID");
+            Integer timeDurationValue = jsonObject.getInt("timeDuration");
+
+            // System.out.println("TimeDurationValue " + timeDurationValue);
+
+            JSONObject taiValue = jsonObject.getJSONObject("Tai");
+            JSONObject ecqiValue = jsonObject.getJSONObject("Ecqi");
+
+            String cellID = ecqiValue.getString("cellID");
+            String TacValue = taiValue.getString("Tac");
+            JSONObject plmnObject = taiValue.getJSONObject("plmn");
+            Integer MCC_value = plmnObject.getInt("MCC");
+            Integer MNC_value = plmnObject.getInt("MNC");
+            String TaiValue = MCC_value + "," + MNC_value + ":" + TacValue;
+
+            // update all the location of supi received in JsonArray;
+            add_value_to_userLocationTable(TaiValue, cellID,timeDurationValue);
+        }
+        // now time to update UE-MobilityTable;
+        // First Fetch all ID
+        updateUEMobilityTable(correlationID);
+
+        nwdaf_notification_manager_ForUEMobility();
+
     }
 
 }

@@ -32,19 +32,39 @@ CREATE TABLE `NWDAF`.`nwdafSliceLoadLevelSubscriptionData` (
   `refCount` int NOT NULL,
   PRIMARY KEY (`ID`));
   
-    
-  CREATE TABLE `NWDAF`.`nwdafUEmobility` (
+  
+  
+  
+  
+  
+  CREATE TABLE `NWDAF`.`nwdafUEmobilitySubscriptionData` (
+  `ID` INT NOT NULL AUTO_INCREMENT,
+  `subscriptionID` VARCHAR(128) NOT NULL,
   `supi` VARCHAR(128) NOT NULL,
-  `ts` DATETIME NULL,
-  `duration` INT NULL,
-  `locInfo` VARCHAR(128) NULL,
+  PRIMARY KEY (`ID`));
+  
+  
+  CREATE TABLE `NWDAF`.`nwdafUEmobilitySubscriptionTable` (
+  `ID` INT NOT NULL AUTO_INCREMENT,
+  `supi` VARCHAR(128) NULL,
+  `subscriptionID` VARCHAR(128) NOT NULL,
+  `correlationID` VARCHAR(128) NOT NULL,
+  `refCount` INT NOT NULL,
+   PRIMARY KEY (`ID`));
+
+CREATE TABLE `NWDAF`.`nwdafUEmobility` (
+  `supi` VARCHAR(128) NOT NULL,
+  `ts` DATETIME NOT NULL,
+  `DurationSec` INT NOT NULL,
+  `location` VARCHAR(128) NULL,
   PRIMARY KEY (`supi`));
   
   CREATE TABLE `NWDAF`.`nwdafUserLocation` (
   `ID` INT NOT NULL AUTO_INCREMENT,
-  `Tai` VARCHAR(128) NULL,
-  `cellID` VARCHAR(128) NULL,
-  PRIMARY KEY (`ID`));
+  `Tai` VARCHAR(128) NOT NULL,
+  `cellID` VARCHAR(128) NOT NULL,
+   `timeDuration` INT NULL,
+   PRIMARY KEY (`ID`));
   
   
   
