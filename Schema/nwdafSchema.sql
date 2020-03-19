@@ -45,6 +45,52 @@ CREATE TABLE `NWDAF`.`nwdafSliceLoadLevelSubscriptionData` (
   `Tai` VARCHAR(128) NULL,
   `cellID` VARCHAR(128) NULL,
   PRIMARY KEY (`ID`));
+
+
+
+
+
+
+CREATE TABLE `NWDAF`.`nwdafQosSustainability` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`subscriptionID` VARCHAR(128) NOT NULL,
+`5Qi` INT NOT NULL,
+`plmnID` VARCHAR(128) NOT NULL,
+`tac` VARCHAR(128) NOT NULL,
+PRIMARY KEY (`ID`),
+FOREIGN KEY (`subscriptionID`)
+REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionID`)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION);
+
+
+CREATE TABLE `NWDAF`.`nwdafQosSustainabilitySubscriptionData` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`subscriptionID` VARCHAR(128) NOT NULL,
+`snssais` VARCHAR(128) NULL,
+`ranUeThroughputThreshold` INT NULL,
+`qosFlowRetainThreshold` INT NULL,
+PRIMARY KEY (`ID`),
+FOREIGN KEY (`subscriptionID`)
+REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionID`)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION);
+
+
+CREATE TABLE `NWDAF`.`nwdafQosSustainabilityInformation` (
+`snssais` VARCHAR(128) NOT NULL,
+`ranUeThroughput` INT NULL,
+`qosFlowRetain` INT NULL,
+PRIMARY KEY(`snssais`));
+
+
+CREATE TABLE `NWDAF`.`nwdafQosSustainabilitySubscriptionTable` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`snssais` VARCHAR(128) NULL,
+`subscriptionID` VARCHAR(128) NOT NULL,
+`correlationID` VARCHAR(128) NOT NULL,
+`refCount` int NOT NULL,
+PRIMARY KEY (`ID`));
   
   
   
