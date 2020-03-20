@@ -4,6 +4,7 @@ package com.nwdaf.Analytics.Controller;
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
+import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
 import io.swagger.annotations.ApiOperation;
 import org.json.JSONException;
@@ -33,6 +34,11 @@ public class Nnwdaf_Controller {
 
     final String EVENT_SUB = "/nnwdaf-eventssubscription/v1";
     final String ANALYTICS ="/apiroot/nnwdaf-analyticsinfo/v1";
+
+    /*******UEmobility***********/
+    @Autowired
+    Nnwdaf_Repository repository;
+    /*******UEmobility***********/
 
 
     @Autowired
@@ -72,6 +78,21 @@ public class Nnwdaf_Controller {
         return nwdaf_service.nwdaf_analytics(snssais, anySlice, eventID);
 
     }
+    /******UEmobility****/
+
+
+    @GetMapping(ANALYTICS + "/{supi}/{eventID}")
+    public Object nwdaf_analyticsUEmobility(@PathVariable("supi") String supi,
+                                            @PathVariable("eventID") int eventID) throws IOException, JSONException {
+
+
+
+           return nwdaf_service.nwdaf_analyticsUEmobility(supi, eventID);
+            //return "supi  "+" :  "+supi+"  "+"eventID"+" : "+eventID;
+
+
+    }
+    /******UEmobility****/
 
 
   /*  /**

@@ -6,6 +6,7 @@ import com.nwdaf.Analytics.Model.APIBuildInformation;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.Model.NnwdafEventsSubscriptionUEmobility;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
@@ -72,6 +73,39 @@ public class Nnwdaf_Service extends BusinessLogic {
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return snssaisDataList;
     }
+
+
+
+    /****UEmobility******/
+    public Object nwdaf_analyticsUEmobility(String supi, int eventID) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+        NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE = new NnwdafEventsSubscriptionUEmobility();
+        nnwdafEventsSubscriptionUE .setSupi(supi);
+
+
+        Object supiDataList = check_For_dataUEmobility(nnwdafEventsSubscriptionUE, true);
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+        return supiDataList;
+
+    }
+
+
+    /****UEmobility******/
+
+
+
+
+
+
+
+
+
+
+
 
 
     public Object nwdaf_subscription(SubscriptionRawData subscriptionRawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
