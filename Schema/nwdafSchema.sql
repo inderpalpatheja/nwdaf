@@ -61,15 +61,10 @@ CREATE TABLE `NWDAF`.`nwdafUEmobility` (
   
   CREATE TABLE `NWDAF`.`nwdafUserLocation` (
   `ID` INT NOT NULL AUTO_INCREMENT,
-<<<<<<< HEAD
-  `Tai` VARCHAR(128) NULL,
-  `cellID` VARCHAR(128) NULL,
-  PRIMARY KEY (`ID`));
-
-
-
-
-
+   `Tai` VARCHAR(128) NOT NULL, 
+  `cellID` VARCHAR(128) NOT NULL, 
+   `timeDuration` INT NULL, 
+   PRIMARY KEY (`ID`)); 
 
 CREATE TABLE `NWDAF`.`nwdafQosSustainability` (
 `ID` INT NOT NULL AUTO_INCREMENT,
@@ -111,12 +106,7 @@ CREATE TABLE `NWDAF`.`nwdafQosSustainabilitySubscriptionTable` (
 `correlationID` VARCHAR(128) NOT NULL,
 `refCount` int NOT NULL,
 PRIMARY KEY (`ID`));
-=======
-  `Tai` VARCHAR(128) NOT NULL,
-  `cellID` VARCHAR(128) NOT NULL,
-   `timeDuration` INT NULL,
-   PRIMARY KEY (`ID`));
->>>>>>> UE-Mobility-branch
+
   
   
   
