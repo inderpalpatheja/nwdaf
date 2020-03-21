@@ -73,6 +73,19 @@ public class Nnwdaf_Controller {
 
     }
 
+    @GetMapping(ANALYTICS + "/{supi}/{eventID}")
+    @ApiOperation(value = "Get Analytics Details By supi or anySlice Details",
+            notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
+            response = Object.class)
+    public Object nwdaf_analyticsForUEMobility(@PathVariable("supi") String supi,
+                                   Boolean anySlice,
+                                  @PathVariable("eventID") int eventID) throws IOException, JSONException {
+
+
+        return nwdaf_service.nwdaf_analyticsForUEMobility(supi, false, eventID);
+
+    }
+
 
   /*  /**
      * @param nnwdafEventsSubscription
@@ -217,6 +230,18 @@ public class Nnwdaf_Controller {
 
     }
 
+
+    // Accepting Notification UE-Mobility [ from Simulator]
+    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{correlationID}")
+    public void acceptingNotificationFromUEMobility(@RequestBody String response) throws Exception {
+
+
+
+        nwdaf_service.notificationHandlerForUEMobility(response);
+
+
+
+    }
 
 
 
