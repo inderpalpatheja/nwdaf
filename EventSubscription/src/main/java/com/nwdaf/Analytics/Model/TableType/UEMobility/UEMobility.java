@@ -7,14 +7,14 @@ package com.nwdaf.Analytics.Model.TableType.UEMobility;
 
 import java.util.Date;
 
-public class nwdafUEmobility {
+public class UEMobility {
 
     String supi;
     Date ts;
     Integer DurationSec;
     String locationInfo;
 
-    public nwdafUEmobility() {
+    public UEMobility() {
     }
 
     public String getSupi() {
@@ -49,7 +49,7 @@ public class nwdafUEmobility {
         this.locationInfo = locationInfo;
     }
 
-    public nwdafUEmobility(String supi, Date ts, Integer durationSec, String locationInfo) {
+    public UEMobility(String supi, Date ts, Integer durationSec, String locationInfo) {
         this.supi = supi;
         this.ts = ts;
         DurationSec = durationSec;

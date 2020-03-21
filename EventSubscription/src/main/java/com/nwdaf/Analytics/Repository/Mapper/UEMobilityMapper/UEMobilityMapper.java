@@ -3,7 +3,7 @@ package com.nwdaf.Analytics.Repository.Mapper.UEMobilityMapper;
 
 
 
-import com.nwdaf.Analytics.Model.TableType.UEMobility.nwdafUEmobility;
+import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobility;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -16,11 +16,13 @@ public class UEMobilityMapper implements RowMapper {
 
         // SliceLoadLevelInformation loadLevel = new SliceLoadLevelInformation();
 
-        nwdafUEmobility nwdafUEmobility1 = new nwdafUEmobility();
-        nwdafUEmobility1.setSupi(resultSet.getString("supi"));
-        nwdafUEmobility1.setDurationSec(resultSet.getInt("DurationSec"));
-        nwdafUEmobility1.setLocationInfo(resultSet.getString("location"));
+        UEMobility UEMobility1 = new UEMobility();
+        UEMobility1.setSupi(resultSet.getString("supi"));
+        UEMobility1.setDurationSec(resultSet.getInt("DurationSec"));
+        UEMobility1.setLocationInfo(resultSet.getString("location"));
 
-        return nwdafUEmobility1;
+
+
+        return UEMobility1;
     }
 }

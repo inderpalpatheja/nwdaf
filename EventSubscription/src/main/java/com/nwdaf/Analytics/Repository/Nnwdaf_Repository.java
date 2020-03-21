@@ -7,11 +7,7 @@ import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSu
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnection;
-import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainability;
-import com.nwdaf.Analytics.Model.TableType.UEMobility.UE_MobilitySubscriptionModel;
-import com.nwdaf.Analytics.Model.TableType.UEMobility.UserLocation;
-import com.nwdaf.Analytics.Model.TableType.UEMobility.nwdafUEmobility;
-import com.nwdaf.Analytics.Model.TableType.UEMobility.nwdafUEmobilitySubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.UEMobility.*;
 import com.nwdaf.Analytics.Repository.Mapper.AnalyticsRowMapper;
 import com.nwdaf.Analytics.Repository.Mapper.*;
 import com.nwdaf.Analytics.Repository.Mapper.LoadLevelInformationMapper.SliceLoadLevelInformationMapper;
@@ -20,6 +16,7 @@ import com.nwdaf.Analytics.Repository.Mapper.LoadLevelInformationMapper.SliceLoa
 import com.nwdaf.Analytics.Repository.Mapper.LoadLevelInformationMapper.SubscriptionTableMapper;
 import com.nwdaf.Analytics.Repository.Mapper.UEMobilityMapper.AnalyticsRowMapperForUEMobility;
 import com.nwdaf.Analytics.Repository.Mapper.UEMobilityMapper.UEMobilityMapper;
+import com.nwdaf.Analytics.Repository.Mapper.UEMobilityMapper.UEMobilitySubscriptionDataMapper;
 import com.nwdaf.Analytics.Repository.Mapper.UEMobilityMapper.nwdafUEmobilitySubscriptionTableMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -584,9 +581,10 @@ public class Nnwdaf_Repository {
     }
 
 
-    public Boolean add_data_into_nwdafUEmobility(UE_MobilitySubscriptionModel ue_mobilitySubscriptionModel) {
+    public Boolean add_data_into_nwdafUEmobility(UEMobilitySubscriptionModel ue_mobilitySubscriptionModel) {
 
-        String query = "INSERT INTO nwdafUEmobility(supi,ts,DurationSec) VALUES(?,'2008-11-11 13:23:44',0)";
+
+        String query = "INSERT INTO nwdafUEmobility(supi,ts,DurationSec) VALUES(?,'2008-11-11 13:23:44',0)on duplicate key update supi = supi";
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
@@ -602,7 +600,7 @@ public class Nnwdaf_Repository {
     }
 
 
-    public Boolean add_data_into_nwdaf_UeMobilitySubscriptionData(UE_MobilitySubscriptionModel ue_mobilitySubscriptionModel) {
+    public Boolean add_data_into_nwdaf_UeMobilitySubscriptionData(UEMobilitySubscriptionModel ue_mobilitySubscriptionModel) {
 
         String query = "INSERT INTO nwdafUEmobilitySubscriptionData(subscriptionID,supi) VALUES(?, ?)";
 
@@ -622,7 +620,7 @@ public class Nnwdaf_Repository {
 
 
 
-    public List<nwdafUEmobility> checkForUEMobilityData(String supi) {
+    public List<UEMobility> checkForUEMobilityData(String supi) {
 
        /* if (anySlice == true) {
             String s = "select *From nwdafSliceLoadLevelInformation";
@@ -650,7 +648,7 @@ public class Nnwdaf_Repository {
         String query = "SELECT * FROM nwdafUEmobilitySubscriptionTable WHERE supi=?";
 
         try {
-            Object obj = (nwdafUEmobilitySubscriptionTable) this.jdbcTemplate.queryForObject(query, new Object[]{supi},
+            Object obj = (UEMobilitySubscriptionTable) this.jdbcTemplate.queryForObject(query, new Object[]{supi},
                     new nwdafUEmobilitySubscriptionTableMapper());
 
             return obj;
@@ -677,7 +675,7 @@ public class Nnwdaf_Repository {
     }
 
 
-    public Boolean addCorrealationIDAndUnSubCorrelationIDIntonwdafUEmobilitySubscriptionTable(nwdafUEmobilitySubscriptionTable slice, boolean getAnalytics) {
+    public Boolean addCorrealationIDAndUnSubCorrelationIDIntonwdafUEmobilitySubscriptionTable(UEMobilitySubscriptionTable slice, boolean getAnalytics) {
 
 
         if (snsExists(slice.getSupi())) {
@@ -775,7 +773,7 @@ public class Nnwdaf_Repository {
     }
 
 
-    public List<nwdafUEmobility> getAllSupi() {
+    public List<UEMobility> getAllSupi() {
 
         String query = "SELECT supi, DurationSec,location FROM nwdafUEmobility";
         try {
@@ -824,6 +822,7 @@ public class Nnwdaf_Repository {
                 public UserLocation mapRow(ResultSet resultSet, int i) throws SQLException {
                     UserLocation userLocation = new UserLocation();
                     userLocation.setTai(resultSet.getString("Tai"));
+                    userLocation.setCellID(resultSet.getString("cellID"));
                     return userLocation;
                 }
             });
@@ -837,26 +836,30 @@ public class Nnwdaf_Repository {
     }
 
 
-    public String findById_supi(String supi) {
+    public List<String> findById_supi(String supi) {
 
         String query = "SELECT subscriptionID FROM nwdafUEmobilitySubscriptionData WHERE supi = '" + supi + "';";
 
-        try {
+        System.out.println(query);
 
-            String subscriptionID = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+        try {
+            return jdbcTemplate.query(query, new RowMapper<String>() {
                 @Override
                 public String mapRow(ResultSet resultSet, int i) throws SQLException {
                     return resultSet.getString("subscriptionID");
                 }
             });
-            return subscriptionID;
         } catch (EmptyResultDataAccessException e) {
-
             return null;
         }
 
+    }
+
+    public Integer increment_ref_count_ofSupi(String supi) {
+        return jdbcTemplate.update("UPDATE nwdafUEmobilitySubscriptionTable SET refCount = refCount + 1 WHERE supi = ?", supi);
 
     }
+
 
     /************************************************************************************************/
 

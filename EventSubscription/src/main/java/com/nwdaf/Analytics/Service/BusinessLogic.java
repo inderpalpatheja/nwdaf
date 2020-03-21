@@ -13,10 +13,10 @@ import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSu
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UserLocation;
-import com.nwdaf.Analytics.Model.TableType.UEMobility.nwdafUEmobility;
-import com.nwdaf.Analytics.Model.TableType.UEMobility.nwdafUEmobilitySubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobility;
+import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionTable;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -43,8 +43,7 @@ public class BusinessLogic extends ResourceValues {
     private static final Logger logger = LoggerFactory.getLogger(BusinessLogic.class);
 
     Set<String> subID_SET = new HashSet<String>();
-    public int subThValue = 0;
-    public int currentLoadLevel = 0;
+    List<UserLocation> userLocations = new ArrayList<>();
 
 
     /**
@@ -429,6 +428,8 @@ public class BusinessLogic extends ResourceValues {
     protected void send_notificaiton_to_NF(String notificationURI,
                                            String eventID,
                                            String snssais,
+                                           List<UserLocation> userLocations,
+                                           String supi,
                                            int currentLoadLevel,
                                            String subscriptionID) throws IOException, JSONException {
 
@@ -437,6 +438,8 @@ public class BusinessLogic extends ResourceValues {
 
         Counters.incrementSubscriptionNotifications();
 
+
+        String subscriptionURI = "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions";
 
         // URL url = null;
         //try {
@@ -464,26 +467,69 @@ public class BusinessLogic extends ResourceValues {
         con.setRequestProperty("Accept", "application/json");
         con.setDoOutput(true);
 
-        //String jsonInputString = "Hey I am Notification";
+
+        /*
+       Todo: Here We have to send the JSON ARRAY of events
+        but it's giving 500 internal server error for that*/
 
         JSONObject json = new JSONObject();
 
         json.put("eventID", eventID);
         json.put("snssais", snssais);
+        json.put("supi", supi);
 
+        for (int i = 0; i < userLocations.size(); i++) {
+
+            String key = "userLocation-" + i;
+            String taiValue = userLocations.get(i).getTai();
+            String cellIDValue = userLocations.get(i).getCellID();
+
+           // String finalLocationValue = taiValue + "||" + cellIDValue;
+
+            out.println("\n\n\ntaiValue"+ taiValue+ "\n\n\n");
+
+
+            //String[] splitedString = splitLocationString.split(",");
+            String[] taiSplitValue = taiValue.split(":");
+
+            String plmnValues = taiSplitValue[0];
+            String TaiValue = taiSplitValue[1];
+
+            out.println("\n\nplmnValues"+plmnValues);
+            out.println("\n\nTacValue"+TaiValue);
+
+            String[] plmnSplittedValues = plmnValues.split(",");
+
+            String MCC = plmnSplittedValues[0];
+            String MNC  = plmnSplittedValues[1];
+
+            String finalLocationValue = " MCC - " + MCC + " MNC - " + MNC + " Tai Value - " + taiValue +" Cell-ID - " + cellIDValue;
+
+            json.put(key, finalLocationValue);
+
+        }
+        // json.put("userLocation-1", userLocations.get(0).getTai());
+        // json.put("userLocation-2", userLocations.get(1).getTai());
 
         // This value will be fetched from nwdafSliceLoadLevelSubscriptionData send by NF
-        json.put("notificaionURI", "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions");
+        json.put("notificaionURI", subscriptionURI.trim());
         json.put("subscriptionID", subscriptionID);
         json.put("currentLoadLevel", currentLoadLevel);
+
+
+        // For POST only - START
+        con.setDoOutput(true);
 
         try (OutputStream os = con.getOutputStream()) {
             byte[] input = json.toString().getBytes("utf-8");
 
+
             os.write(input, 0, input.length);
+            os.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        // For POST only - END
 
         // Read the response from input stream;
         try (BufferedReader br = new BufferedReader(
@@ -621,7 +667,12 @@ public class BusinessLogic extends ResourceValues {
                     } */
 
                     SubscriptionTable subscriptionData = repository.findById_subscriptionID(notifyData.getSubscriptionID());
-                    send_notificaiton_to_NF(subscriptionData.getNotificationURI(), EventID.values()[subscriptionData.getEventID()].toString(), slice.getSnssais(), slice.getCurrentLoadLevel(), subscriptionData.getSubscriptionID());
+                    send_notificaiton_to_NF(subscriptionData.getNotificationURI(), EventID.values()[subscriptionData.getEventID()].toString(),
+                            slice.getSnssais(),
+                            null,
+                            "null",
+                            slice.getCurrentLoadLevel(),
+                            subscriptionData.getSubscriptionID());
                 }
             }
         }
@@ -638,7 +689,7 @@ public class BusinessLogic extends ResourceValues {
 
         if (getAnalytics) {
 
-            List<nwdafUEmobility> supiDataList = repository.checkForUEMobilityData(nnwdafEventsSubscription.getSupi());
+            List<UEMobility> supiDataList = repository.checkForUEMobilityData(nnwdafEventsSubscription.getSupi());
 
             // if data is not found -> calling collector function to collect data
             if (supiDataList.isEmpty()) {
@@ -670,7 +721,7 @@ public class BusinessLogic extends ResourceValues {
             } else {
                 // flag to check if getAnalytics ref count will be updated or not
                 //flag = 1;
-                Object obj = nwdaf_data_collector(nnwdafEventsSubscription, getAnalytics);
+                Object obj = nwdaf_data_collector_For_UE_Mobility(nnwdafEventsSubscription, getAnalytics);
 
                 if (obj instanceof ResponseEntity) {
                     return obj;
@@ -748,7 +799,7 @@ public class BusinessLogic extends ResourceValues {
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
             return correlationID;
         } else {
-            repository.increment_ref_count(nnwdafEventsSubscription.getSnssais());
+            repository.increment_ref_count_ofSupi(nnwdafEventsSubscription.getSupi());
         }
         return null;
 
@@ -803,7 +854,8 @@ public class BusinessLogic extends ResourceValues {
 
             try {
 
-                nwdafUEmobilitySubscriptionTable uEmobilitySubscriptionTable = new nwdafUEmobilitySubscriptionTable();
+                UEMobilitySubscriptionTable uEmobilitySubscriptionTable = new UEMobilitySubscriptionTable();
+
                 uEmobilitySubscriptionTable.setCorrelationID(correlationID);
                 uEmobilitySubscriptionTable.setSubscriptionID(UUID.fromString(response.toString()));
                 uEmobilitySubscriptionTable.setSupi(nnwdafEventsSubscription.getSupi());
@@ -854,12 +906,13 @@ public class BusinessLogic extends ResourceValues {
 
         List<String> subcriptionIDSet = new ArrayList<>();
 
-        List<UserLocation> userLocations = new ArrayList<>();
+       // List<String> subscriptionIDList = new ArrayList<>();
+
 
         UserLocation userLocation = new UserLocation();
 
 
-        List<nwdafUEmobility> supiList = repository.getAllSupi();
+        List<UEMobility> supiList = repository.getAllSupi();
 
         if (repository.getALLsnssais() == null) {
             logger.warn("no snssais Found [ Null object ]");
@@ -878,49 +931,55 @@ public class BusinessLogic extends ResourceValues {
             // iterating through split string and finding User Location from particular ID
             for (int j = 0; j < splitedString.length; j++) {
 
-                /* now it's time to find the UserLocaiton by particular ID*/
+                /* now it's time to find the UserLocation by particular ID */
 
                 // Type Casting String ID value to Integer Value;
                 Integer ID = Integer.valueOf(splitedString[j].trim());
 
+                //Finding UseLocation Via ID.
                 userLocation = repository.getUserLocationFromID(ID);
+
                 userLocations.add(userLocation);
                 // out.println("user-location : Tai-value " + userLocation.getTai());
             }
 
             out.println("supi value = " + supiList.get(i).getSupi());
 
-            String subscriptionID = repository.findById_supi(supiList.get(i).getSupi());
+            List<String> subscriptionDataList = repository.findById_supi(supiList.get(i).getSupi());
 
-            out.println("\nsubscriptionID_VIA_supi " + subscriptionID);
-
-            SubscriptionTable subscriptionData = repository.findById_subscriptionID(subscriptionID);
+            out.println("\n\nSubscriptionListsize" + subscriptionDataList.size());
 
 
-            //out.println("\nEventID " + subscriptionData.getEventID() +
-            //  "\nSubscriptionID - "+ subscriptionData.getSubscriptionID());
+            for (int k = 0; k < subscriptionDataList.size(); k++) {
+                out.println("\nsubscriptionID_VIA_supi " + subscriptionDataList.get(k));
+                SubscriptionTable subscriptionData = repository.findById_subscriptionID(subscriptionDataList.get(k));
 
-            out.println("\nnotificaitonURI - " + subscriptionData.getNotificationURI() +
-                    "\neventID - " + EventID.values()[subscriptionData.getEventID()].toString() +
-                    "\nsupi - " + supiList.get(i).getSupi() +
-                    "\nTai value - " + userLocation.getTai() +
-                    "\nSubscriptionID - " + subscriptionData.getSubscriptionID());
+                //out.println("\nEventID " + subscriptionData.getEventID() +
+                //  "\nSubscriptionID - "+ subscriptionData.getSubscriptionID());
 
-
-            if (!subID_SET.contains(subscriptionID)) {
-                subID_SET.add(subscriptionID);
-
-               // send_notificaiton_to_NF_forUEMobility(subscriptionData.getNotificationURI(),
-                 //       EventID.values()[subscriptionData.getEventID()].toString());
+                out.println("\nnotificaitonURI - " + subscriptionData.getNotificationURI() +
+                        "\neventID - " + EventID.values()[subscriptionData.getEventID()].toString() +
+                        "\nsupi - " + supiList.get(i).getSupi() +
+                        "\nTai value - " + userLocation.getTai() +
+                        "\nSubscriptionID - " + subscriptionData.getSubscriptionID());
 
 
-                send_notificaiton_to_NF(subscriptionData.getNotificationURI(), EventID.values()[subscriptionData.getEventID()].toString(),
-                        supiList.get(i).getSupi(),
-                        0, subscriptionData.getSubscriptionID());
+                if (!subID_SET.contains(subscriptionDataList.get(k))) {
+                    subID_SET.add(subscriptionDataList.get(k));
+
+                    // send_notificaiton_to_NF_forUEMobility(subscriptionData.getNotificationURI(),
+                    //       EventID.values()[subscriptionData.getEventID()].toString());
+
+
+                    send_notificaiton_to_NF(subscriptionData.getNotificationURI(), EventID.values()[subscriptionData.getEventID()].toString(),
+                            "null",
+                            userLocations,
+                            supiList.get(i).getSupi(),
+                            0, subscriptionData.getSubscriptionID());
+                }
+
             }
+
         }
-
-
     }
-
 }

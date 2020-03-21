@@ -36,11 +36,14 @@ public class AMFController extends Functionality {
     }
 
 
-    @GetMapping("/sendDataToUEMobility")
-    public void sendUEData() throws IOException, JSONException {
+    @GetMapping("/sendDataToUEMobility/{correlationID}")
+    public void sendUEData(@PathVariable String correlationID) throws IOException, JSONException {
         for (int i = 0; i < correlationIDList.size(); i++) {
+           /* sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
+                    correlationIDList.get(i)); */
+
             sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
-                    correlationIDList.get(i));
+                    correlationID);
 
         }
     }
@@ -70,8 +73,6 @@ public class AMFController extends Functionality {
         //unsubscribe(notificationURI, subId);
 
     }
-
-
 
 
     //  private CallBackForCorrelationID backForCorrelationID;
@@ -111,7 +112,6 @@ public class AMFController extends Functionality {
 
         return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
     } */
-
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusSubscribe")
@@ -231,8 +231,9 @@ public class AMFController extends Functionality {
         }
         //  return "Data send to " + updated_URL;
 
-        if(con != null)
-        { con.disconnect(); }
+        if (con != null) {
+            con.disconnect();
+        }
 
         return new ResponseEntity<String>("Send", HttpStatus.OK);
     }
@@ -245,6 +246,16 @@ public class AMFController extends Functionality {
 
         notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
 
+
+        // initialize a Random object somewhere; you should only need one
+        Random random = new Random();
+
+        // generate a random integer from 0 to 899, then add 100
+        int threeDigitRandomValueForOneLocaiton = random.nextInt(900) + 100;
+        int twoDigitRandomValueForOneLocation = random.nextInt(90) + 10;
+
+        int threeDigitRandomValueForTwoLocaiton = random.nextInt(900) + 100;
+        int twoDigitRandomValueForTwoLocation = random.nextInt(90) + 10;
 
         // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
 
@@ -264,8 +275,8 @@ public class AMFController extends Functionality {
 
 
         JSONObject plmnObject = new JSONObject();
-        plmnObject.put("MNC", "921");
-        plmnObject.put("MCC", "21");
+        plmnObject.put("MNC", String.valueOf(threeDigitRandomValueForOneLocaiton));
+        plmnObject.put("MCC", String.valueOf(twoDigitRandomValueForOneLocation));
 
         JSONObject EcqiObject = new JSONObject();
         EcqiObject.put("plmn", plmnObject);
@@ -279,13 +290,13 @@ public class AMFController extends Functionality {
 
         JSONObject userLocation = new JSONObject();
         // userLocation.put("correlationID", correlationID);
-        userLocation.put("timeDuration",12);
+        userLocation.put("timeDuration", 12);
         userLocation.put("Tai", taiObject);
         userLocation.put("Ecqi", EcqiObject);
 
         JSONObject plmnObject1 = new JSONObject();
-        plmnObject1.put("MNC", "322");
-        plmnObject1.put("MCC", "57");
+        plmnObject1.put("MNC", String.valueOf(threeDigitRandomValueForTwoLocaiton));
+        plmnObject1.put("MCC", String.valueOf(twoDigitRandomValueForTwoLocation));
 
         JSONObject EcqiObject1 = new JSONObject();
         EcqiObject1.put("plmn", plmnObject1);
@@ -298,7 +309,7 @@ public class AMFController extends Functionality {
 
 
         JSONObject userLocation1 = new JSONObject();
-        userLocation1.put("timeDuration",25);
+        userLocation1.put("timeDuration", 25);
         userLocation1.put("Tai", taiObject1);
         userLocation1.put("Ecqi", EcqiObject1);
 

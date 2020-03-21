@@ -7,7 +7,7 @@ package com.nwdaf.Analytics.Model.TableType.UEMobility;
 
 import java.util.UUID;
 
-public class nwdafUEmobilitySubscriptionTable {
+public class UEMobilitySubscriptionTable {
 
     private Integer ID;
     private String supi;
@@ -16,7 +16,7 @@ public class nwdafUEmobilitySubscriptionTable {
     private Integer referenceCount;
 
 
-    public nwdafUEmobilitySubscriptionTable() {
+    public UEMobilitySubscriptionTable() {
     }
 
 
@@ -60,7 +60,7 @@ public class nwdafUEmobilitySubscriptionTable {
         this.referenceCount = referenceCount;
     }
 
-    public nwdafUEmobilitySubscriptionTable(Integer ID, String supi, UUID subscriptionID, UUID correlationID, Integer referenceCount) {
+    public UEMobilitySubscriptionTable(Integer ID, String supi, UUID subscriptionID, UUID correlationID, Integer referenceCount) {
         this.ID = ID;
         this.supi = supi;
         this.subscriptionID = subscriptionID;

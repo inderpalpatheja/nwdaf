@@ -5,7 +5,7 @@ package com.nwdaf.Analytics.Model.TableType.UEMobility;
  * @author  sheetalkumar
  */
 
-public class UE_MobilitySubscriptionModel {
+public class UEMobilitySubscriptionModel {
 
     String subscriptionID;
     Integer eventID;
@@ -15,7 +15,7 @@ public class UE_MobilitySubscriptionModel {
     String supi;
 
 
-    public UE_MobilitySubscriptionModel() {
+    public UEMobilitySubscriptionModel() {
     }
 
     public String getSubscriptionID() {
@@ -66,7 +66,7 @@ public class UE_MobilitySubscriptionModel {
         this.supi = supi;
     }
 
-    public UE_MobilitySubscriptionModel(String subscriptionID, Integer eventID, String notificationURI, Integer notifMethod, Integer repetitionPeriod, String supi) {
+    public UEMobilitySubscriptionModel(String subscriptionID, Integer eventID, String notificationURI, Integer notifMethod, Integer repetitionPeriod, String supi) {
         this.subscriptionID = subscriptionID;
         this.eventID = eventID;
         this.notificationURI = notificationURI;
