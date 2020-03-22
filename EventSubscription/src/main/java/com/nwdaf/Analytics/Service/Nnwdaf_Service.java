@@ -349,6 +349,7 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
         repository.updateCurrentLoadLevel(currentLoadLevel, snssais);
+
         nwdaf_notification_manager();
 
         //repository.getSnssaisViaSubID(correlationID);
