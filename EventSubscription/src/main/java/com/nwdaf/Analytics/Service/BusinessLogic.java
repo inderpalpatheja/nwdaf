@@ -2,33 +2,35 @@ package com.nwdaf.Analytics.Service;
 
 import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnection;
+import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnectionUE;
 import com.nwdaf.Analytics.Model.AMFModel.AMFModel;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.Nnrf.Nnrf_Model;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.Model.NnwdafEventsSubscriptionUEmobility;
 import com.nwdaf.Analytics.Model.NotificationData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelInformation;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.UEmobility.UEmobilitySubscriptionTable;
+import com.nwdaf.Analytics.Model.UserLocation;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.*;
 import java.net.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static java.lang.System.out;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
@@ -116,6 +118,129 @@ public class BusinessLogic extends ResourceValues {
         return null;
     }
 
+    /****UEmobility******/
+
+    protected Object check_For_dataUEmobility(NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE, boolean getAnalytics) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+        if (getAnalytics) {
+
+
+            List<UserLocation> supiDataList = getUElocation(nnwdafEventsSubscriptionUE.getSupi());
+
+            // if data is not found -> calling collector function to collect data
+            if (supiDataList == null || supiDataList.isEmpty()) {
+                logger.warn("Data not found ");
+
+                // Calling collector function
+                Object obj = nwdaf_data_collectorUEmobility(nnwdafEventsSubscriptionUE, getAnalytics);
+
+                if (obj instanceof ResponseEntity) {
+                    return obj;
+                }
+
+                // Adding supi into database
+                repository.add_data_into_nwdafUEmobility_table(nnwdafEventsSubscriptionUE.getSupi());
+
+                EventConnectionUE eventConnectionUE = new EventConnectionUE();
+                eventConnectionUE.setMessage("Data not Found for " + nnwdafEventsSubscriptionUE.getSupi());
+                eventConnectionUE.setSupi(nnwdafEventsSubscriptionUE.getSupi());
+                eventConnectionUE.setDataStatus(false);
+
+                logger.debug("supi: " + nnwdafEventsSubscriptionUE.getSupi() + "\n" +
+                        "DataStatus:  " + eventConnectionUE.getDataStatus());
+
+                //throw new NullPointerException("Data not found!");
+                return eventConnectionUE;
+
+            } else {
+                // flag to check if getAnalytics ref count will be updated or not
+                //flag = 1;
+                Object obj = nwdaf_data_collectorUEmobility(nnwdafEventsSubscriptionUE, getAnalytics);
+
+                if (obj instanceof ResponseEntity) {
+                    return obj;
+                }
+
+                // if Data found returning JSON
+                return supiDataList;
+            }
+
+        } else {
+
+            Object obj = nwdaf_data_collectorUEmobility(nnwdafEventsSubscriptionUE, getAnalytics);
+
+            if (obj instanceof ResponseEntity) {
+                return obj;
+            }
+        }
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+        return null;
+
+    }
+
+    /****UEmobility******/
+
+
+
+    /****UEmobility******/
+    public List<UserLocation> getUElocation(String supi){
+
+
+        try {
+
+            //Boolean supiCheck = repository.supiExists(supi);
+
+            String location = repository.getAllNotificationDataForUEMobility(supi);
+
+            // Splitting location via ,
+            String[] splitedString = location.split(",");
+
+
+            // iterating through split string and finding User Location from particular ID
+            List<UserLocation> userLocations = new ArrayList<>();
+            for (int j = 0; j < splitedString.length; j++) {
+
+                /* now it's time to find the UserLocaiton by particular ID*/
+                // Type Casting String ID value to Integer Value;
+
+                Integer ID = Integer.valueOf(splitedString[j].trim());
+                UserLocation userLocation;
+                userLocation = repository.getUserLocationFromID(ID);
+                userLocations.add(userLocation);
+
+            }
+            return userLocations;
+
+
+        }catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+        catch (Exception e){
+            return null;
+        }
+
+    }
+
+
+
+    /****UEmobility******/
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * @param nnwdafEventsSubscription
@@ -185,6 +310,87 @@ public class BusinessLogic extends ResourceValues {
         }
         return null;
     }
+
+
+
+    /********UEmobility*************/
+
+    protected Object nwdaf_data_collectorUEmobility(NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE, boolean getAnalytics) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+
+        if (!repository.supiExists(nnwdafEventsSubscriptionUE.getSupi())) {
+
+
+            // Generating CorrelationID
+            UUID correlationID = FrameWorkFunction.getUniqueID();
+
+
+
+            Nnrf_Model nnrfModel = new Nnrf_Model();
+
+            // Adding correlationID to object and send to SIMULATOR
+            nnrfModel.setCorrelationId(String.valueOf(correlationID));
+            // Updated URL For NWDAF to Subscribe
+            // updated_POST_NRF_URL = POST_NRF_URL + "/" + correlationID;
+            // POST_NRF_URL = NRF URL ------> [ Reading from ]application.properties
+            try {
+
+                //URL obj = new URL(POST_NRF_URL);
+                URL obj = new URL(POST_AMF_URL);
+                HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+                con.setRequestMethod("POST");
+                con.setRequestProperty("User-Agent", USER_AGENT);
+                con.setRequestProperty("Content-Type", "application/json; utf-8");
+                con.setRequestProperty("Accept", "application/json");
+
+                // Function To Send CorrelationID to SIMULATOR
+                int responseCode = send_data_receieve_response(nnrfModel, con);
+
+                if (responseCode != HttpStatus.OK.value()) {
+                    throw new Exception();
+                }
+
+                response_handlerUEmobility(nnwdafEventsSubscriptionUE, responseCode, correlationID, con, getAnalytics);
+
+                if (con != null) {
+                    con.disconnect();
+                }
+
+            } catch (Exception ex) {
+                return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(), HttpStatus.NOT_FOUND);
+            }
+
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+            return correlationID;
+        }  else {
+
+            if(!getAnalytics)
+            { //repository.increment_ref_count(nnwdafEventsSubscriptionUE.getSupi());
+
+            }
+        }
+        return null;
+    }
+
+
+    /********UEmobility*************/
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -334,6 +540,80 @@ public class BusinessLogic extends ResourceValues {
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
+
+
+
+
+
+
+
+    /*********UEmobility*************/
+
+
+    protected void response_handlerUEmobility(NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE,
+                                              int responseCode, UUID correlationID,
+                                              HttpURLConnection con, boolean getAnalytics) throws IOException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+            // incrementing Counter
+            Counters.incrementCollectorSubscriptions();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+
+            try {
+
+                UEmobilitySubscriptionTable UEobj = new UEmobilitySubscriptionTable();
+                UEobj.setCorrelationID(String.valueOf(correlationID));
+                UEobj.setSubscriptionID(response.toString());
+                UEobj.setSupi(nnwdafEventsSubscriptionUE.getSupi());
+
+                if (getAnalytics) {
+                    if (!repository.supiExists(UEobj.getSupi())) {
+                        repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable_UE(UEobj, true);
+                    }
+                } else {
+                    repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable_UE(UEobj, false);
+                }
+
+
+            } catch (Exception e) {
+                out.println(e.getMessage());
+            }
+            in.close();
+        } else {
+
+            logger.error(" POST request not worked");
+        }
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+    }
+
+
+    /*********UEmobility*************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

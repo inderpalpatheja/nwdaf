@@ -31,7 +31,7 @@ public class AmfApplication extends Functionality {
 
         //  System.out.println("Subscribers Count - " + subList);
 
-        for (int i = 0; i < subList; i++) {
+        /*for (int i = 0; i < subList; i++) {
             String subId = subscribe(0,
                     "http://localhost:8082/notify",
                     snssaisString[rand.nextInt(snssaisString.length)],
@@ -40,7 +40,7 @@ public class AmfApplication extends Functionality {
                     rand.nextInt(30) + 40); /// rand.nextInt( high - low ) + low
 
             subIDList.add(subId);
-        }
+        }*/
     }
 
 
@@ -48,7 +48,7 @@ public class AmfApplication extends Functionality {
         SpringApplication.run(AmfApplication.class, args);
         logger.debug("In AmfApplication class");
 
-        AMFController amfController = new AMFController();
+        /* AMFController amfController = new AMFController();
 
         // Reading subscriber list From file
         ApplicationPropertiesValue properties = new ApplicationPropertiesValue();
@@ -72,7 +72,7 @@ public class AmfApplication extends Functionality {
             }
 
             Thread.sleep(20 * 1000);
-        }
+        }*/
 
     }
 }
