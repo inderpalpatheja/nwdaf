@@ -77,6 +77,9 @@ public class Nnwdaf_Service extends BusinessLogic {
 
     public Object nwdaf_subscription(SubscriptionRawData subscriptionRawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
 
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
@@ -141,36 +144,27 @@ public class Nnwdaf_Service extends BusinessLogic {
             // Storing data into loadlevelInformation Table
             repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
 
-
-            // JSON payload send by NF to NWDAF
-        /* logger.info("\n" + "SubID : " + nnwdafEventsSubscription.getSubscriptionID() + " NotificationURI : " + nnwdafEventsSubscription.getEventID() +
-                " snssais : " + nnwdafEventsSubscription.getSnssais() + " anySlice : " + nnwdafEventsSubscription.getAnySlice() +
-                " notifMethod : " + nnwdafEventsSubscription.getNotifMethod() + " repetition Method : " + nnwdafEventsSubscription.getRepetitionPeriod() +
-                " LoadLevelThreshold : " + nnwdafEventsSubscription.getLoadLevelThreshold()); */
-            //getAnalytics = false;
-
             // function to check snssais data
-        }
+            Object obj = check_For_data(nnwdafEventsSubscription, false);
 
+            if (obj instanceof ResponseEntity) {
+                return obj;
+            }
 
-        // function to check snssais data
-        Object obj = check_For_data(nnwdafEventsSubscription, false);
+            responseHeaders = send_response_header_to_NF(subscriptionID);
+            return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
 
-        if (obj instanceof ResponseEntity) {
-            return obj;
         } else if (nnwdafEventsSubscription.getEventID() == EventID.UE_MOBILITY.ordinal()) {
 
             // If Event Id is set to UE-Mobility
             perform_UEMobility(nnwdafEventsSubscription);
 
-
-            logger.info("sending response to NF");
-            // function to send response header to NF
-            HttpHeaders responseHeaders = send_response_header_to_NF(subscriptionID);
+            responseHeaders = send_response_header_to_NF(subscriptionID);
 
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
             return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
         } else if (eventID == EventID.QOS_SUSTAINABILITY.ordinal()) {
+
             nnwdafEventsSubscription.set_5Qi((Integer) subscriptionRawData.get_5Qi());
             nnwdafEventsSubscription.setMcc((String) subscriptionRawData.getMcc());
             nnwdafEventsSubscription.setMnc((String) subscriptionRawData.getMnc());
@@ -188,23 +182,23 @@ public class Nnwdaf_Service extends BusinessLogic {
             }
 
 
-
             repository.addDataQosSustainability(nnwdafEventsSubscription);
             repository.addDataQosSustainabilitySubscriptionData(nnwdafEventsSubscription);
             repository.setNwdafQosSustainabilityInformation(nnwdafEventsSubscription);
 
+            // Changed obj -- > obj1
+            Object obj1 = check_For_data(nnwdafEventsSubscription, false);
+
+            if (obj1 instanceof ResponseEntity) {
+                return obj1;
+            }
+
+            logger.info("sending response to NF");
+            // function to send response header to NF
+            responseHeaders = send_response_header_to_NF(subscriptionID);
+
         }
 
-        // Changed obj -- > obj1
-        Object obj1 = check_For_data(nnwdafEventsSubscription, false);
-
-        if (obj1 instanceof ResponseEntity) {
-            return obj1;
-        }
-
-        logger.info("sending response to NF");
-        // function to send response header to NF
-        HttpHeaders responseHeaders = send_response_header_to_NF(subscriptionID);
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
@@ -467,7 +461,6 @@ public class Nnwdaf_Service extends BusinessLogic {
     public void notificationHandlerForUEMobility(String response) throws JSONException, IOException {
 
         // System.out.println("In-Notification-Handler-for-UE-Mobility");
-
         //JSONArray jsonArray = new JSONArray(response);
         JSONArray jsonArray = new JSONArray(response);
         String correlationID = jsonArray.get(0).toString();

@@ -59,18 +59,20 @@ public class AMFController extends Functionality {
     @RequestMapping(method = RequestMethod.POST, value = "/notify")
     public void addData(@RequestBody String string) throws Exception {
 
-        JSONObject jsonObject = new JSONObject(string);
-
-        String subId = jsonObject.getString("subscriptionID");
-        String notificationURI = jsonObject.getString("notificaionURI");
-        Integer loadLevel = jsonObject.getInt("currentLoadLevel");
-        String snssais = jsonObject.getString("snssais");
-
+        out.println("in final-notification-test");
         System.out.println("\n\nNotification Received From NWDAF -" + string);
+       // JSONObject jsonObject = new JSONObject(string);
+
+       // String subId = jsonObject.getString("subscriptionID");
+       // String notificationURI = jsonObject.getString("notificaionURI");
+       // Integer loadLevel = jsonObject.getInt("currentLoadLevel");
+       // String snssais = jsonObject.getString("snssais");
+
+
         //  out.println(subId + " loadLevel " + loadLevel + "snssais" + snssais + "NotifcaionURI" + notificationURI);
 
         // Unsubscribe
-        unsubscribe(notificationURI, subId);
+       // unsubscribe(notificationURI, subId);
 
     }
 
