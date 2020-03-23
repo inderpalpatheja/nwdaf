@@ -25,6 +25,9 @@ import static java.lang.System.out;
 @RestController
 public class AMFController extends Functionality {
 
+    final String ranUeThroughput = "ranuethroughput";
+    final String qosFlowRetain = "qosflowretain";
+
 
     Random rand = new Random();
 
@@ -46,16 +49,16 @@ public class AMFController extends Functionality {
 
         JSONObject jsonObject = new JSONObject(string);
 
-        String subId = jsonObject.getString("subscriptionID");
-        String notificationURI = jsonObject.getString("notificaionURI");
-        Integer loadLevel = jsonObject.getInt("currentLoadLevel");
-        String snssais = jsonObject.getString("snssais");
+        //String subId = jsonObject.getString("subscriptionID");
+        //String notificationURI = jsonObject.getString("notificaionURI");
+        //Integer loadLevel = jsonObject.getInt("currentLoadLevel");
+        //String snssais = jsonObject.getString("snssais");
 
         System.out.println("\n\nNotification Received From NWDAF -" + string);
         //  out.println(subId + " loadLevel " + loadLevel + "snssais" + snssais + "NotifcaionURI" + notificationURI);
 
         // Unsubscribe
-        unsubscribe(notificationURI, subId);
+        //unsubscribe(notificationURI, subId);
 
     }
 
@@ -227,5 +230,105 @@ public class AMFController extends Functionality {
     //public void getCorrelationList(List<String> correlationList) {
     //  out.println(correlationList.size());
     // }
+
+
+
+
+
+    @PostMapping("/update/{qosLoadType}/{correlationID}")
+    public ResponseEntity<String> sendData(String notiTargetAddress, @PathVariable("qosLoadType") String loadType, @PathVariable("correlationID") String correlationID) throws IOException, JSONException {
+
+        //  out.println("send Data check1");
+
+        notiTargetAddress = "http://localhost:8081/Nnrf_NFManagement_NFStatusNotify/Qos";
+        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
+
+        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
+        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
+
+        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
+
+        String updated_URL = notiTargetAddress + "/" + correlationID;
+        //  out.println("updated URl - " + updated_URL);
+        URL url = new URL(updated_URL);
+
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+
+
+        // String notificationString = "\n\nSending Notification to " + notiTargetAddress + "/" +
+        //      correlationID;
+
+        // int currnetLoadLevel =50;
+
+        JSONObject json = new JSONObject();
+
+        loadType = loadType.toLowerCase();
+
+        if(loadType.equals(ranUeThroughput))
+        { json.put("ranUeThroughput", 1 + rand.nextInt(85)); }
+
+        else if(loadType.equals(qosFlowRetain))
+        { json.put("qosFlowRetain", 1 + rand.nextInt(85)); }
+
+        else
+        { return new ResponseEntity<String>("Invalid load value", HttpStatus.NOT_ACCEPTABLE); }
+
+        json.put("correlationID", correlationID);
+
+        // out.println("check " + correlationID);
+
+        // For POST only - START
+        con.setDoOutput(true);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = json.toString().getBytes("utf-8");
+
+            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
+
+            os.write(input, 0, input.length);
+            os.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // For POST only - END
+
+        int responseCode = con.getResponseCode();
+        //String responseMessage = con.getResponseMessage();
+        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
+        //System.out.println("POST Response Message :: " + responseMessage);
+
+        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // print result
+            // System.out.println("\n\n");
+            //  System.out.println(response);
+        } else {
+            // System.out.println("\n\n");
+            // System.out.println("POST request not worked");
+        }
+        //  return "Data send to " + updated_URL;
+
+        if(con != null)
+        { con.disconnect(); }
+
+        return new ResponseEntity<String>("Send", HttpStatus.OK);
+    }
+
+
 }
 

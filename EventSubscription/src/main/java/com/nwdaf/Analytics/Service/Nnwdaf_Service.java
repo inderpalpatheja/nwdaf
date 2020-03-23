@@ -4,6 +4,7 @@ import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.MissingData;
 import com.nwdaf.Analytics.Model.APIBuildInformation;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
@@ -304,22 +305,24 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
 
-    public void notificationHandler(String response) throws Exception {
+    public void notificationHandler(String response, EventID eventID) throws Exception {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        // here subID == correlationID
+        if(eventID == EventID.LOAD_LEVEL_INFORMATION)
+        {
+            // here subID == correlationID
 
-        JSONObject json = new JSONObject(response);
+            JSONObject json = new JSONObject(response);
 
-        // String correlationID = json.getString("correlationID");
-        int currentLoadLevel = json.getInt("currentLoadLevel");
-        String correlationID = json.getString("correlationID");
+            // String correlationID = json.getString("correlationID");
+            int currentLoadLevel = json.getInt("currentLoadLevel");
+            String correlationID = json.getString("correlationID");
 
-        //out.println("received from SIMULATOR - " + "currentLoadLevel - " + currentLoadLevel + correlationID);
+            //out.println("received from SIMULATOR - " + "currentLoadLevel - " + currentLoadLevel + correlationID);
 
-        String snssais = repository.getSnssaisByCorrelationID(correlationID);
+            String snssais = repository.getSnssaisByCorrelationID(correlationID, eventID);
 
         /*
          if(repository.isGetAnalytics(snssais)) {
@@ -327,15 +330,51 @@ public class Nnwdaf_Service extends BusinessLogic {
             repository.setGetAnalytics(snssais, false);
         } */
 
-        if (repository.getRefCount_LoadLevelSubscriptionTable(snssais) == 0) {
-            repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais);
+            if (repository.getRefCount(snssais, eventID) == 0) {
+                repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais);
+            }
+
+
+            repository.updateCurrentLoadLevel(currentLoadLevel, snssais);
+            nwdaf_notification_manager();
+
+            //repository.getSnssaisViaSubID(correlationID);
         }
 
 
-        repository.updateCurrentLoadLevel(currentLoadLevel, snssais);
-        nwdaf_notification_manager();
+        else if(eventID == EventID.QOS_SUSTAINABILITY)
+        {
+            JSONObject json = new JSONObject(response);
 
-        //repository.getSnssaisViaSubID(correlationID);
+            Integer ranUeThroughput = null;
+            Integer qosFlowRetain = null;
+
+            if(json.has("ranUeThroughput"))
+            { ranUeThroughput = json.getInt("ranUeThroughput"); }
+
+            else
+            { qosFlowRetain = json.getInt("qosFlowRetain"); }
+
+            String correlationID = json.getString("correlationID");
+            String snssais = repository.getSnssaisByCorrelationID(correlationID, eventID);
+
+            if(repository.getRefCount(snssais, eventID) == 0)
+            { repository.deleteEntry_QosSustainabilitySubscriptionTable(snssais); }
+
+
+            if(ranUeThroughput != null)
+            {
+                repository.updateRanUeThroughput(ranUeThroughput, snssais);
+                qosNotificationManager(QosType.RAN_UE_THROUGHPUT);
+            }
+
+            else if(qosFlowRetain != null)
+            {
+                repository.updateQosFlowRetain(qosFlowRetain, snssais);
+                qosNotificationManager(QosType.QOS_FLOW_RETAIN);
+            }
+        }
+
 
         // incrementing notification Counter
         Counters.incrementCollectorSubscriptionNotifications();

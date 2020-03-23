@@ -4,14 +4,17 @@ import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnection;
 import com.nwdaf.Analytics.Model.AMFModel.AMFModel;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.Nnrf.Nnrf_Model;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.NotificationData;
+import com.nwdaf.Analytics.Model.QosNotificationData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelInformation;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilityInformation;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionTable;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
 import org.json.JSONException;
@@ -131,7 +134,7 @@ public class BusinessLogic extends ResourceValues {
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
 
-        if (!snsExists(nnwdafEventsSubscription.getEventID(), nnwdafEventsSubscription.getSnssais())) {
+        if (!repository.snsExists(nnwdafEventsSubscription.getSnssais(), EventID.values()[nnwdafEventsSubscription.getEventID()])) {
 
 
             // Generating CorrelationID
@@ -181,7 +184,7 @@ public class BusinessLogic extends ResourceValues {
          }  else {
 
             if(!getAnalytics)
-            { increaseRefCount(nnwdafEventsSubscription.getEventID(), nnwdafEventsSubscription.getSnssais()); }
+            { repository.increaseRefCount(nnwdafEventsSubscription.getSnssais(), EventID.values()[nnwdafEventsSubscription.getEventID()]); }
         }
         return null;
     }
@@ -296,7 +299,7 @@ public class BusinessLogic extends ResourceValues {
                     slice.setSnssais(nnwdafEventsSubscription.getSnssais());
 
                     if (getAnalytics) {
-                        if (!repository.snsExistsLoadLevelSubscriptionTable(slice.getSnssais())) {
+                        if (!repository.snsExists(slice.getSnssais(), EventID.LOAD_LEVEL_INFORMATION)) {
                             repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(slice, true);
                         }
                     } else {
@@ -314,7 +317,7 @@ public class BusinessLogic extends ResourceValues {
 
                     if(getAnalytics)
                     {
-                        if(!repository.snsExistsQosSubscriptionTable(qos.getSnssais()))
+                        if(!repository.snsExists(qos.getSnssais(), EventID.QOS_SUSTAINABILITY))
                         { repository.addDataQosSustainabilitySubscriptionTable(qos, true); }
                     }
 
@@ -448,16 +451,28 @@ public class BusinessLogic extends ResourceValues {
         return subscriptionIDList;
     }
 
+
+
+    protected void send_notificaiton_to_NF(String notificationURI,
+                                           EventID eventID,
+                                           String snssais,
+                                           Integer currentLoadLevel,
+                                           String subscriptionID) throws IOException, JSONException
+    { send_notificaiton_to_NF(notificationURI, eventID, snssais, currentLoadLevel, subscriptionID, null); }
+
+
+
+
     /**
      * @param notificationURI
      * @throws IOException
      * @desc this function will send notification to network function
      */
     protected void send_notificaiton_to_NF(String notificationURI,
-                                           String eventID,
+                                           EventID eventID,
                                            String snssais,
-                                           int currentLoadLevel,
-                                           String subscriptionID) throws IOException, JSONException {
+                                           Integer currentLoadLevel,
+                                           String subscriptionID, QosType qosType) throws IOException, JSONException {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
@@ -496,14 +511,32 @@ public class BusinessLogic extends ResourceValues {
 
         JSONObject json = new JSONObject();
 
-        json.put("eventID", eventID);
+        json.put("eventID", eventID.toString());
         json.put("snssais", snssais);
 
 
         // This value will be fetched from nwdafSliceLoadLevelSubscriptionData send by NF
         json.put("notificaionURI", "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions");
         json.put("subscriptionID", subscriptionID);
-        json.put("currentLoadLevel", currentLoadLevel);
+
+
+        /**************************************************************************************************************/
+
+        if(eventID == EventID.LOAD_LEVEL_INFORMATION)
+        { json.put("currentLoadLevel", currentLoadLevel); }
+
+
+        else if(eventID == EventID.QOS_SUSTAINABILITY)
+        {
+            if(qosType == QosType.RAN_UE_THROUGHPUT)
+            { json.put("crossedRanUeThroughputThreshold", currentLoadLevel); }
+
+            else
+            { json.put("crossedQosFlowRetainThreshold", currentLoadLevel); }
+        }
+
+        /**************************************************************************************************************/
+
 
         try (OutputStream os = con.getOutputStream()) {
             byte[] input = json.toString().getBytes("utf-8");
@@ -553,16 +586,16 @@ public class BusinessLogic extends ResourceValues {
 
         if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
         {
-            mCorrelationID = repository.getUnSubCorrelationID_LoadLevelInformation(snssais);
+            mCorrelationID = repository.getUnSubCorrelationID(snssais, EventID.LOAD_LEVEL_INFORMATION);
             //   String mCorrelationID = repository.getUnSubCorrelationID(snssais);
 
-            correlationID = repository.getCorrelationID_LoadLevelInformation(mCorrelationID);
+            correlationID = repository.getCorrelationID(mCorrelationID, EventID.LOAD_LEVEL_INFORMATION);
         }
 
         else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
         {
-            mCorrelationID = repository.getUnSubCorrelationID_QosSustainability(snssais);
-            correlationID = repository.getCorrelationID_QosSustainability(mCorrelationID);
+            mCorrelationID = repository.getUnSubCorrelationID(snssais, EventID.QOS_SUSTAINABILITY);
+            correlationID = repository.getCorrelationID(mCorrelationID, EventID.QOS_SUSTAINABILITY);
         }
 
 
@@ -649,28 +682,28 @@ public class BusinessLogic extends ResourceValues {
         // Fetching all snssais list
         List<SliceLoadLevelInformation> list = repository.getALLsnssais();
 
-        if (repository.getALLsnssais() == null) {
+        if (list == null || list.isEmpty()) {
             logger.warn("no snssais Found [ Null object ]");
+            return;
         }
 
         for(SliceLoadLevelInformation slice: list)
         {
             List<NotificationData> dataSet = repository.getAllNotificationData(slice.getSnssais(), slice.getCurrentLoadLevel());
 
-            if(dataSet != null)
+            if(dataSet != null && !dataSet.isEmpty())
             {
                 for(NotificationData notifyData: dataSet)
                 {
-                    /*if(!subID_SET.contains(notifyData.getSubscriptionID()))
+                    if(!subID_SET.contains(notifyData.getSubscriptionID()))
                     {
                         subID_SET.add(notifyData.getSubscriptionID());
 
-                        SubscriptionTable subscriptionData = repository.findById_subscriptionID(notifyData.getSubscriptionID());
-                        send_notificaiton_to_NF(subscriptionData.getNotificationURI(), EventID.values()[subscriptionData.getEventID()].toString(), slice.getSnssais(), slice.getCurrentLoadLevel(), subscriptionData.getSubscriptionID());
-                    } */
+                       //SubscriptionTable subscriptionData = repository.findById_subscriptionID(notifyData.getSubscriptionID());
+                        send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.LOAD_LEVEL_INFORMATION, slice.getSnssais(), slice.getCurrentLoadLevel(), notifyData.getSubscriptionID());
+                    }
 
-                    SubscriptionTable subscriptionData = repository.findById_subscriptionID(notifyData.getSubscriptionID());
-                    send_notificaiton_to_NF(subscriptionData.getNotificationURI(), EventID.values()[subscriptionData.getEventID()].toString(), slice.getSnssais(), slice.getCurrentLoadLevel(), subscriptionData.getSubscriptionID());
+                    //send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.LOAD_LEVEL_INFORMATION, slice.getSnssais(), slice.getCurrentLoadLevel(), notifyData.getSubscriptionID());
                 }
             }
         }
@@ -680,25 +713,53 @@ public class BusinessLogic extends ResourceValues {
 
 
 
-    public boolean snsExists(Integer eventID, String snssais)
-    {
-        if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
-        { return repository.snsExistsLoadLevelSubscriptionTable(snssais); }
 
-        else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
-        { return repository.snsExistsQosSubscriptionTable(snssais); }
 
-        return true;
+
+
+
+    protected void qosNotificationManager(QosType qosType) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+
+        List<QosSustainabilityInformation> list = repository.getAllSnssaisForQos(qosType);
+
+        if (list == null || list.isEmpty()) {
+            logger.warn("no snssais Found [ Null object ]");
+            return;
+        }
+
+        for(QosSustainabilityInformation qos: list)
+        {
+            List<QosNotificationData> dataSet;
+
+            if(qosType == QosType.RAN_UE_THROUGHPUT)
+            { dataSet = repository.getAllQosNotificationData(qos.getSnssais(), qos.getRanUeThroughput() ,qosType); }
+
+            else
+            { dataSet = repository.getAllQosNotificationData(qos.getSnssais(), qos.getQosFlowRetain() ,qosType); }
+
+
+            if(dataSet != null && !dataSet.isEmpty())
+            {
+                if(qosType == QosType.RAN_UE_THROUGHPUT)
+                {
+                    for(QosNotificationData notifyData: dataSet)
+                    { send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.QOS_SUSTAINABILITY, qos.getSnssais(), qos.getRanUeThroughput(), notifyData.getSubscriptionID(), QosType.RAN_UE_THROUGHPUT); }
+                }
+
+                else
+                {
+                    for(QosNotificationData notifyData: dataSet)
+                    { send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.QOS_SUSTAINABILITY, qos.getSnssais(), qos.getQosFlowRetain(), notifyData.getSubscriptionID(), QosType.QOS_FLOW_RETAIN); }
+                }
+            }
+        }
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
 
-
-    public void increaseRefCount(Integer eventID, String snssais)
-    {
-        if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
-        { repository.increaseRefCount_LoadLevelSubscriptionTable(snssais); }
-
-        else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
-        { repository.increaseRefCount_QosSubscriptionTable(snssais); }
-    }
 
 }

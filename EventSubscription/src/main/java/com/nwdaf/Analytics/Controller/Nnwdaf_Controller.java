@@ -1,6 +1,7 @@
 package com.nwdaf.Analytics.Controller;
 
 
+import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
@@ -139,10 +140,19 @@ public class Nnwdaf_Controller {
     @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusNotify/{correlationID}")
     public void acceptingNotification(@RequestBody String response) throws Exception {
 
-        nwdaf_service.notificationHandler(response);
+        nwdaf_service.notificationHandler(response, EventID.LOAD_LEVEL_INFORMATION);
 
     }
 
+
+
+    // Accepting Notification related to QOS_SUSTAINABILITY [ from Simulator]
+    @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusNotify/Qos/{correlationID}")
+    public void acceptingNotification_Qos(@RequestBody String response) throws Exception {
+
+        nwdaf_service.notificationHandler(response, EventID.QOS_SUSTAINABILITY);
+
+    }
 
 
 
