@@ -4,6 +4,7 @@ package com.nwdaf.Analytics.Controller;
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
+import com.nwdaf.Analytics.Model.RawData.UEUpdateRawData;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
 import io.swagger.annotations.ApiOperation;
 import org.json.JSONException;
@@ -122,6 +123,12 @@ public class Nnwdaf_Controller {
     }
 
 
+   /* @PutMapping(EVENT_SUB + "/subscriptions/{subscriptionID}")
+    @ApiOperation(value = OperationInfo.UPDATE_SUBSCRIPTION_INFO, notes = OperationInfo.UPDATE_SUBSCRIPTION_NOTES, response = Object.class)
+    public ResponseEntity<?> update_nf_subscriptionForUE(@PathVariable("subscriptionID") String subscriptionID, @RequestBody  SubUpdateRawData updateData) {
+
+        return nwdaf_service.update_nf_subscription_ForUE(subscriptionID, updateData);
+    }*/
 
 
     /**

@@ -8,6 +8,7 @@ import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
+import com.nwdaf.Analytics.Model.RawData.UEUpdateRawData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.NnwdafEventsSubscriptionUEmobility;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionModel;
@@ -245,8 +246,60 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         nnwdafEventsSubscription = (NnwdafEventsSubscription) checkForData;
 
+       /* if(5 == nnwdafEventsSubscription.getEventID()){
+            // Updating user via subscriptionID
+            repository.updateNF_forUE(nnwdafEventsSubscription, subscriptionID);
+        }*/
+
+
         // Updating user via subscriptionID
         repository.updateNF(nnwdafEventsSubscription, subscriptionID);
+
+        // Incrementing update counter
+        Counters.incrementSubscriptionUpdates();
+
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+        return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> update_nf_subscription_ForUE(String subscriptionID, SubUpdateRawData updateRawData) {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+
+        SubscriptionTable nwdafSubscriptionTableModel = repository.findById_subscriptionID(subscriptionID);
+
+        if (nwdafSubscriptionTableModel == null) {
+            logger.warn("no Content");
+            return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
+        }
+
+        NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
+
+        nnwdafEventsSubscription.setSupi((String) updateRawData.getSupi());
+        nnwdafEventsSubscription.setEventID((Integer) updateRawData.getEventID());
+        //Object checkForData;
+
+
+      /* if ((checkForData = TypeChecker.checkForUpdateSub(updateData)) instanceof NnwdafEventsSubscription) {
+            nnwdafEventsSubscription = (NnwdafEventsSubscription) checkForData;
+        } else {
+            return new ResponseEntity<InvalidType>((InvalidType) checkForData, HttpStatus.NOT_ACCEPTABLE);
+        }
+
+
+       // Integer loadLevelThreshold = repository.getLoadLevelThreshold(subscriptionID);
+
+        if ((checkForData = UpdateValidator.check(nnwdafEventsSubscription, updateData, nwdafSubscriptionTableModel, loadLevelThreshold)) instanceof MissingData) {
+            return new ResponseEntity<MissingData>((MissingData) checkForData, HttpStatus.NOT_ACCEPTABLE);
+        }
+
+      //  nnwdafEventsSubscription = (NnwdafEventsSubscription) checkForData;*/
+
+        // Updating user via subscriptionID
+        repository.updateNF_forUE(nnwdafEventsSubscription, subscriptionID);
 
         // Incrementing update counter
         Counters.incrementSubscriptionUpdates();
@@ -521,7 +574,6 @@ public class Nnwdaf_Service extends BusinessLogic {
         String supi = repository.getSupiValueByCorrelationID(correlationID);
 
 
-
         // now time to update UE-MobilityTable;
         // First Fetch all ID
         updateUEMobilityTable(correlationID);
@@ -541,7 +593,7 @@ public class Nnwdaf_Service extends BusinessLogic {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        if(5 == eventID) {
+        if (5 == eventID) {
 
             NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE = new NnwdafEventsSubscriptionUEmobility();
             nnwdafEventsSubscriptionUE.setSupi(supi);
@@ -552,8 +604,7 @@ public class Nnwdaf_Service extends BusinessLogic {
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
             return supiDataList;
 
-        }
-        else{
+        } else {
 
             return "eventID: eventID for UEmobility must be 5";
         }
@@ -561,12 +612,6 @@ public class Nnwdaf_Service extends BusinessLogic {
 
     }
     /****UEmobility******/
-
-
-
-
-
-
 
 
 }

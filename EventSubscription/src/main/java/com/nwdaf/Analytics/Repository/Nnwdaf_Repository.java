@@ -1292,6 +1292,20 @@ public class Nnwdaf_Repository {
 
     }
 
+    public Integer updateNF_forUE(NnwdafEventsSubscription nnwdafEventsSubscription, String subscriptionID) {
+
+        // Updating nwdafSubscriptionTable
+        String updateSubscriptionTable = "UPDATE nwdafSubscriptionTable SET eventID = ?, notifMethod = ?, repetitionPeriod = ? WHERE subscriptionID = ?";
+        jdbcTemplate.update(updateSubscriptionTable, new Object[]{nnwdafEventsSubscription.getEventID(), nnwdafEventsSubscription.getNotifMethod(), nnwdafEventsSubscription.getRepetitionPeriod(), subscriptionID});
+
+
+        // Updating nwdafSliceLoadLevelSubscriptionData
+        String updateLoadLevelSubData = "UPDATE nwdafUEmobilitySubscriptionData; SET supi = ? WHERE subscriptionID = ?";
+        jdbcTemplate.update(updateLoadLevelSubData, new Object[]{nnwdafEventsSubscription.getSupi(), subscriptionID});
+
+        return 1;
+    }
+
 
     /****UEmobility**********/
 
