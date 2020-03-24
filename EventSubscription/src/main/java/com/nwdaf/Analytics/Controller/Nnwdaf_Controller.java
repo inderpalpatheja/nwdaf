@@ -82,7 +82,7 @@ public class Nnwdaf_Controller {
                                   @PathVariable("eventID") int eventID) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analyticsForUEMobility(supi, false, eventID);
+        return nwdaf_service.nwdaf_analyticsUEmobility(supi, eventID);
 
     }
 

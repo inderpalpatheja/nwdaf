@@ -100,6 +100,22 @@ public class AMFController extends Functionality {
         return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
     }
 
+    @RequestMapping(method = RequestMethod.DELETE, value = "/Namf_Event_Exposure_UnSubscribe")
+    public ResponseEntity<String> unsubScribeFromNWDAFForUEMobility(@RequestBody String response) throws JSONException, IOException {
+
+        JSONObject jsonObject = new JSONObject(response);
+        String unSubCorrelationID = jsonObject.getString("mSubcorrelationID");
+        String correlationID = jsonObject.getString("correlationID");
+
+        correlationIDList.remove(correlationID);
+        // list.delete();
+        //     out.println("Unsubscribed from NWDAF WORKED for " + response);
+
+
+        return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
+    }
+
+
  /*   @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
     public ResponseEntity<String> unsubScribeFromNWDAFForUEMobility(@RequestBody String response) throws JSONException, IOException {
 

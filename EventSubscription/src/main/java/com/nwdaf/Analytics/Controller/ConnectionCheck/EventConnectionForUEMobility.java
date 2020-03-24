@@ -1,6 +1,9 @@
 package com.nwdaf.Analytics.Controller.ConnectionCheck;
 
+import com.nwdaf.Analytics.Model.TableType.UEMobility.UserLocation;
+
 import java.util.Date;
+import java.util.List;
 
 public class EventConnectionForUEMobility {
 
@@ -9,19 +12,7 @@ public class EventConnectionForUEMobility {
     private String supi;
     private Date ts;
     private Integer DurationSec;
-    private String locationInfo;
-
-    public EventConnectionForUEMobility() {
-    }
-
-    public EventConnectionForUEMobility(Boolean dataStatus, String message, String supi, Date ts, Integer durationSec, String locationInfo) {
-        DataStatus = dataStatus;
-        Message = message;
-        this.supi = supi;
-        this.ts = ts;
-        DurationSec = durationSec;
-        this.locationInfo = locationInfo;
-    }
+    private Object locationInfo;
 
     @Override
     public String toString() {
@@ -31,8 +22,11 @@ public class EventConnectionForUEMobility {
                 ", supi='" + supi + '\'' +
                 ", ts=" + ts +
                 ", DurationSec=" + DurationSec +
-                ", locationInfo='" + locationInfo + '\'' +
+                ", locationInfo=" + locationInfo +
                 '}';
+    }
+
+    public EventConnectionForUEMobility() {
     }
 
     public Boolean getDataStatus() {
@@ -75,11 +69,20 @@ public class EventConnectionForUEMobility {
         DurationSec = durationSec;
     }
 
-    public String getLocationInfo() {
+    public Object getLocationInfo() {
         return locationInfo;
     }
 
-    public void setLocationInfo(String locationInfo) {
+    public void setLocationInfo(Object locationInfo) {
+        this.locationInfo = locationInfo;
+    }
+
+    public EventConnectionForUEMobility(Boolean dataStatus, String message, String supi, Date ts, Integer durationSec, Object locationInfo) {
+        DataStatus = dataStatus;
+        Message = message;
+        this.supi = supi;
+        this.ts = ts;
+        DurationSec = durationSec;
         this.locationInfo = locationInfo;
     }
 }

@@ -9,6 +9,7 @@ import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.NnwdafEventsSubscriptionUEmobility;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionModel;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UserLocation;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.context.EmbeddedValueResolverAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -38,6 +40,8 @@ import java.math.BigInteger;
 import java.net.*;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.*;
+
+import static java.lang.System.out;
 
 
 @Service
@@ -270,13 +274,19 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         }*/
 
+
         if (subscriber == null) {
             logger.warn("subscriptionID= not found");
             //  out.println("subscriptionID= not found");
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NOT_FOUND);
         }
 
+        if (subscriber.getEventID() == EventID.UE_MOBILITY.ordinal()) {
+            unsubscribeNF_forUEMobility(subscriber);
+        }
+
         String snssais;
+
 
         if ((snssais = repository.unsubscribeNF(subscriber)) != null) {
 
@@ -295,6 +305,22 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
+    }
+
+    private void unsubscribeNF_forUEMobility(SubscriptionTable subscriber) throws Exception {
+
+        String supi;
+
+
+        if ((supi = repository.unsubscribeNFForUE(subscriber)) != null) {
+
+            Integer eventID = subscriber.getEventID();
+
+            unsubscribeFromNWDAF_forUEMobility(supi, eventID);
+
+            repository.deleteEntry_UEMobilitySubscriptionTable(supi);
+
+        }
     }
 
 
@@ -464,6 +490,11 @@ public class Nnwdaf_Service extends BusinessLogic {
         //JSONArray jsonArray = new JSONArray(response);
         JSONArray jsonArray = new JSONArray(response);
         String correlationID = jsonArray.get(0).toString();
+        String cellID;
+        String TacValue;
+        Integer MCC_value;
+        Integer MNC_value;
+        JSONObject plmnObject = new JSONObject();
 
         // At 0 position I am sending CorrelationID;
         for (int i = 1; i < jsonArray.length(); i++) {
@@ -476,60 +507,66 @@ public class Nnwdaf_Service extends BusinessLogic {
             JSONObject taiValue = jsonObject.getJSONObject("Tai");
             JSONObject ecqiValue = jsonObject.getJSONObject("Ecqi");
 
-            String cellID = ecqiValue.getString("cellID");
-            String TacValue = taiValue.getString("Tac");
-            JSONObject plmnObject = taiValue.getJSONObject("plmn");
-            Integer MCC_value = plmnObject.getInt("MCC");
-            Integer MNC_value = plmnObject.getInt("MNC");
+            cellID = ecqiValue.getString("cellID");
+            TacValue = taiValue.getString("Tac");
+            plmnObject = taiValue.getJSONObject("plmn");
+            MCC_value = plmnObject.getInt("MCC");
+            MNC_value = plmnObject.getInt("MNC");
             String TaiValue = MCC_value + "," + MNC_value + ":" + TacValue;
 
             // update all the location of supi received in JsonArray;
             add_value_to_userLocationTable(TaiValue, cellID, timeDurationValue);
         }
+
+        String supi = repository.getSupiValueByCorrelationID(correlationID);
+
+
+
         // now time to update UE-MobilityTable;
         // First Fetch all ID
         updateUEMobilityTable(correlationID);
+
+        if (repository.getRefCount_UEmobilitySubscriptionTable(supi) == 0) {
+            repository.deleteEntry_UEMobilitySubscriptionTable(supi);
+        }
 
         nwdaf_notification_manager_ForUEMobility();
 
     }
 
-    public String nwdaf_analyticsForUEMobility(String supi, Boolean anySlice, int eventID) throws JSONException {
+    /****UEmobility******/
 
-        JSONObject userLocationObject = new JSONObject();
-        List<UserLocation> userLocations = new ArrayList<>();
-        UserLocation userLocation = new UserLocation();
+    public Object nwdaf_analyticsUEmobility(String supi, int eventID) throws IOException, JSONException {
 
-        String location = repository.getAllNotificationDataForUEMobility(supi);
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        // Removing [ ] from location String
-        String splitLocationString = location.substring(1, location.length() - 1);
+        if(5 == eventID) {
 
-        // Splitting location via ,
-        String[] splitedString = splitLocationString.split(",");
+            NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE = new NnwdafEventsSubscriptionUEmobility();
+            nnwdafEventsSubscriptionUE.setSupi(supi);
 
-        // iterating through split string and finding User Location from particular ID
-        for (int j = 0; j < splitedString.length; j++) {
 
-            /* now it's time to find the UserLocation by particular ID*/
+            Object supiDataList = check_For_dataUEmobility(nnwdafEventsSubscriptionUE, true);
 
-            // Type Casting String ID value to Integer Value;
-            Integer ID = Integer.valueOf(splitedString[j].trim());
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+            return supiDataList;
 
-            //Finding UseLocation Via ID.
-            userLocation = repository.getUserLocationFromID(ID);
+        }
+        else{
 
-            userLocations.add(userLocation);
-            // out.println("user-location : Tai-value " + userLocation.getTai());
+            return "eventID: eventID for UEmobility must be 5";
         }
 
-        for (int i = 0; i < userLocations.size(); i++) {
 
-
-            String keyValue = "UserLocation - " + i;
-            String UserLocationTaiValue = userLocations.get(i).getTai();
-            userLocationObject.put(keyValue, UserLocationTaiValue);
-        }
-        return userLocationObject.toString();
     }
+    /****UEmobility******/
+
+
+
+
+
+
+
+
 }

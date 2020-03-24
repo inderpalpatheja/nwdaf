@@ -11,6 +11,15 @@ public class UserLocation {
     private String cellID;
     private Integer timeDuration;
 
+    @Override
+    public String toString() {
+        return "UserLocation{" +
+                "ID=" + ID +
+                ", tai='" + tai + '\'' +
+                ", cellID='" + cellID + '\'' +
+                ", timeDuration=" + timeDuration +
+                '}';
+    }
 
     public UserLocation() {
     }
