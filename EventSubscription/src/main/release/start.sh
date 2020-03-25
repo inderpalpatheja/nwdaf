@@ -1,1 +1,0 @@
-java -jar nwdaf.jar &
