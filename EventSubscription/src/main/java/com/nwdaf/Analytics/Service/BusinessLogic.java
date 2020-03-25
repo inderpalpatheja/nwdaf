@@ -60,7 +60,7 @@ public class BusinessLogic extends ResourceValues {
     UserLocation userLocation = new UserLocation();
 
 
-   // UserLocation userLocation = new UserLocation();
+    // UserLocation userLocation = new UserLocation();
 
 
     /**
@@ -467,24 +467,122 @@ public class BusinessLogic extends ResourceValues {
                                            int currentLoadLevel,
                                            String subscriptionID) throws IOException, JSONException {
 
-        JSONObject jsonForUEMobility = new JSONObject();
-        JSONObject jsonForSliceLoadLevel = new JSONObject();
-        JSONArray jsonArrayFinalNotification = new JSONArray();
-        JSONObject jsonObjectFinalNotification = new JSONObject();
+//        JSONObject jsonForUEMobility = new JSONObject();
+//        JSONObject jsonForSliceLoadLevel = new JSONObject();
+//        JSONArray jsonArrayFinalNotification = new JSONArray();
+//        JSONObject jsonObjectFinalNotification = new JSONObject();
+
         String tacValue;
 
-        jsonObjectFinalNotification.put("subscriptionID", subscriptionID);
+        /*JSON NOTIFICATION ACCORDING 3GPP START*/
 
-        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
-        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+        JSONArray eventNotificationArray = new JSONArray();
+        JSONObject eventNotificationFinalObject = new JSONObject();
+        JSONObject eventNotificationObject = new JSONObject();
+        JSONArray uEMobilityArray = new JSONArray();
+        JSONObject sliceLoadLevelInfo = new JSONObject();
+        JSONArray snssaisArray = new JSONArray();
+        JSONObject ueMobilityObject = new JSONObject();
+        JSONArray locationInfoArray = new JSONArray();
+
+        JSONArray ueTrajectoryArray = new JSONArray();
+        JSONObject ueTrajectoryObject = new JSONObject();
+
+
+
+        for (int i = 0; i < userLocations.size(); i++) {
+
+            JSONObject locationInfoObject = new JSONObject();
+
+            String key = "userLocation-" + i;
+            String taiValue = userLocations.get(i).getTai();
+            String cellIDValue = userLocations.get(i).getCellID();
+            Integer timeDuration = userLocations.get(i).getTimeDuration();
+
+            // String finalLocationValue = taiValue + "||" + cellIDValue;
+            out.println("\n\n\ntaiValue" + taiValue + "\n\n\n");
+            //String[] splitedString = splitLocationString.split(",");
+            String[] taiSplitValue = taiValue.split(":");
+            String plmnValues = taiSplitValue[0];
+            tacValue = taiSplitValue[1];
+
+            out.println("\n\nplmnValues" + plmnValues);
+            out.println("\n\nTacValue" + tacValue);
+
+            String[] plmnSplittedValues = plmnValues.split(",");
+            String MCC = plmnSplittedValues[0];
+            String MNC = plmnSplittedValues[1];
+            //  String finalLocationValue = " MCC - " + MCC + " MNC - " + MNC + " Tac Value - " + tacValue + " Cell-ID - " + cellIDValue;
+
+            JSONObject plmnObject = new JSONObject();
+            plmnObject.put("MNC", MNC);
+            plmnObject.put("MCC", MCC);
+
+            JSONObject EcqiObject = new JSONObject();
+            EcqiObject.put("plmn", plmnObject);
+            EcqiObject.put("cellID", cellIDValue);
+
+
+            JSONObject taiObject = new JSONObject();
+            taiObject.put("plmn", plmnObject);
+            taiObject.put("Tac", tacValue);
+
+
+            JSONObject userLocation = new JSONObject();
+            userLocation.put("timeDuration", timeDuration);
+            userLocation.put("Tai", taiObject);
+            userLocation.put("Ecqi", EcqiObject);
+
+
+            locationInfoObject.put(key, userLocation);
+            locationInfoArray.put(locationInfoObject);
+
+        }
+
+
+
+
+        ueTrajectoryObject.put("ts", "Date-time-value");
+        ueTrajectoryObject.put("recurringTime", "recurringTime-value");
+        ueTrajectoryObject.put("duration", 30);
+        ueMobilityObject.put("supi", supi);
+        ueTrajectoryObject.put("locInfo", locationInfoArray);
+
+        ueTrajectoryArray.put(ueTrajectoryObject);
+
+        ueMobilityObject.put("ueTraj", ueTrajectoryArray);
+
+
+        uEMobilityArray.put(ueMobilityObject);
+
+        snssaisArray.put(snssais);
+        sliceLoadLevelInfo.put("loadLevelInformation", currentLoadLevel);
+        sliceLoadLevelInfo.put("snssais", snssaisArray);
+
+        eventNotificationObject.put("NwdafEvent", eventID);
+        eventNotificationObject.put("SliceLoadLevelInformation", sliceLoadLevelInfo);
+        eventNotificationObject.put("ueMobs", uEMobilityArray);
+
+        eventNotificationArray.put(eventNotificationObject);
+
+        eventNotificationFinalObject.put("eventNotifications", eventNotificationArray);
+        eventNotificationFinalObject.put("subscriptionId", subscriptionID);
+
+        /*JSON NOTIFICATION ACCORDING 3GPP ENDS*/
+
+
+       // jsonObjectFinalNotification.put("subscriptionID", subscriptionID);
+
+     /*   final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);*/
 
         Counters.incrementSubscriptionNotifications();
 
 
-        out.println("eventID - " + eventID);
+       // out.println("eventID - " + eventID);
 
 
-        String subscriptionURI = "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions";
+       // String subscriptionURI = "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions";
 
         // URL url = null;
         //try {
@@ -518,7 +616,7 @@ public class BusinessLogic extends ResourceValues {
         but it's giving 500 internal server error for that*/
 
 
-        if (eventID.equals("UE_MOBILITY")) {
+       /* if (eventID.equals("UE_MOBILITY")) {
 
             // out.println("sheetal_UE");
             // out.println(eventID);
@@ -610,7 +708,7 @@ public class BusinessLogic extends ResourceValues {
 
 
         // jsonArrayFinalNotification.put(jsonForSliceLoadLevel);
-        //jsonArrayFinalNotification.put(jsonForUEMobility);
+        //jsonArrayFinalNotification.put(jsonForUEMobility);*/
 
 
         // For POST only - START
@@ -621,8 +719,8 @@ public class BusinessLogic extends ResourceValues {
 
         try (OutputStream os = con.getOutputStream()) {
 
-            out.println("final-notification-test-2" + jsonArrayFinalNotification.toString());
-            byte[] input = jsonArrayFinalNotification.toString().getBytes("utf-8");
+            out.println("final-notification-test-2" + eventNotificationFinalObject.toString());
+            byte[] input = eventNotificationFinalObject.toString().getBytes("utf-8");
 
 
             os.write(input, 0, input.length);
@@ -661,7 +759,7 @@ public class BusinessLogic extends ResourceValues {
         //userLocations.clear();
         // jsonArrayFinalNotification.remove(0);
 
-        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+       // logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
 
     // @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
@@ -1314,7 +1412,7 @@ public class BusinessLogic extends ResourceValues {
                 //Finding UseLocation Via ID.
                 userLocation = repository.getUserLocationFromID(ID);
 
-                out.println("userlocation - " +userLocation.toString());
+                out.println("userlocation - " + userLocation.toString());
 
                 userLocationsForAnalytics.add(userLocation);
                 // out.println("user-location : Tai-value " + userLocation.getTai());
