@@ -4,6 +4,7 @@ package com.nwdaf.Analytics.Controller;
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
+import com.nwdaf.Analytics.Model.RawData.UEUpdateRawData;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
 import io.swagger.annotations.ApiOperation;
 import org.json.JSONException;
@@ -73,6 +74,19 @@ public class Nnwdaf_Controller {
 
     }
 
+    @GetMapping(ANALYTICS + "/{supi}/{eventID}")
+    @ApiOperation(value = "Get Analytics Details By supi or anySlice Details",
+            notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
+            response = Object.class)
+    public Object nwdaf_analyticsForUEMobility(@PathVariable("supi") String supi,
+                                   Boolean anySlice,
+                                  @PathVariable("eventID") int eventID) throws IOException, JSONException {
+
+
+        return nwdaf_service.nwdaf_analyticsUEmobility(supi, eventID);
+
+    }
+
 
   /*  /**
      * @param nnwdafEventsSubscription
@@ -109,6 +123,12 @@ public class Nnwdaf_Controller {
     }
 
 
+   /* @PutMapping(EVENT_SUB + "/subscriptions/{subscriptionID}")
+    @ApiOperation(value = OperationInfo.UPDATE_SUBSCRIPTION_INFO, notes = OperationInfo.UPDATE_SUBSCRIPTION_NOTES, response = Object.class)
+    public ResponseEntity<?> update_nf_subscriptionForUE(@PathVariable("subscriptionID") String subscriptionID, @RequestBody  SubUpdateRawData updateData) {
+
+        return nwdaf_service.update_nf_subscription_ForUE(subscriptionID, updateData);
+    }*/
 
 
     /**
@@ -217,6 +237,18 @@ public class Nnwdaf_Controller {
 
     }
 
+
+    // Accepting Notification UE-Mobility [ from Simulator]
+    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{correlationID}")
+    public void acceptingNotificationFromUEMobility(@RequestBody String response) throws Exception {
+
+
+
+        nwdaf_service.notificationHandlerForUEMobility(response);
+
+
+
+    }
 
 
 

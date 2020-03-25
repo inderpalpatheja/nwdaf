@@ -7,6 +7,20 @@ public class SubUpdateRawData {
     Object repetitionPeriod;
     Object loadLevelThreshold;
 
+    /*UE-Mobility*/
+    Object supi;
+
+
+    public SubUpdateRawData() {
+    }
+
+    public SubUpdateRawData(Object eventID, Object notifMethod, Object repetitionPeriod, Object loadLevelThreshold, Object supi) {
+        this.eventID = eventID;
+        this.notifMethod = notifMethod;
+        this.repetitionPeriod = repetitionPeriod;
+        this.loadLevelThreshold = loadLevelThreshold;
+        this.supi = supi;
+    }
 
     public Object getEventID() {
         return eventID;
@@ -38,5 +52,13 @@ public class SubUpdateRawData {
 
     public void setLoadLevelThreshold(Object loadLevelThreshold) {
         this.loadLevelThreshold = loadLevelThreshold;
+    }
+
+    public Object getSupi() {
+        return supi;
+    }
+
+    public void setSupi(Object supi) {
+        this.supi = supi;
     }
 }
