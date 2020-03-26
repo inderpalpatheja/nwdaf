@@ -134,7 +134,7 @@ public class Nnwdaf_Controller {
     @ApiOperation(value = OperationInfo.UNSUBSCRICE_INFO, notes = OperationInfo.UNSUBSCRIBE_NOTES, response = Object.class)
     public ResponseEntity<?> unsubscription_nf(@PathVariable("subscriptionID") String subscriptionID) throws Exception {
 
-        System.out.println("\n\n\n@@IN UN-SUBSCRIPTION@@\n\n");
+       // System.out.println("\n\n\n@@IN UN-SUBSCRIPTION@@\n\n");
         System.out.println("subscriptionID - " + subscriptionID);
 
         return nwdaf_service.unsubscription_nf(subscriptionID);
