@@ -1,7 +1,6 @@
 package com.nwdaf.Analytics.Service;
 
 import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
-import com.nwdaf.Analytics.Controller.ConnectionCheck.MissingData;
 import com.nwdaf.Analytics.Model.APIBuildInformation;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
@@ -10,14 +9,18 @@ import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
-import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainability;
+import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.NnwdafEventsSubscriptionUEmobility;
+import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionModel;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
 import com.nwdaf.Analytics.Service.Validator.ErrorReport.EssentialsError;
 import com.nwdaf.Analytics.Service.Validator.ErrorReport.QosSustainabilityError;
 import com.nwdaf.Analytics.Service.Validator.ErrorReport.SliceLoadLevelError;
+import com.nwdaf.Analytics.Service.Validator.ErrorReport.UeMobilityError;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.EssentialsValidator;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.QosSustainabilityValidator;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.SliceLoadLevelValidator;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.UeMobilityValidator;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -40,7 +43,7 @@ import java.net.*;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.*;
 
-
+import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 
 @Service
@@ -101,7 +104,6 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
         //Validate Event specific data
-
         if(nnwdafEventsSubscription.getEventID() == EventID.LOAD_LEVEL_INFORMATION.ordinal())
         {
             if((validator = SliceLoadLevelValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof SliceLoadLevelError)
@@ -115,7 +117,15 @@ public class Nnwdaf_Service extends BusinessLogic {
         }
 
 
+        else if(nnwdafEventsSubscription.getEventID() == EventID.UE_MOBILITY.ordinal())
+        {
+            if((validator = UeMobilityValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof UeMobilityError)
+            { return new ResponseEntity<UeMobilityError>((UeMobilityError)validator, HttpStatus.NOT_ACCEPTABLE); }
+        }
+
+
         nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
+
 
         logger.info("consumer is subscribing for an event and providing these details. eventID:  " + nnwdafEventsSubscription.getEventID() + "\n" + " notificationURI:  " + nnwdafEventsSubscription.getNotificationURI() + "\n" +
                 " snssais:  " + nnwdafEventsSubscription.getSnssais() + "\n" + " notifMethod:  " + nnwdafEventsSubscription.getNotifMethod() + "\n" +
@@ -157,6 +167,12 @@ public class Nnwdaf_Service extends BusinessLogic {
                 " LoadLevelThreshold : " + nnwdafEventsSubscription.getLoadLevelThreshold()); */
             //getAnalytics = false;
             // function to check snssais data
+
+            Object obj = check_For_data(nnwdafEventsSubscription, false);
+
+            if (obj instanceof ResponseEntity) {
+                return obj;
+            }
         }
 
 
@@ -167,15 +183,22 @@ public class Nnwdaf_Service extends BusinessLogic {
             repository.addDataQosSustainability(nnwdafEventsSubscription);
             repository.addDataQosSustainabilitySubscriptionData(nnwdafEventsSubscription);
             repository.setNwdafQosSustainabilityInformation(nnwdafEventsSubscription.getSnssais());
+
+            Object obj = check_For_data(nnwdafEventsSubscription, false);
+
+            if (obj instanceof ResponseEntity) {
+                return obj;
+            }
         }
 
 
-
-        Object obj = check_For_data(nnwdafEventsSubscription, false);
-
-        if (obj instanceof ResponseEntity) {
-            return obj;
+        else if(eventID == EventID.UE_MOBILITY.ordinal())
+        {
+            repository.subscribeNF(nnwdafEventsSubscription, EventID.UE_MOBILITY);
+            return perform_UEMobility(nnwdafEventsSubscription);
         }
+
+
 
 
         logger.info("sending response to NF");
@@ -273,6 +296,10 @@ public class Nnwdaf_Service extends BusinessLogic {
             logger.warn("subscriptionID= not found");
             //  out.println("subscriptionID= not found");
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NOT_FOUND);
+        }
+
+        if (subscriber.getEventID() == EventID.UE_MOBILITY.ordinal()) {
+            unsubscribeNF_forUEMobility(subscriber);
         }
 
         String snssais;
@@ -464,5 +491,212 @@ public class Nnwdaf_Service extends BusinessLogic {
                 "https://truminds.com/home",
                 Collections.emptyList());
     }
+
+
+
+
+
+
+    /*************************************Sheetal's UE_MOBILITY functions***************************************************************/
+
+
+
+
+
+    public ResponseEntity<?> perform_UEMobility(NnwdafEventsSubscription nnwdafEventsSubscription) throws IOException, JSONException, URISyntaxException {
+
+        //System.out.println("in UE-Mobility");
+
+        System.out.println(nnwdafEventsSubscription.getSupi());
+
+        // updating UE-Mobility Table if event id UE_mobility
+        UEMobilitySubscriptionModel ue_mobilitySubscriptionModel = new UEMobilitySubscriptionModel();
+
+        ue_mobilitySubscriptionModel.setSubscriptionID(nnwdafEventsSubscription.getSubscriptionID());
+        ue_mobilitySubscriptionModel.setEventID(nnwdafEventsSubscription.getEventID());
+        ue_mobilitySubscriptionModel.setNotificationURI(nnwdafEventsSubscription.getNotificationURI());
+        ue_mobilitySubscriptionModel.setNotifMethod(nnwdafEventsSubscription.getNotifMethod());
+        ue_mobilitySubscriptionModel.setRepetitionPeriod(nnwdafEventsSubscription.getRepetitionPeriod());
+        ue_mobilitySubscriptionModel.setSupi(nnwdafEventsSubscription.getSupi());
+
+
+        //  System.out.println(ue_mobilitySubscriptionModel.toString());
+
+        repository.add_data_into_nwdaf_UeMobilitySubscriptionData(ue_mobilitySubscriptionModel);
+        repository.add_data_into_nwdafUEmobility(ue_mobilitySubscriptionModel);
+
+
+        Object obj = check_For_data_for_UE_Mobility(nnwdafEventsSubscription, false);
+
+        if (obj instanceof ResponseEntity) {
+            return (ResponseEntity<?>) obj;
+        }
+
+        logger.info("sending response to NF");
+
+        // function to send response header to NF
+        HttpHeaders responseHeaders = send_response_header_to_NF(UUID.fromString(nnwdafEventsSubscription.getSubscriptionID()));
+
+        return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
+
+    }
+
+
+    public void notificationHandlerForUEMobility(String response) throws JSONException, IOException {
+
+        // System.out.println("In-Notification-Handler-for-UE-Mobility");
+        //JSONArray jsonArray = new JSONArray(response);
+        JSONArray jsonArray = new JSONArray(response);
+        String correlationID = jsonArray.get(0).toString();
+        String cellID;
+        String TacValue;
+        Integer MCC_value;
+        Integer MNC_value;
+        JSONObject plmnObject = new JSONObject();
+
+        // At 0 position I am sending CorrelationID;
+        for (int i = 1; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            // String correlationID = jsonObject.getString("correlationID");
+            Integer timeDurationValue = jsonObject.getInt("timeDuration");
+
+            // System.out.println("TimeDurationValue " + timeDurationValue);
+
+            JSONObject taiValue = jsonObject.getJSONObject("Tai");
+            JSONObject ecqiValue = jsonObject.getJSONObject("Ecqi");
+
+            cellID = ecqiValue.getString("cellID");
+            TacValue = taiValue.getString("Tac");
+            plmnObject = taiValue.getJSONObject("plmn");
+            MCC_value = plmnObject.getInt("MCC");
+            MNC_value = plmnObject.getInt("MNC");
+            String TaiValue = MCC_value + "," + MNC_value + ":" + TacValue;
+
+            // update all the location of supi received in JsonArray;
+            add_value_to_userLocationTable(TaiValue, cellID, timeDurationValue);
+        }
+
+        String supi = repository.getSupiValueByCorrelationID(correlationID);
+
+
+        // now time to update UE-MobilityTable;
+        // First Fetch all ID
+        updateUEMobilityTable(correlationID);
+
+        if (repository.getRefCount_UEmobilitySubscriptionTable(supi) == 0) {
+            repository.deleteEntry_UEMobilitySubscriptionTable(supi);
+        }
+
+        nwdaf_notification_manager_ForUEMobility();
+
+    }
+
+    /****UEmobility******/
+
+    public Object nwdaf_analyticsUEmobility(String supi, int eventID) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+        if (eventID == EventID.UE_MOBILITY.ordinal()) {
+
+            NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE = new NnwdafEventsSubscriptionUEmobility();
+            nnwdafEventsSubscriptionUE.setSupi(supi);
+
+
+            Object supiDataList = check_For_dataUEmobility(nnwdafEventsSubscriptionUE, true);
+
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+            return supiDataList;
+
+        } else {
+
+            return "eventID: eventID for UEmobility must be 5";
+        }
+
+
+    }
+
+
+
+    private void unsubscribeNF_forUEMobility(SubscriptionTable subscriber) throws Exception {
+
+        String supi;
+
+
+        if ((supi = repository.unsubscribeNFForUE(subscriber)) != null) {
+
+            Integer eventID = subscriber.getEventID();
+
+            unsubscribeFromNWDAF_forUEMobility(supi, eventID);
+
+            repository.deleteEntry_UEMobilitySubscriptionTable(supi);
+
+        }
+    }
+
+
+
+    protected void unsubscribeFromNWDAF_forUEMobility(String supi, Integer eventID) throws Exception {
+
+        // here subscriptionID = unsubCorrealtionID
+
+        // String subscriptionID =  repository.getUnSubCorrelationID(snssais);
+
+        URL obj = new URL(DELETE_AMF_URL);
+        //  out.println(DELETE_NRF_URL);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        String mCorrelationID = "";
+        String correlationID = "";
+
+
+        mCorrelationID = repository.getUnSubCorrelationID_UEMobility(supi);
+        correlationID = repository.getCorrelationID_UEMobility(mCorrelationID);
+
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("mSubcorrelationID", mCorrelationID);
+        jsonObject.put("correlationID", correlationID);
+
+        con.setRequestMethod("DELETE");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+        con.setDoOutput(true);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = jsonObject.toString().getBytes("utf-8");
+
+            os.write(input, 0, input.length);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        // Read the response from input stream;
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(con.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            con.disconnect();
+        }
+
+    }
+
+
+
+
+    /************************************************************************************************************************/
 
 }

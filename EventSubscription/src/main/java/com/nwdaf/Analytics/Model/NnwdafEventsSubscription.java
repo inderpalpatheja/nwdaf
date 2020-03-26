@@ -88,6 +88,26 @@ public class NnwdafEventsSubscription {
 
 
 
+
+
+    /*****************UE_MOBILITY parameters****************************/
+
+
+    String supi;
+
+    public String getSupi() {
+        return supi;
+    }
+
+    public void setSupi(String supi) {
+        this.supi = supi;
+    }
+
+
+    /*******************************************************************/
+
+
+
     public String getSubscriptionID() {
         return subscriptionID;
     }

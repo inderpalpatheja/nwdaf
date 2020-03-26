@@ -19,8 +19,10 @@ public class ResourceValues {
     @Value("${spring.AMF.Subscribe.url}")
     String POST_AMF_URL;
 
-
     @Value("${spring.NRF.UnSubscribe.url}")
     String DELETE_NRF_URL;
+
+    @Value("${spring.AMF.UnSubscribe.url}")
+    String DELETE_AMF_URL;
 
 }
