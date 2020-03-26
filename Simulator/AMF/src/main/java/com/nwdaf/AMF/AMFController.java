@@ -7,7 +7,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,8 +38,8 @@ public class AMFController extends Functionality {
     @GetMapping("/sendDataToUEMobility/{correlationID}")
     public void sendUEData(@PathVariable String correlationID) throws IOException, JSONException {
         for (int i = 0; i < correlationIDList.size(); i++) {
-           /* sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
-                    correlationIDList.get(i)); */
+           // sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
+             //       correlationIDList.get(i));
 
             sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
                     correlationID);
@@ -59,21 +58,53 @@ public class AMFController extends Functionality {
     @RequestMapping(method = RequestMethod.POST, value = "/notify")
     public void addData(@RequestBody String string) throws Exception {
 
-        out.println("in final-notification-test");
+        //  out.println("in final-notification-test");
         System.out.println("\n\nNotification Received From NWDAF -" + string);
-       // JSONObject jsonObject = new JSONObject(string);
 
-       // String subId = jsonObject.getString("subscriptionID");
-       // String notificationURI = jsonObject.getString("notificaionURI");
-       // Integer loadLevel = jsonObject.getInt("currentLoadLevel");
-       // String snssais = jsonObject.getString("snssais");
+        // JSONArray jsonArray = new JSONArray(string);
+
+        JSONObject jsonObject = new JSONObject(string);
+
+        String suscriptionIDFromFinalNotificaion = jsonObject.getString("subscriptionId");
+       // out.println("suscriptionIDFromFinalNotificaion -- > " + suscriptionIDFromFinalNotificaion);
+
+
+        //  String subId = jsonObject.getString("subscriptionID");
+        //  String notificationURI = jsonObject.getString("notificaionURI");
+        // Integer loadLevel = jsonObject.getInt("currentLoadLevel");
+        // String snssais = jsonObject.getString("snssais");
 
 
         //  out.println(subId + " loadLevel " + loadLevel + "snssais" + snssais + "NotifcaionURI" + notificationURI);
-
+        //  out.println("notification URI - " + notificationURI);
         // Unsubscribe
-       // unsubscribe(notificationURI, subId);
+        //  out.println("subListSize - " + AmfApplication.getSubIDList().size());
 
+        // Stirn
+        Integer size= AmfApplication.getUnSubURIMap().size();
+       // out.println("size of map " + size);
+
+
+        // using for-each loop for iteration over Map.entrySet()
+        for (Map.Entry<String, String> entry : AmfApplication.getUnSubURIMap().entrySet()) {
+
+            if (entry.getKey().equals(suscriptionIDFromFinalNotificaion)) {
+               // out.println("URI found -- > " + entry.getValue());
+              //  out.println("ID found --- > " + entry.getKey());
+                String UnSubURI = entry.getValue() + entry.getKey();
+                out.println("Un-SubURI - - - > " + UnSubURI);
+
+                unsubscribe(entry.getValue().trim(),entry.getKey().trim());
+            }
+//            System.out.println("Key = " + entry.getKey() +
+//                    ", Value = " + entry.getValue());
+//
+        }
+
+
+        // unsubscribe();
+
+        // out.println("subID - " + subId);
     }
 
 
@@ -260,7 +291,7 @@ public class AMFController extends Functionality {
     public ResponseEntity<String> sendDataForUEMobility(String notiTargetAddress,
                                                         String correlationID) throws IOException, JSONException {
 
-        out.println("In send Data for UE-Mobility");
+        //  out.println("In send Data for UE-Mobility");
 
         notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
 
@@ -274,6 +305,9 @@ public class AMFController extends Functionality {
 
         int threeDigitRandomValueForTwoLocaiton = random.nextInt(900) + 100;
         int twoDigitRandomValueForTwoLocation = random.nextInt(90) + 10;
+
+        int randomTime1 = random.nextInt(90) + 10;
+        int randomTime2 = random.nextInt(90) + 10;
 
         // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
 
@@ -308,7 +342,7 @@ public class AMFController extends Functionality {
 
         JSONObject userLocation = new JSONObject();
         // userLocation.put("correlationID", correlationID);
-        userLocation.put("timeDuration", 12);
+        userLocation.put("timeDuration", randomTime1);
         userLocation.put("Tai", taiObject);
         userLocation.put("Ecqi", EcqiObject);
 
@@ -327,7 +361,7 @@ public class AMFController extends Functionality {
 
 
         JSONObject userLocation1 = new JSONObject();
-        userLocation1.put("timeDuration", 25);
+        userLocation1.put("timeDuration", randomTime2);
         userLocation1.put("Tai", taiObject1);
         userLocation1.put("Ecqi", EcqiObject1);
 
@@ -376,6 +410,95 @@ public class AMFController extends Functionality {
         return new ResponseEntity<>("Created", HttpStatus.OK);
     }
 
+
+    public void testJSONData() throws JSONException {
+
+        Random random = new Random();
+
+        /*JSON NOTIFICATION ACCORDING 3GPP START*/
+
+        // generate a random integer from 0 to 899, then add 100
+        //  int threeDigitRandomValueForOneLocaiton = random.nextInt(900) + 100;
+        //  int twoDigitRandomValueForOneLocation = random.nextInt(90) + 10;
+
+        int threeDigitRandomValueForTwoLocaiton = random.nextInt(900) + 100;
+        int twoDigitRandomValueForTwoLocation = random.nextInt(90) + 10;
+
+        //  int randomTime1 = random.nextInt(90)+10;
+        // int randomTime2 = random.nextInt(90)+10;
+
+        JSONArray eventNotificationArray = new JSONArray();
+        JSONObject eventNotificationFinalObject = new JSONObject();
+        JSONObject eventNotificationObject = new JSONObject();
+        JSONArray uEMobilityArray = new JSONArray();
+        JSONObject sliceLoadLevelInfo = new JSONObject();
+        JSONArray snssaisArray = new JSONArray();
+        JSONObject ueMobilityObject = new JSONObject();
+
+
+        JSONObject plmnObject1 = new JSONObject();
+        plmnObject1.put("MNC", String.valueOf(threeDigitRandomValueForTwoLocaiton));
+        plmnObject1.put("MCC", String.valueOf(twoDigitRandomValueForTwoLocation));
+
+
+        JSONObject EcqiObject1 = new JSONObject();
+        EcqiObject1.put("plmn", plmnObject1);
+        EcqiObject1.put("cellID", "cellID-String-value-1");
+
+
+        JSONObject taiObject1 = new JSONObject();
+        taiObject1.put("plmn", plmnObject1);
+        taiObject1.put("Tac", "TacID-value-1");
+
+
+        JSONArray ueTrajectoryArray = new JSONArray();
+        JSONArray locationInfoArray = new JSONArray();
+
+
+        JSONObject locationInfoObject = new JSONObject();
+        locationInfoObject.put("timeDuration", 29);
+        locationInfoObject.put("Tai", taiObject1);
+        locationInfoObject.put("Ecqi", EcqiObject1);
+
+        locationInfoArray.put(locationInfoObject);
+
+
+        JSONObject ueTrajectoryObject = new JSONObject();
+
+        ueTrajectoryObject.put("ts", "Date-time-value");
+        ueTrajectoryObject.put("recurringTime", "recurringTime-value");
+        ueTrajectoryObject.put("duration", 30);
+        ueMobilityObject.put("supi", "supi-value");
+        ueTrajectoryObject.put("locInfo", locationInfoArray);
+
+        ueTrajectoryArray.put(ueTrajectoryObject);
+
+        ueMobilityObject.put("ueTraj", ueTrajectoryArray);
+
+
+        uEMobilityArray.put(ueMobilityObject);
+
+        snssaisArray.put("snssais");
+        sliceLoadLevelInfo.put("loadLevelInformation", 100);
+        sliceLoadLevelInfo.put("snssais", snssaisArray);
+
+        eventNotificationObject.put("NwdafEvent", "0,5");
+        eventNotificationObject.put("SliceLoadLevelInformation", sliceLoadLevelInfo);
+        eventNotificationObject.put("ueMobs", uEMobilityArray);
+
+        eventNotificationArray.put(eventNotificationObject);
+
+        eventNotificationFinalObject.put("eventNotifications", eventNotificationArray);
+        eventNotificationFinalObject.put("subscriptionId", 12345);
+
+        out.println(eventNotificationFinalObject.toString());
+
+
+
+
+
+        /*JSON NOTIFICATION ACCORDING 3GPP ENDS*/
+    }
 
 }
 
