@@ -42,9 +42,16 @@ public class Nnwdaf_Repository {
     Random random = new Random();
 
 
-    public Boolean subscribeNF(NnwdafEventsSubscription nnwdafEventsSubscription) {
+    public Boolean subscribeNF(NnwdafEventsSubscription nnwdafEventsSubscription, EventID eventID) {
 
-        String query = "INSERT INTO nwdafSubscriptionTable VALUES(?, ?, ?, ?, ?)";
+        String query = "";
+
+        if(eventID == EventID.LOAD_LEVEL_INFORMATION)
+        { query = "INSERT INTO nwdafSubscriptionTable VALUES(?, ?, ?, ?, ?)"; }
+
+        else if(eventID == EventID.QOS_SUSTAINABILITY)
+        { query = "INSERT INTO nwdafSubscriptionTable (subscriptionID, eventID, notificationURI) VALUES(?, ?, ?)"; }
+
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
@@ -54,8 +61,13 @@ public class Nnwdaf_Repository {
                 preparedStatement.setString(1, nnwdafEventsSubscription.getSubscriptionID());
                 preparedStatement.setInt(2, nnwdafEventsSubscription.getEventID());
                 preparedStatement.setString(3, nnwdafEventsSubscription.getNotificationURI());
-                preparedStatement.setInt(4, nnwdafEventsSubscription.getNotifMethod());
-                preparedStatement.setInt(5, nnwdafEventsSubscription.getRepetitionPeriod());
+
+                if(eventID == EventID.LOAD_LEVEL_INFORMATION)
+                {
+                    preparedStatement.setInt(4, nnwdafEventsSubscription.getNotifMethod());
+                    preparedStatement.setInt(5, nnwdafEventsSubscription.getRepetitionPeriod());
+                }
+
                 return preparedStatement.execute();
             }
         });
@@ -103,7 +115,7 @@ public class Nnwdaf_Repository {
     }
 
 
-    public List<EventConnection> checkForData(String snssais, Boolean anySlice, Integer eventID) {
+    public List<Object> checkForData(String snssais, Boolean anySlice, Integer eventID) {
 
 
         if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
@@ -128,7 +140,19 @@ public class Nnwdaf_Repository {
 
         else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
         {
+            String query = "";
 
+            if(anySlice)
+            { query = "SELECT * FROM nwdafQosSustainabilityInformation"; }
+
+            else
+            { query = "SELECT * FROM nwdafQosSustainabilityInformation WHERE snssais = '" + snssais + "';"; }
+
+            try
+            { return jdbcTemplate.query(query, new QosAnalyticsMapper()); }
+
+            catch(EmptyResultDataAccessException ex)
+            { return null; }
         }
 
         return null;
@@ -661,7 +685,7 @@ public class Nnwdaf_Repository {
     }
 
 
-    public Boolean setNwdafQosSustainabilityInformation(NnwdafEventsSubscription nnwdafEventsSubscription)
+    public Boolean setNwdafQosSustainabilityInformation(String snssais)
     {
         String query = "INSERT INTO nwdafQosSustainabilityInformation VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE snssais = snssais";
 
@@ -670,7 +694,7 @@ public class Nnwdaf_Repository {
             @Override
             public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
 
-                preparedStatement.setString(1, nnwdafEventsSubscription.getSnssais());
+                preparedStatement.setString(1, snssais);
                 preparedStatement.setInt(2, 0);
                 preparedStatement.setInt(3, 0);
 
@@ -773,6 +797,30 @@ public class Nnwdaf_Repository {
 
 
 
+    public Integer getRanUeThroughputThreshold(String subscriptionID)
+    {
+        String query = "SELECT ranUeThroughputThreshold FROM nwdafQosSustainabilitySubscriptionData WHERE subscriptionID = '" + subscriptionID + "';";
+
+        return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
+            @Override
+            public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getInt("ranUeThroughputThreshold");
+            }
+        });
+    }
+
+
+    public Integer getQosFlowRetainThreshold(String subscriptionID)
+    {
+        String query = "SELECT qosFlowRetainThreshold FROM nwdafQosSustainabilitySubscriptionData WHERE subscriptionID = '" + subscriptionID + "';";
+
+        return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
+            @Override
+            public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getInt("qosFlowRetainThreshold");
+            }
+        });
+    }
 
 
 

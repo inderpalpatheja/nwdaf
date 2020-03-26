@@ -2,6 +2,7 @@ package com.nwdaf.Analytics.Service;
 
 import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnection;
+import com.nwdaf.Analytics.Controller.ConnectionCheck.QosAnalyticsInfo;
 import com.nwdaf.Analytics.Model.AMFModel.AMFModel;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
@@ -61,9 +62,11 @@ public class BusinessLogic extends ResourceValues {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
+        int eventID = nnwdafEventsSubscription.getEventID();
+
         if (getAnalytics) {
 
-            List<EventConnection> snssaisDataList = repository.checkForData(nnwdafEventsSubscription.getSnssais(),
+            List<Object> snssaisDataList = repository.checkForData(nnwdafEventsSubscription.getSnssais(),
                     nnwdafEventsSubscription.getAnySlice(), nnwdafEventsSubscription.getEventID());
 
             // if data is not found -> calling collector function to collect data
@@ -77,21 +80,41 @@ public class BusinessLogic extends ResourceValues {
                     return obj;
                 }
 
-                // Adding snssais into database
-                repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
 
-                EventConnection eventConnection = new EventConnection();
-                eventConnection.setMessage("Data not Found for " + nnwdafEventsSubscription.getSnssais());
-                eventConnection.setCurrentLoadLevelInfo(0);
-                eventConnection.setSnssais(nnwdafEventsSubscription.getSnssais());
-                eventConnection.setDataStatus(false);
+                if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+                {
+                    // Adding snssais into database
+                    repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
 
-                logger.debug("snssais: " + nnwdafEventsSubscription.getSnssais() + "\n" +
-                        " CurrentLoadLevelInfo: " + eventConnection.getCurrentLoadLevelInfo() + "\n" +
-                        "DataStatus:  " + eventConnection.getDataStatus());
+                    EventConnection eventConnection = new EventConnection();
+                    eventConnection.setMessage("Data not Found for " + nnwdafEventsSubscription.getSnssais());
+                    eventConnection.setCurrentLoadLevelInfo(0);
+                    eventConnection.setSnssais(nnwdafEventsSubscription.getSnssais());
+                    eventConnection.setDataStatus(false);
 
-                //throw new NullPointerException("Data not found!");
-                return eventConnection;
+                    logger.debug("snssais: " + nnwdafEventsSubscription.getSnssais() + "\n" +
+                            " CurrentLoadLevelInfo: " + eventConnection.getCurrentLoadLevelInfo() + "\n" +
+                            "DataStatus:  " + eventConnection.getDataStatus());
+
+                    //throw new NullPointerException("Data not found!");
+                    return eventConnection;
+                }
+
+                else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
+                {
+                    repository.setNwdafQosSustainabilityInformation(nnwdafEventsSubscription.getSnssais());
+
+                    QosAnalyticsInfo qosInfo = new QosAnalyticsInfo(nnwdafEventsSubscription.getSnssais(), HttpStatus.NOT_FOUND);
+
+                    logger.debug("eventID: " + EventID.QOS_SUSTAINABILITY.toString() + "\n" +
+                            "snssais: " + nnwdafEventsSubscription.getSnssais() + "\n" +
+                            " ranUeThroughput: " + qosInfo.getRanUeThroughput()  + "\n" +
+                            " qosFlowRetain: " + qosInfo.getQosFlowRetain()  + "\n" +
+                            "DataStatus:  " + qosInfo.getDataStatus());
+
+                    return qosInfo;
+                }
+
 
             } else {
                 // flag to check if getAnalytics ref count will be updated or not

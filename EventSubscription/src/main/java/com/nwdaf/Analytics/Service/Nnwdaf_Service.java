@@ -10,11 +10,14 @@ import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainability;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
-import com.nwdaf.Analytics.Service.Validator.InvalidType;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator;
-import com.nwdaf.Analytics.Service.Validator.TypeChecker;
-import com.nwdaf.Analytics.Service.Validator.UpdateValidator;
+import com.nwdaf.Analytics.Service.Validator.ErrorReport.EssentialsError;
+import com.nwdaf.Analytics.Service.Validator.ErrorReport.QosSustainabilityError;
+import com.nwdaf.Analytics.Service.Validator.ErrorReport.SliceLoadLevelError;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.EssentialsValidator;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.QosSustainabilityValidator;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.SliceLoadLevelValidator;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -85,26 +88,34 @@ public class Nnwdaf_Service extends BusinessLogic {
             return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(), HttpStatus.NOT_FOUND);
         }
 
-        NnwdafEventsSubscription nnwdafEventsSubscription;
-        Object checkForData;
+        NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
+        Object validator;
 
 
-        // Check for DataType
-        if((checkForData = TypeChecker.checkForSubscription(subscriptionRawData)) instanceof NnwdafEventsSubscription)
-        { nnwdafEventsSubscription = (NnwdafEventsSubscription)checkForData; }
+        //Check for essential attributes
+        if((validator = EssentialsValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof EssentialsError)
+        { return new ResponseEntity<EssentialsError>((EssentialsError)validator, HttpStatus.NOT_ACCEPTABLE); }
 
-        else
-        { return new ResponseEntity<InvalidType>((InvalidType)checkForData, HttpStatus.NOT_ACCEPTABLE); }
+        nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
 
 
-        //Check for Validity
-        Object checkSubscription;
 
-        if((checkSubscription = SubscriptionValidator.check(nnwdafEventsSubscription, subscriptionRawData)) instanceof MissingData)
-        { return new ResponseEntity<MissingData>((MissingData)checkSubscription, HttpStatus.NOT_ACCEPTABLE); }
+        //Validate Event specific data
 
-        nnwdafEventsSubscription = (NnwdafEventsSubscription)checkSubscription;
+        if(nnwdafEventsSubscription.getEventID() == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+        {
+            if((validator = SliceLoadLevelValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof SliceLoadLevelError)
+            { return new ResponseEntity<SliceLoadLevelError>((SliceLoadLevelError)validator, HttpStatus.NOT_ACCEPTABLE); }
+        }
 
+        else if(nnwdafEventsSubscription.getEventID() == EventID.QOS_SUSTAINABILITY.ordinal())
+        {
+            if((validator = QosSustainabilityValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof QosSustainabilityError)
+            { return new ResponseEntity<QosSustainabilityError>((QosSustainabilityError)validator, HttpStatus.NOT_ACCEPTABLE); }
+        }
+
+
+        nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
 
         logger.info("consumer is subscribing for an event and providing these details. eventID:  " + nnwdafEventsSubscription.getEventID() + "\n" + " notificationURI:  " + nnwdafEventsSubscription.getNotificationURI() + "\n" +
                 " snssais:  " + nnwdafEventsSubscription.getSnssais() + "\n" + " notifMethod:  " + nnwdafEventsSubscription.getNotifMethod() + "\n" +
@@ -116,9 +127,6 @@ public class Nnwdaf_Service extends BusinessLogic {
         // setting subscription ID
         nnwdafEventsSubscription.setSubscriptionID(String.valueOf(subscriptionID));
 
-        // Adding data into NwdafSubscriptionTable   [ Database ]
-        repository.subscribeNF(nnwdafEventsSubscription);
-
         // Incrementing Subscription Counter
         Counters.incrementSubscriptions();
 
@@ -127,6 +135,9 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
         {
+            // Adding data into NwdafSubscriptionTable   [ Database ]
+            repository.subscribeNF(nnwdafEventsSubscription, EventID.LOAD_LEVEL_INFORMATION);
+
             // adding values into subscriptionData
             add_values_into_subscriptionData(subscriptionID, nnwdafEventsSubscription.getSnssais(),
                     nnwdafEventsSubscription.getLoadLevelThreshold());
@@ -151,23 +162,14 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
         {
-            nnwdafEventsSubscription.set_5Qi((Integer)subscriptionRawData.get_5Qi());
-            nnwdafEventsSubscription.setMcc((String)subscriptionRawData.getMcc());
-            nnwdafEventsSubscription.setMnc((String)subscriptionRawData.getMnc());
-            nnwdafEventsSubscription.setPlmnID(nnwdafEventsSubscription.getMcc(), nnwdafEventsSubscription.getMnc());
-            nnwdafEventsSubscription.setTac((String)subscriptionRawData.getTac());
-
-            if(subscriptionRawData.getRanUeThroughputThreshold() != null)
-            { nnwdafEventsSubscription.setRanUeThroughputThreshold((Integer)subscriptionRawData.getRanUeThroughputThreshold()); }
-
-            if(subscriptionRawData.getQosFlowRetainThreshold() != null)
-            { nnwdafEventsSubscription.setQosFlowRetainThreshold((Integer)subscriptionRawData.getQosFlowRetainThreshold());; }
+            repository.subscribeNF(nnwdafEventsSubscription, EventID.QOS_SUSTAINABILITY);
 
             repository.addDataQosSustainability(nnwdafEventsSubscription);
             repository.addDataQosSustainabilitySubscriptionData(nnwdafEventsSubscription);
-            repository.setNwdafQosSustainabilityInformation(nnwdafEventsSubscription);
-
+            repository.setNwdafQosSustainabilityInformation(nnwdafEventsSubscription.getSnssais());
         }
+
+
 
         Object obj = check_For_data(nnwdafEventsSubscription, false);
 
@@ -209,7 +211,7 @@ public class Nnwdaf_Service extends BusinessLogic {
         NnwdafEventsSubscription nnwdafEventsSubscription;
         Object checkForData;
 
-
+        /*
         if((checkForData = TypeChecker.checkForUpdateSub(updateData)) instanceof NnwdafEventsSubscription)
         { nnwdafEventsSubscription = (NnwdafEventsSubscription)checkForData; }
 
@@ -217,16 +219,28 @@ public class Nnwdaf_Service extends BusinessLogic {
         { return new ResponseEntity<InvalidType>((InvalidType)checkForData, HttpStatus.NOT_ACCEPTABLE); }
 
 
-        Integer loadLevelThreshold = repository.getLoadLevelThreshold(subscriptionID);
 
-        if((checkForData = UpdateValidator.check(nnwdafEventsSubscription, updateData, nwdafSubscriptionTableModel, loadLevelThreshold)) instanceof MissingData)
+        Integer threshold = null;
+
+        if(nnwdafEventsSubscription.getEventID() == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+        { threshold = repository.getLoadLevelThreshold(subscriptionID); }
+
+        else if(nnwdafEventsSubscription.getEventID() == EventID.QOS_SUSTAINABILITY.ordinal())
+        {
+            if((threshold = repository.getRanUeThroughputThreshold(subscriptionID)) == null)
+            { threshold = repository.getLoadLevelThreshold(subscriptionID); }
+        }
+
+
+
+        if((checkForData = UpdateValidator.check(nnwdafEventsSubscription, updateData, nwdafSubscriptionTableModel, threshold)) instanceof MissingData)
         { return new ResponseEntity<MissingData>((MissingData)checkForData, HttpStatus.NOT_ACCEPTABLE); }
 
         nnwdafEventsSubscription = (NnwdafEventsSubscription)checkForData;
 
         // Updating user via subscriptionID
         repository.updateNF(nnwdafEventsSubscription, subscriptionID);
-
+*/
         // Incrementing update counter
         Counters.incrementSubscriptionUpdates();
 
