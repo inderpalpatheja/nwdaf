@@ -44,6 +44,7 @@ import java.net.*;
 import java.util.*;
 
 import static java.lang.System.out;
+import static java.lang.System.setOut;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 public class BusinessLogic extends ResourceValues {
@@ -53,11 +54,19 @@ public class BusinessLogic extends ResourceValues {
     Nnwdaf_Repository repository;
     //checking
 
+//    JSONObject jsonForUEMobility = new JSONObject();
+//    JSONObject jsonForSliceLoadLevel = new JSONObject();
+//    JSONArray jsonArrayFinalNotification = new JSONArray();
+//    JSONObject jsonObjectFinalNotification = new JSONObject();
+
     private static final Logger logger = LoggerFactory.getLogger(BusinessLogic.class);
 
     Set<String> subID_SET = new HashSet<String>();
-    public int subThValue = 0;
-    public int currentLoadLevel = 0;
+    List<UserLocation> userLocations = new ArrayList<>();
+    UserLocation userLocation = new UserLocation();
+
+
+    // UserLocation userLocation = new UserLocation();
 
     List<UserLocation> userLocations = new ArrayList<>();
     UserLocation userLocation = new UserLocation();
@@ -172,7 +181,6 @@ public class BusinessLogic extends ResourceValues {
 
         if (!repository.snsExists(nnwdafEventsSubscription.getSnssais(), EventID.values()[nnwdafEventsSubscription.getEventID()])) {
 
-
             // Generating CorrelationID
             UUID correlationID = FrameWorkFunction.getUniqueID();
             // if Event Id is UE-Mobility nwdaf will subscribe to AMF;
@@ -188,7 +196,7 @@ public class BusinessLogic extends ResourceValues {
             // Updated URL For NWDAF to Subscribe
             // updated_POST_NRF_URL = POST_NRF_URL + "/" + correlationID;
             // POST_NRF_URL = NRF URL ------> [ Reading from ]application.properties
-           try {
+            try {
 
                 URL obj = new URL(POST_NRF_URL);
                 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -217,14 +225,13 @@ public class BusinessLogic extends ResourceValues {
 
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
             return correlationID;
-         }  else {
+        } else {
 
             if(!getAnalytics)
             { repository.increaseRefCount(nnwdafEventsSubscription.getSnssais(), EventID.values()[nnwdafEventsSubscription.getEventID()]); }
         }
         return null;
     }
-
 
 
     /**
@@ -327,8 +334,7 @@ public class BusinessLogic extends ResourceValues {
 
                 int eventID = nnwdafEventsSubscription.getEventID();
 
-                if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
-                {
+                if (eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal()) {
                     SliceLoadLevelSubscriptionTable slice = new SliceLoadLevelSubscriptionTable();
                     slice.setCorrelationID(String.valueOf(correlationID));
                     slice.setSubscriptionID(response.toString());
@@ -341,10 +347,7 @@ public class BusinessLogic extends ResourceValues {
                     } else {
                         repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(slice, false);
                     }
-                }
-
-                else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
-                {
+                } else if (eventID == EventID.QOS_SUSTAINABILITY.ordinal()) {
                     QosSustainabilitySubscriptionTable qos = new QosSustainabilitySubscriptionTable();
 
                     qos.setCorrelationID(String.valueOf(correlationID));
@@ -356,9 +359,6 @@ public class BusinessLogic extends ResourceValues {
                         if(!repository.snsExists(qos.getSnssais(), EventID.QOS_SUSTAINABILITY))
                         { repository.addDataQosSustainabilitySubscriptionTable(qos, true); }
                     }
-
-                    else
-                    { repository.addDataQosSustainabilitySubscriptionTable(qos, false); }
                 }
 
 
@@ -373,10 +373,6 @@ public class BusinessLogic extends ResourceValues {
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
-
-
-
-
 
 
     /**
@@ -466,6 +462,7 @@ public class BusinessLogic extends ResourceValues {
         return responseCode;
 
     }
+
     /**
      * @param snssais
      * @return
@@ -510,27 +507,137 @@ public class BusinessLogic extends ResourceValues {
                                            Integer currentLoadLevel,
                                            String subscriptionID, QosType qosType) throws IOException, JSONException {
 
-        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
-        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+//        JSONObject jsonForUEMobility = new JSONObject();
+//        JSONObject jsonForSliceLoadLevel = new JSONObject();
+//        JSONArray jsonArrayFinalNotification = new JSONArray();
+//        JSONObject jsonObjectFinalNotification = new JSONObject();
+
+        String tacValue;
+
+        /*JSON NOTIFICATION ACCORDING 3GPP START*/
+
+        JSONArray eventNotificationArray = new JSONArray();
+        JSONObject eventNotificationFinalObject = new JSONObject();
+        JSONObject eventNotificationObject = new JSONObject();
+        JSONArray uEMobilityArray = new JSONArray();
+        JSONObject sliceLoadLevelInfo = new JSONObject();
+        JSONArray snssaisArray = new JSONArray();
+        JSONObject ueMobilityObject = new JSONObject();
+        JSONArray locationInfoArray = new JSONArray();
+
+        JSONArray ueTrajectoryArray = new JSONArray();
+        JSONObject ueTrajectoryObject = new JSONObject();
+
+
+
+        for (int i = 0; i < userLocations.size(); i++) {
+
+            JSONObject locationInfoObject = new JSONObject();
+
+            String key = "userLocation-" + i;
+            String taiValue = userLocations.get(i).getTai();
+            String cellIDValue = userLocations.get(i).getCellID();
+            Integer timeDuration = userLocations.get(i).getTimeDuration();
+
+            // String finalLocationValue = taiValue + "||" + cellIDValue;
+            out.println("\n\n\ntaiValue" + taiValue + "\n\n\n");
+            //String[] splitedString = splitLocationString.split(",");
+            String[] taiSplitValue = taiValue.split(":");
+            String plmnValues = taiSplitValue[0];
+            tacValue = taiSplitValue[1];
+
+            out.println("\n\nplmnValues" + plmnValues);
+            out.println("\n\nTacValue" + tacValue);
+
+            String[] plmnSplittedValues = plmnValues.split(",");
+            String MCC = plmnSplittedValues[0];
+            String MNC = plmnSplittedValues[1];
+            //  String finalLocationValue = " MCC - " + MCC + " MNC - " + MNC + " Tac Value - " + tacValue + " Cell-ID - " + cellIDValue;
+
+            JSONObject plmnObject = new JSONObject();
+            plmnObject.put("MNC", MNC);
+            plmnObject.put("MCC", MCC);
+
+            JSONObject EcqiObject = new JSONObject();
+            EcqiObject.put("plmn", plmnObject);
+            EcqiObject.put("cellID", cellIDValue);
+
+
+            JSONObject taiObject = new JSONObject();
+            taiObject.put("plmn", plmnObject);
+            taiObject.put("Tac", tacValue);
+
+
+            JSONObject userLocation = new JSONObject();
+            userLocation.put("timeDuration", timeDuration);
+            userLocation.put("Tai", taiObject);
+            userLocation.put("Ecqi", EcqiObject);
+
+
+            locationInfoObject.put(key, userLocation);
+            locationInfoArray.put(locationInfoObject);
+
+        }
+
+
+
+
+        ueTrajectoryObject.put("ts", "Date-time-value");
+        ueTrajectoryObject.put("recurringTime", "recurringTime-value");
+        ueTrajectoryObject.put("duration", 30);
+        ueMobilityObject.put("supi", supi);
+        ueTrajectoryObject.put("locInfo", locationInfoArray);
+
+        ueTrajectoryArray.put(ueTrajectoryObject);
+
+        ueMobilityObject.put("ueTraj", ueTrajectoryArray);
+
+
+        uEMobilityArray.put(ueMobilityObject);
+
+        snssaisArray.put(snssais);
+        sliceLoadLevelInfo.put("loadLevelInformation", currentLoadLevel);
+        sliceLoadLevelInfo.put("snssais", snssaisArray);
+
+        eventNotificationObject.put("NwdafEvent", eventID);
+        eventNotificationObject.put("SliceLoadLevelInformation", sliceLoadLevelInfo);
+        eventNotificationObject.put("ueMobs", uEMobilityArray);
+
+        eventNotificationArray.put(eventNotificationObject);
+
+        eventNotificationFinalObject.put("eventNotifications", eventNotificationArray);
+        eventNotificationFinalObject.put("subscriptionId", subscriptionID);
+
+        /*JSON NOTIFICATION ACCORDING 3GPP ENDS*/
+
+
+       // jsonObjectFinalNotification.put("subscriptionID", subscriptionID);
+
+     /*   final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);*/
 
         Counters.incrementSubscriptionNotifications();
 
 
+       // out.println("eventID - " + eventID);
 
-       // URL url = null;
+
+       // String subscriptionURI = "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions";
+
+        // URL url = null;
         //try {
-           URL url = new URL(notificationURI);
+        URL url = new URL(notificationURI);
         //} catch (MalformedURLException e) {
-           // logger.warn("http connect exception found");
-            //e.printStackTrace();
+        // logger.warn("http connect exception found");
+        //e.printStackTrace();
         //}
 
         // Opening connection;
-       // HttpURLConnection con = null;
+        // HttpURLConnection con = null;
         ///try {
-         HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
         //} catch (IOException e) {
-            //e.printStackTrace();
+        //e.printStackTrace();
 
         //}
 
@@ -543,9 +650,92 @@ public class BusinessLogic extends ResourceValues {
         con.setRequestProperty("Accept", "application/json");
         con.setDoOutput(true);
 
-        //String jsonInputString = "Hey I am Notification";
 
-        JSONObject json = new JSONObject();
+        /*
+       Todo: Here We have to send the JSON ARRAY of events
+        but it's giving 500 internal server error for that*/
+
+
+       /* if (eventID.equals("UE_MOBILITY")) {
+
+            // out.println("sheetal_UE");
+            // out.println(eventID);
+
+            jsonForUEMobility.put("eventID", eventID);
+            jsonForUEMobility.put("supi", supi);
+
+
+            for (int i = 0; i < userLocations.size(); i++) {
+
+
+                String key = "userLocation-" + i;
+                String taiValue = userLocations.get(i).getTai();
+                String cellIDValue = userLocations.get(i).getCellID();
+                Integer timeDuration = userLocations.get(i).getTimeDuration();
+
+                // String finalLocationValue = taiValue + "||" + cellIDValue;
+                out.println("\n\n\ntaiValue" + taiValue + "\n\n\n");
+                //String[] splitedString = splitLocationString.split(",");
+                String[] taiSplitValue = taiValue.split(":");
+                String plmnValues = taiSplitValue[0];
+                tacValue = taiSplitValue[1];
+
+                out.println("\n\nplmnValues" + plmnValues);
+                out.println("\n\nTacValue" + tacValue);
+
+                String[] plmnSplittedValues = plmnValues.split(",");
+                String MCC = plmnSplittedValues[0];
+                String MNC = plmnSplittedValues[1];
+                //  String finalLocationValue = " MCC - " + MCC + " MNC - " + MNC + " Tac Value - " + tacValue + " Cell-ID - " + cellIDValue;
+
+                JSONObject plmnObject = new JSONObject();
+                plmnObject.put("MNC", MNC);
+                plmnObject.put("MCC", MCC);
+
+                JSONObject EcqiObject = new JSONObject();
+                EcqiObject.put("plmn", plmnObject);
+                EcqiObject.put("cellID", cellIDValue);
+
+
+                JSONObject taiObject = new JSONObject();
+                taiObject.put("plmn", plmnObject);
+                taiObject.put("Tac", tacValue);
+
+
+                JSONObject userLocation = new JSONObject();
+                // userLocation.put("correlationID", correlationID);
+                userLocation.put("timeDuration", timeDuration);
+                userLocation.put("Tai", taiObject);
+                userLocation.put("Ecqi", EcqiObject);
+
+
+                jsonForUEMobility.put(key, userLocation);
+            }
+            jsonForUEMobility.put("notificationURI", subscriptionURI.trim());
+            jsonForUEMobility.put("subscriptionID", subscriptionID);
+
+            jsonObjectFinalNotification.put(eventID, jsonForUEMobility);
+        }
+        if (eventID.equals("LOAD_LEVEL_INFORMATION")) {
+
+            // out.println("sheetal_load");
+            //out.println(eventID);
+
+
+            jsonForSliceLoadLevel.put("eventID", eventID);
+            jsonForSliceLoadLevel.put("snssais", snssais);
+
+
+            // json.put("supi", supi);
+
+
+            // json.put("userLocation-1", userLocations.get(0).getTai());
+            // json.put("userLocation-2", userLocations.get(1).getTai());
+
+            // This value will be fetched from nwdafSliceLoadLevelSubscriptionData send by NF
+            jsonForSliceLoadLevel.put("notificationURI", subscriptionURI.trim());
+            jsonForSliceLoadLevel.put("subscriptionID", subscriptionID);
+            jsonForSliceLoadLevel.put("currentLoadLevel", currentLoadLevel);
 
         json.put("eventID", eventID.toString());
 
@@ -593,34 +783,48 @@ public class BusinessLogic extends ResourceValues {
 
 
         try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
+
+            out.println("final-notification-test-2" + eventNotificationFinalObject.toString());
+            byte[] input = eventNotificationFinalObject.toString().getBytes("utf-8");
+
 
             os.write(input, 0, input.length);
+            os.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        // For POST only - END
 
-        // Read the response from input stream;
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(con.getInputStream(), "utf-8"))) {
-            StringBuilder response = new StringBuilder();
+        int responseCode = con.getResponseCode();
 
-            String responseLine = null;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
+        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+
+            // after sending the notification making json array null;
+            // jsonArrayFinalNotification = null;
+
+            //  out.println("\n\n\njsonarray0Index - " + jsonArrayFinalNotification.get(0).toString());
+            //   out.println("jsonarraylength" + jsonArrayFinalNotification.length());
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
             }
-
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            in.close();
         }
 
-        finally
-        { con.disconnect(); }
 
-        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+        if (con != null) {
+            con.disconnect();
+        }
+        // For load-level-checking
+        //userLocations.clear();
+        // jsonArrayFinalNotification.remove(0);
 
+       // logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
 
     // @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
@@ -686,16 +890,68 @@ public class BusinessLogic extends ResourceValues {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            con.disconnect();
         }
-
-        finally
-        { con.disconnect(); }
 
     }
 
+    protected void unsubscribeFromNWDAF_forUEMobility(String supi, Integer eventID) throws Exception {
+
+        // here subscriptionID = unsubCorrealtionID
+
+        // String subscriptionID =  repository.getUnSubCorrelationID(snssais);
+
+        URL obj = new URL(DELETE_AMF_URL);
+        //  out.println(DELETE_NRF_URL);
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        String mCorrelationID = "";
+        String correlationID = "";
 
 
+        mCorrelationID = repository.getUnSubCorrelationID_UEMobility(supi);
+        correlationID = repository.getCorrelationID_UEMobility(mCorrelationID);
 
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("mSubcorrelationID", mCorrelationID);
+        jsonObject.put("correlationID", correlationID);
+
+        con.setRequestMethod("DELETE");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+        con.setDoOutput(true);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = jsonObject.toString().getBytes("utf-8");
+
+            os.write(input, 0, input.length);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        // Read the response from input stream;
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(con.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            con.disconnect();
+        }
+
+    }
 
     protected boolean testConnection() {
 
@@ -709,14 +965,16 @@ public class BusinessLogic extends ResourceValues {
 
             if (con.getResponseCode() != HttpStatus.ACCEPTED.value()) {
 
-                if(con != null)
-                { con.disconnect(); }
+                if (con != null) {
+                    con.disconnect();
+                }
 
                 return false;
             }
 
-            if(con != null)
-            { con.disconnect(); }
+            if (con != null) {
+                con.disconnect();
+            }
 
         } catch (Exception ex) {
             return false;
@@ -724,7 +982,6 @@ public class BusinessLogic extends ResourceValues {
 
         return true;
     }
-
 
 
     // Updated nwdaf_notification_manager 3rd March, 2020
@@ -741,8 +998,7 @@ public class BusinessLogic extends ResourceValues {
             return;
         }
 
-        for(SliceLoadLevelInformation slice: list)
-        {
+        for (SliceLoadLevelInformation slice : list) {
             List<NotificationData> dataSet = repository.getAllNotificationData(slice.getSnssais(), slice.getCurrentLoadLevel());
 
             if(dataSet != null && !dataSet.isEmpty())
@@ -758,6 +1014,7 @@ public class BusinessLogic extends ResourceValues {
                     }
 
                     //send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.LOAD_LEVEL_INFORMATION, slice.getSnssais(), slice.getCurrentLoadLevel(), notifyData.getSubscriptionID());
+
                 }
             }
         }
@@ -765,6 +1022,12 @@ public class BusinessLogic extends ResourceValues {
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
 
+
+    protected Object check_For_data_for_UE_Mobility(NnwdafEventsSubscription nnwdafEventsSubscription, boolean getAnalytics) throws IOException, JSONException {
+
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
 
 
@@ -811,6 +1074,8 @@ public class BusinessLogic extends ResourceValues {
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
+
+                out.println("supi------->" + ueMobilitySubscriptionModel.getSupi());
 
 
 
@@ -870,7 +1135,6 @@ public class BusinessLogic extends ResourceValues {
 
                 out.println("supi------->" + ueMobilitySubscriptionModel.getSupi());
 
-
                 return eventConnection;
 
             } else {
@@ -899,6 +1163,7 @@ public class BusinessLogic extends ResourceValues {
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return null;
+      
     }
 
 
@@ -1079,7 +1344,6 @@ public class BusinessLogic extends ResourceValues {
 
 
 
-
     private Object nwdaf_data_collector_For_UE_Mobility(NnwdafEventsSubscription nnwdafEventsSubscription, boolean getAnalytics) {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
@@ -1139,6 +1403,7 @@ public class BusinessLogic extends ResourceValues {
         return null;
 
     }
+
 
 
 
@@ -1713,6 +1978,7 @@ public class BusinessLogic extends ResourceValues {
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
+
 
 
 

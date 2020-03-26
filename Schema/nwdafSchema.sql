@@ -32,6 +32,7 @@ CREATE TABLE `NWDAF`.`nwdafSliceLoadLevelSubscriptionData` (
   `refCount` int NOT NULL,
   PRIMARY KEY (`ID`));
   
+  
     
    CREATE TABLE `NWDAF`.`nwdafUEmobilitySubscriptionData` (
   `ID` INT NOT NULL AUTO_INCREMENT,
@@ -61,6 +62,7 @@ CREATE TABLE `NWDAF`.`nwdafUEmobility` (
   `cellID` VARCHAR(128) NOT NULL, 
    `timeDuration` INT NULL, 
    PRIMARY KEY (`ID`)); 
+
 
 
 
@@ -106,6 +108,7 @@ CREATE TABLE `NWDAF`.`nwdafQosSustainabilitySubscriptionTable` (
 `correlationID` VARCHAR(128) NOT NULL,
 `refCount` int NOT NULL,
 PRIMARY KEY (`ID`));
+
   
   
   

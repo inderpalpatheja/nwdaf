@@ -29,5 +29,10 @@ public class EvenSubscriptionApplication {
 
         BasicConfigurator.configure();
         logger.debug("In EventSubscriptionApplication Class");
+
+
+
+
+
     }
 }
