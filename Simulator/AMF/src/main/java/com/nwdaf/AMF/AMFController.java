@@ -44,7 +44,7 @@ public class AMFController extends Functionality {
             // sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
             //       correlationIDList.get(i));
 
-            sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
+            sendDataForUEMobility("http://localhost:8081/Namf_Event_Exposure_Notify",
                     correlationID);
 
         }
@@ -180,6 +180,7 @@ public class AMFController extends Functionality {
 
         // Adding unSubCorrelationId into database;
         UUID unSubCorrelationId = UUID.randomUUID();
+        out.println("in-load-level----->> + "+obj.getNotificationTargetAddress() + "::"+obj.getCorrelationId());
         correlationIDList.add(obj.getCorrelationId());
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
@@ -193,12 +194,16 @@ public class AMFController extends Functionality {
         //  list.add();
 
         JSONObject json = new JSONObject(response);
+
         Namf_EventExposure_Subscribe obj = new Namf_EventExposure_Subscribe();
         obj.setCorrelationId(json.getString("correlationID"));
         obj.setNotificationTargetAddress(json.getString("notificationTargetAddress"));
 
         // Adding unSubCorrelationId into database;
         UUID unSubCorrelationId = UUID.randomUUID();
+
+        out.println("in-UE-Mobility----->> + "+obj.getNotificationTargetAddress() + "::"+obj.getCorrelationId());
+
         correlationIDList.add(obj.getCorrelationId());
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
@@ -407,7 +412,7 @@ public class AMFController extends Functionality {
 
         //  out.println("In send Data for UE-Mobility");
 
-        notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
+        notiTargetAddress = "http://localhost:8081/Namf_Event_Exposure_Notify";
 
 
         // initialize a Random object somewhere; you should only need one

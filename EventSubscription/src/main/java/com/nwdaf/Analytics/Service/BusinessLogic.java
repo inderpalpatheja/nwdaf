@@ -63,7 +63,6 @@ public class BusinessLogic extends ResourceValues {
     UserLocation userLocation = new UserLocation();
 
 
-
     /**
      * @param nnwdafEventsSubscription
      * @throws IOException
@@ -94,8 +93,7 @@ public class BusinessLogic extends ResourceValues {
                 }
 
 
-                if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
-                {
+                if (eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal()) {
                     // Adding snssais into database
                     repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
 
@@ -111,18 +109,15 @@ public class BusinessLogic extends ResourceValues {
 
                     //throw new NullPointerException("Data not found!");
                     return eventConnection;
-                }
-
-                else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
-                {
+                } else if (eventID == EventID.QOS_SUSTAINABILITY.ordinal()) {
                     repository.setNwdafQosSustainabilityInformation(nnwdafEventsSubscription.getSnssais());
 
                     QosAnalyticsInfo qosInfo = new QosAnalyticsInfo(nnwdafEventsSubscription.getSnssais(), HttpStatus.NOT_FOUND);
 
                     logger.debug("eventID: " + EventID.QOS_SUSTAINABILITY.toString() + "\n" +
                             "snssais: " + nnwdafEventsSubscription.getSnssais() + "\n" +
-                            " ranUeThroughput: " + qosInfo.getRanUeThroughput()  + "\n" +
-                            " qosFlowRetain: " + qosInfo.getQosFlowRetain()  + "\n" +
+                            " ranUeThroughput: " + qosInfo.getRanUeThroughput() + "\n" +
+                            " qosFlowRetain: " + qosInfo.getQosFlowRetain() + "\n" +
                             "DataStatus:  " + qosInfo.getDataStatus());
 
                     return qosInfo;
@@ -188,7 +183,7 @@ public class BusinessLogic extends ResourceValues {
             // Updated URL For NWDAF to Subscribe
             // updated_POST_NRF_URL = POST_NRF_URL + "/" + correlationID;
             // POST_NRF_URL = NRF URL ------> [ Reading from ]application.properties
-           try {
+            try {
 
                 URL obj = new URL(POST_NRF_URL);
                 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -217,14 +212,14 @@ public class BusinessLogic extends ResourceValues {
 
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
             return correlationID;
-         }  else {
+        } else {
 
-            if(!getAnalytics)
-            { repository.increaseRefCount(nnwdafEventsSubscription.getSnssais(), EventID.values()[nnwdafEventsSubscription.getEventID()]); }
+            if (!getAnalytics) {
+                repository.increaseRefCount(nnwdafEventsSubscription.getSnssais(), EventID.values()[nnwdafEventsSubscription.getEventID()]);
+            }
         }
         return null;
     }
-
 
 
     /**
@@ -276,7 +271,7 @@ public class BusinessLogic extends ResourceValues {
 
 
         // notificationTargetUrl = Namf_EventExposure_Notify
-        json.put("notificationTargetAddress", notificationTargetUrl);
+        json.put("notificationTargetAddress", notificationTargetUrlForAMF);
 
         // For POST only - START
         con.setDoOutput(true);
@@ -327,8 +322,7 @@ public class BusinessLogic extends ResourceValues {
 
                 int eventID = nnwdafEventsSubscription.getEventID();
 
-                if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
-                {
+                if (eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal()) {
                     SliceLoadLevelSubscriptionTable slice = new SliceLoadLevelSubscriptionTable();
                     slice.setCorrelationID(String.valueOf(correlationID));
                     slice.setSubscriptionID(response.toString());
@@ -341,24 +335,20 @@ public class BusinessLogic extends ResourceValues {
                     } else {
                         repository.addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(slice, false);
                     }
-                }
-
-                else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
-                {
+                } else if (eventID == EventID.QOS_SUSTAINABILITY.ordinal()) {
                     QosSustainabilitySubscriptionTable qos = new QosSustainabilitySubscriptionTable();
 
                     qos.setCorrelationID(String.valueOf(correlationID));
                     qos.setSubscriptionID(response.toString());
                     qos.setSnssais(nnwdafEventsSubscription.getSnssais());
 
-                    if(getAnalytics)
-                    {
-                        if(!repository.snsExists(qos.getSnssais(), EventID.QOS_SUSTAINABILITY))
-                        { repository.addDataQosSustainabilitySubscriptionTable(qos, true); }
+                    if (getAnalytics) {
+                        if (!repository.snsExists(qos.getSnssais(), EventID.QOS_SUSTAINABILITY)) {
+                            repository.addDataQosSustainabilitySubscriptionTable(qos, true);
+                        }
+                    } else {
+                        repository.addDataQosSustainabilitySubscriptionTable(qos, false);
                     }
-
-                    else
-                    { repository.addDataQosSustainabilitySubscriptionTable(qos, false); }
                 }
 
 
@@ -373,10 +363,6 @@ public class BusinessLogic extends ResourceValues {
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
-
-
-
-
 
 
     /**
@@ -446,8 +432,8 @@ public class BusinessLogic extends ResourceValues {
                 "unSubCorrelationId", nnrfModel.getUnSubCorrelationId());
 
 
-        // notificationTargetUrl = Namf_EventExposure_Notify
-        json.put("notificationTargetAddress", notificationTargetUrl);
+        // notificationTargetUrl = NRF URL
+        json.put("notificationTargetAddress", notificationTargetUrlForNRF);
 
         // For POST only - START
         con.setDoOutput(true);
@@ -466,6 +452,7 @@ public class BusinessLogic extends ResourceValues {
         return responseCode;
 
     }
+
     /**
      * @param snssais
      * @return
@@ -488,15 +475,13 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-
     protected void send_notificaiton_to_NF(String notificationURI,
                                            EventID eventID,
                                            String snssais,
                                            Integer currentLoadLevel,
-                                           String subscriptionID) throws IOException, JSONException
-    { send_notificaiton_to_NF(notificationURI, eventID, snssais, currentLoadLevel, subscriptionID, null); }
-
-
+                                           String subscriptionID) throws IOException, JSONException {
+        send_notificaiton_to_NF(notificationURI, eventID, snssais, currentLoadLevel, subscriptionID, null);
+    }
 
 
     /**
@@ -516,21 +501,20 @@ public class BusinessLogic extends ResourceValues {
         Counters.incrementSubscriptionNotifications();
 
 
-
-       // URL url = null;
+        // URL url = null;
         //try {
-           URL url = new URL(notificationURI);
+        URL url = new URL(notificationURI);
         //} catch (MalformedURLException e) {
-           // logger.warn("http connect exception found");
-            //e.printStackTrace();
+        // logger.warn("http connect exception found");
+        //e.printStackTrace();
         //}
 
         // Opening connection;
-       // HttpURLConnection con = null;
+        // HttpURLConnection con = null;
         ///try {
-         HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
         //} catch (IOException e) {
-            //e.printStackTrace();
+        //e.printStackTrace();
 
         //}
 
@@ -549,8 +533,7 @@ public class BusinessLogic extends ResourceValues {
 
         json.put("eventID", eventID.toString());
 
-        if(eventID == EventID.LOAD_LEVEL_INFORMATION)
-        {
+        if (eventID == EventID.LOAD_LEVEL_INFORMATION) {
             json.put("snssais", snssais);
 
 
@@ -560,11 +543,7 @@ public class BusinessLogic extends ResourceValues {
 
 
             json.put("currentLoadLevel", currentLoadLevel);
-        }
-
-
-        else if(eventID == EventID.QOS_SUSTAINABILITY)
-        {
+        } else if (eventID == EventID.QOS_SUSTAINABILITY) {
 
             QosSustainabilityInfo qosSustainabilityInfo = repository.getPlmnID_Tac(subscriptionID, currentLoadLevel, qosType);
 
@@ -580,11 +559,11 @@ public class BusinessLogic extends ResourceValues {
 
             qosInfo.put("areaInfo", areaInfo);
 
-            if(qosType == QosType.RAN_UE_THROUGHPUT)
-            { qosInfo.put("crossedRanUeThroughputThreshold", currentLoadLevel); }
-
-            else
-            { qosInfo.put("crossedQosFlowRetainThreshold", currentLoadLevel); }
+            if (qosType == QosType.RAN_UE_THROUGHPUT) {
+                qosInfo.put("crossedRanUeThroughputThreshold", currentLoadLevel);
+            } else {
+                qosInfo.put("crossedQosFlowRetainThreshold", currentLoadLevel);
+            }
 
             json.put("QosSustainabilityInfo", qosInfo);
         }
@@ -614,10 +593,9 @@ public class BusinessLogic extends ResourceValues {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            con.disconnect();
         }
-
-        finally
-        { con.disconnect(); }
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
 
@@ -638,16 +616,12 @@ public class BusinessLogic extends ResourceValues {
         String mCorrelationID = "";
         String correlationID = "";
 
-        if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
-        {
+        if (eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal()) {
             mCorrelationID = repository.getUnSubCorrelationID(snssais, EventID.LOAD_LEVEL_INFORMATION);
             //   String mCorrelationID = repository.getUnSubCorrelationID(snssais);
 
             correlationID = repository.getCorrelationID(mCorrelationID, EventID.LOAD_LEVEL_INFORMATION);
-        }
-
-        else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
-        {
+        } else if (eventID == EventID.QOS_SUSTAINABILITY.ordinal()) {
             mCorrelationID = repository.getUnSubCorrelationID(snssais, EventID.QOS_SUSTAINABILITY);
             correlationID = repository.getCorrelationID(mCorrelationID, EventID.QOS_SUSTAINABILITY);
         }
@@ -686,15 +660,11 @@ public class BusinessLogic extends ResourceValues {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            con.disconnect();
         }
 
-        finally
-        { con.disconnect(); }
-
     }
-
-
-
 
 
     protected boolean testConnection() {
@@ -709,14 +679,16 @@ public class BusinessLogic extends ResourceValues {
 
             if (con.getResponseCode() != HttpStatus.ACCEPTED.value()) {
 
-                if(con != null)
-                { con.disconnect(); }
+                if (con != null) {
+                    con.disconnect();
+                }
 
                 return false;
             }
 
-            if(con != null)
-            { con.disconnect(); }
+            if (con != null) {
+                con.disconnect();
+            }
 
         } catch (Exception ex) {
             return false;
@@ -724,7 +696,6 @@ public class BusinessLogic extends ResourceValues {
 
         return true;
     }
-
 
 
     // Updated nwdaf_notification_manager 3rd March, 2020
@@ -741,19 +712,15 @@ public class BusinessLogic extends ResourceValues {
             return;
         }
 
-        for(SliceLoadLevelInformation slice: list)
-        {
+        for (SliceLoadLevelInformation slice : list) {
             List<NotificationData> dataSet = repository.getAllNotificationData(slice.getSnssais(), slice.getCurrentLoadLevel());
 
-            if(dataSet != null && !dataSet.isEmpty())
-            {
-                for(NotificationData notifyData: dataSet)
-                {
-                    if(!subID_SET.contains(notifyData.getSubscriptionID()))
-                    {
+            if (dataSet != null && !dataSet.isEmpty()) {
+                for (NotificationData notifyData : dataSet) {
+                    if (!subID_SET.contains(notifyData.getSubscriptionID())) {
                         subID_SET.add(notifyData.getSubscriptionID());
 
-                       //SubscriptionTable subscriptionData = repository.findById_subscriptionID(notifyData.getSubscriptionID());
+                        //SubscriptionTable subscriptionData = repository.findById_subscriptionID(notifyData.getSubscriptionID());
                         send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.LOAD_LEVEL_INFORMATION, slice.getSnssais(), slice.getCurrentLoadLevel(), notifyData.getSubscriptionID());
                     }
 
@@ -764,9 +731,6 @@ public class BusinessLogic extends ResourceValues {
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
-
-
-
 
 
     protected void qosNotificationManager(QosType qosType) throws IOException, JSONException {
@@ -782,29 +746,25 @@ public class BusinessLogic extends ResourceValues {
             return;
         }
 
-        for(QosSustainabilityInformation qos: list)
-        {
+        for (QosSustainabilityInformation qos : list) {
             List<QosNotificationData> dataSet;
 
-            if(qosType == QosType.RAN_UE_THROUGHPUT)
-            { dataSet = repository.getAllQosNotificationData(qos.getSnssais(), qos.getRanUeThroughput() ,qosType); }
+            if (qosType == QosType.RAN_UE_THROUGHPUT) {
+                dataSet = repository.getAllQosNotificationData(qos.getSnssais(), qos.getRanUeThroughput(), qosType);
+            } else {
+                dataSet = repository.getAllQosNotificationData(qos.getSnssais(), qos.getQosFlowRetain(), qosType);
+            }
 
-            else
-            { dataSet = repository.getAllQosNotificationData(qos.getSnssais(), qos.getQosFlowRetain() ,qosType); }
 
-
-            if(dataSet != null && !dataSet.isEmpty())
-            {
-                if(qosType == QosType.RAN_UE_THROUGHPUT)
-                {
-                    for(QosNotificationData notifyData: dataSet)
-                    { send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.QOS_SUSTAINABILITY, qos.getSnssais(), qos.getRanUeThroughput(), notifyData.getSubscriptionID(), QosType.RAN_UE_THROUGHPUT); }
-                }
-
-                else
-                {
-                    for(QosNotificationData notifyData: dataSet)
-                    { send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.QOS_SUSTAINABILITY, qos.getSnssais(), qos.getQosFlowRetain(), notifyData.getSubscriptionID(), QosType.QOS_FLOW_RETAIN); }
+            if (dataSet != null && !dataSet.isEmpty()) {
+                if (qosType == QosType.RAN_UE_THROUGHPUT) {
+                    for (QosNotificationData notifyData : dataSet) {
+                        send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.QOS_SUSTAINABILITY, qos.getSnssais(), qos.getRanUeThroughput(), notifyData.getSubscriptionID(), QosType.RAN_UE_THROUGHPUT);
+                    }
+                } else {
+                    for (QosNotificationData notifyData : dataSet) {
+                        send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.QOS_SUSTAINABILITY, qos.getSnssais(), qos.getQosFlowRetain(), notifyData.getSubscriptionID(), QosType.QOS_FLOW_RETAIN);
+                    }
                 }
             }
         }
@@ -813,16 +773,7 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-
-
-
-
     /**************************UE_MOBILITY code*********************************************************************/
-
-
-
-
-
 
 
     protected Object check_For_data_for_UE_Mobility(NnwdafEventsSubscription nnwdafEventsSubscription, boolean getAnalytics) throws IOException, JSONException {
@@ -902,13 +853,10 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-
-
     public void add_value_to_userLocationTable(String taiValue, String cellID, Integer timeDuration) {
 
         repository.addValuesToUserLocationTable(taiValue, cellID, timeDuration);
     }
-
 
 
     public void updateUEMobilityTable(String correlationID) {
@@ -922,9 +870,6 @@ public class BusinessLogic extends ResourceValues {
         //Updating the location of supi;
         repository.updateLocatoinValueToUEMobilityTable(IDs, supi);
     }
-
-
-
 
 
     protected void nwdaf_notification_manager_ForUEMobility() throws IOException, JSONException {
@@ -999,6 +944,7 @@ public class BusinessLogic extends ResourceValues {
                     send_notificaiton_to_NF(subscriptionData.getNotificationURI(),
                             EventID.values()[subscriptionData.getEventID()].toString(),
                             "null",
+
                             userLocations,
                             supiList.get(i).getSupi(),
                             0, subscriptionData.getSubscriptionID());
@@ -1008,8 +954,6 @@ public class BusinessLogic extends ResourceValues {
 
         }
     }
-
-
 
 
     protected Object check_For_dataUEmobility(NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE, boolean getAnalytics) throws IOException, JSONException {
@@ -1078,8 +1022,6 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-
-
     private Object nwdaf_data_collector_For_UE_Mobility(NnwdafEventsSubscription nnwdafEventsSubscription, boolean getAnalytics) {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
@@ -1141,10 +1083,6 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-
-
-
-
     /**
      * @param notificationURI
      * @throws IOException
@@ -1179,7 +1117,6 @@ public class BusinessLogic extends ResourceValues {
 
         JSONArray ueTrajectoryArray = new JSONArray();
         JSONObject ueTrajectoryObject = new JSONObject();
-
 
 
         for (int i = 0; i < userLocations.size(); i++) {
@@ -1230,8 +1167,6 @@ public class BusinessLogic extends ResourceValues {
             locationInfoArray.put(locationInfoObject);
 
         }
-
-
 
 
         ueTrajectoryObject.put("ts", "Date-time-value");
@@ -1455,8 +1390,6 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-
-
     public List<EventConnectionForUEMobility> getUElocation(String supi) {
 
 
@@ -1520,7 +1453,6 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-
     protected Object nwdaf_data_collectorUEmobility(NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE, boolean getAnalytics) throws IOException, JSONException {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
@@ -1534,10 +1466,11 @@ public class BusinessLogic extends ResourceValues {
             UUID correlationID = FrameWorkFunction.getUniqueID();
 
 
-            Nnrf_Model nnrfModel = new Nnrf_Model();
+            //  Nnrf_Model nnrfModel = new Nnrf_Model();
 
+            AMFModel amfModel = new AMFModel();
             // Adding correlationID to object and send to SIMULATOR
-            nnrfModel.setCorrelationId(String.valueOf(correlationID));
+            amfModel.setCorrelationId(String.valueOf(correlationID));
             // Updated URL For NWDAF to Subscribe
             // updated_POST_NRF_URL = POST_NRF_URL + "/" + correlationID;
             // POST_NRF_URL = NRF URL ------> [ Reading from ]application.properties
@@ -1553,7 +1486,9 @@ public class BusinessLogic extends ResourceValues {
                 con.setRequestProperty("Accept", "application/json");
 
                 // Function To Send CorrelationID to SIMULATOR
-                int responseCode = send_data_receieve_response(nnrfModel, con);
+              //  int responseCode = send_data_receieve_response(nnrfModel, con);
+
+                int responseCode = send_data_receieve_response_AMF(amfModel,con);
 
                 if (responseCode != HttpStatus.OK.value()) {
                     throw new Exception();
@@ -1581,8 +1516,6 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-
-
     private int send_data_receieve_response_For_UEMobility(AMFModel amfModel, HttpURLConnection con) throws JSONException, IOException {
 
         JSONObject json = new JSONObject();
@@ -1592,7 +1525,7 @@ public class BusinessLogic extends ResourceValues {
 
 
         // notificationTargetUrl = Namf_EventExposure_Notify
-        json.put("notificationTargetAddress", notificationTargetUrl);
+        json.put("notificationTargetAddress", notificationTargetUrlForAMF);
 
         // For POST only - START
         con.setDoOutput(true);
@@ -1610,8 +1543,6 @@ public class BusinessLogic extends ResourceValues {
 
         return responseCode;
     }
-
-
 
 
     private void response_handler_for_UEMobility(NnwdafEventsSubscription nnwdafEventsSubscription, int responseCode, UUID correlationID, HttpURLConnection con, boolean getAnalytics) throws IOException {
@@ -1664,8 +1595,6 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-
-
     protected void response_handlerUEmobility(NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE,
                                               int responseCode, UUID correlationID,
                                               HttpURLConnection con, boolean getAnalytics) throws IOException {
@@ -1713,7 +1642,6 @@ public class BusinessLogic extends ResourceValues {
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
-
 
 
     /************************************************************************************************************************/

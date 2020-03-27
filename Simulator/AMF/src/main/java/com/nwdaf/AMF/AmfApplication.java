@@ -79,7 +79,7 @@ public class AmfApplication extends Functionality {
 
             //unSubURIMap.put(,ID);
 
-            unSubURIMap.put(ID,URI);
+            unSubURIMap.put(ID, URI);
 
             // subIDList.add(subId);
         }
@@ -117,7 +117,7 @@ public class AmfApplication extends Functionality {
         }*/
 
 
-        while (true) {
+     /*   while (true) {
             //Thread.sleep(5000);
 
             amfApplication.test(subList);
@@ -127,7 +127,7 @@ public class AmfApplication extends Functionality {
                 amfController.sendData("http://localhost:8081/Nnrf_NFManagement_NFStatusNotify",
                         amfController.getCorrelationIDList().get(i));
                 // amfApplication.unsubscribe(subIDList.get(i));
-            }*/
+            }
 
             for (int i = 0; i < amfController.getCorrelationIDList().size(); i++) {
                 amfController.sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
@@ -142,8 +142,7 @@ public class AmfApplication extends Functionality {
             }
 
             Thread.sleep(20 * 1000);
-        }
-
+        } */
 
 
         // AMFController amfController = new AMFController();
