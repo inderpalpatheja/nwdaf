@@ -32,8 +32,8 @@ public class Nnwdaf_Controller {
 
     private final Nnwdaf_Service nwdaf_service;
 
-    final String EVENT_SUB = "apiRoot/nnwdaf-eventssubscription/v1";
-    final String ANALYTICS ="apiRoot/nnwdaf-analyticsinfo/v1/analytics";
+    final String EVENT_SUB = "/nnwdaf-eventssubscription/v1";
+    final String ANALYTICS ="/nnwdaf-analyticsinfo/v1/analytics";
 
 
     @Autowired
