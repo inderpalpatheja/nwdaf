@@ -25,6 +25,7 @@ public class Functionality {
                             String snssais,
                             Integer notifMethod,
                             Integer repPeriod,
+                            String supi,
                             Integer ldLevel) throws Exception {
         String line;
         StringBuffer responseContent = new StringBuffer();
@@ -45,6 +46,7 @@ public class Functionality {
         json.put("notifMethod", notifMethod);
         json.put("repetitionPeriod", repPeriod);
         json.put("loadLevelThreshold", ldLevel);
+        json.put("supi", supi);
 
         try (OutputStream os = con.getOutputStream()) {
             byte[] input = json.toString().getBytes("utf-8");
@@ -58,16 +60,14 @@ public class Functionality {
             while ((responseLine = br.readLine()) != null) {
                 response.append(responseLine.trim());
             }
-            out.println("Status: " + con.getResponseCode());
-            out.println("Message: " + response.toString());
+            //  out.println("Status: " + con.getResponseCode());
+            //  out.println("Message: " + response.toString());
+        } finally {
+            con.disconnect();
         }
-
-        finally
-        { con.disconnect(); }
 
         return con.getHeaderField("Location");
     }
-
 
 
     public void update(String subID, Integer eventID, Integer notifMethod, Integer repLevel, Integer ldLevel) throws Exception {
@@ -105,10 +105,9 @@ public class Functionality {
             }
             // out.println("Status: " + con.getResponseCode());
             //  out.println("Message: " + response.toString());
+        } finally {
+            con.disconnect();
         }
-
-        finally
-        { con.disconnect(); }
     }
 
 
@@ -118,6 +117,7 @@ public class Functionality {
         // out.println("unSubscribe URL" + notificationURI + "/" + subID);
 
         String updatedURL = notificationURI + "/" + subID;
+        out.println("updated URL - " + updatedURL);
 
         StringBuffer responseContent = new StringBuffer();
 
@@ -130,9 +130,11 @@ public class Functionality {
         con.setDoOutput(true);
 
         out.println("Status: " + con.getResponseCode());
+        out.println("message:" + con.getResponseMessage());
 
         if(con != null)
         { con.disconnect(); }
     }
+
 
 }
