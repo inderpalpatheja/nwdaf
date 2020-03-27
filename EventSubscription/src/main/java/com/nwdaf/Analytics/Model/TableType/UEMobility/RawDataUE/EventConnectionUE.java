@@ -5,7 +5,6 @@ package com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE;
  * @author  sheetalkumar
  */
 
-
 import java.util.Date;
 
 public class EventConnectionUE {
