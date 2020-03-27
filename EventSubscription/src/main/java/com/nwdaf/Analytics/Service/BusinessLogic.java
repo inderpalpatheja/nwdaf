@@ -989,7 +989,8 @@ public class BusinessLogic extends ResourceValues {
                 repository.add_data_into_nwdafUEmobility(ueMobilitySubscriptionModel);
 
                 EventConnectionUE eventConnectionUE = new EventConnectionUE();
-                eventConnectionUE.setMessage("Data not Found for " + nnwdafEventsSubscriptionUE.getSupi());
+               // eventConnectionUE.setMessage("Data not Found for " + nnwdafEventsSubscriptionUE.getSupi());
+                eventConnectionUE.setMessage("204 No Content");
                 eventConnectionUE.setSupi(nnwdafEventsSubscriptionUE.getSupi());
                 eventConnectionUE.setDataStatus(false);
 
