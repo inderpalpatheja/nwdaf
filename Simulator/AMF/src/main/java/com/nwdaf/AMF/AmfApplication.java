@@ -42,7 +42,7 @@ public class AmfApplication extends Functionality {
     Random random = new Random();
 
 
-    public void test(int subList) throws Exception {
+    public void test(int subList, int eventID) throws Exception {
 
         //  System.out.println("Subscribers Count - " + subList);
         int MCC = random.nextInt(900) + 100;
@@ -57,32 +57,67 @@ public class AmfApplication extends Functionality {
         //  System.out.println("SUPI ---- > " + supi);
 
 
-        for (int i = 0; i < subList; i++) {
+        if (0 == eventID) {
+            for (int i = 0; i < subList; i++) {
 
-            int eventIDvalue = eventIDArray[rand.nextInt(eventIDArray.length)];
-            System.out.println("even-ID-value = " + eventIDvalue);
+                // int eventIDvalue = eventIDArray[rand.nextInt(eventIDArray.length)];
+                System.out.println("even-ID-value = " + eventID);
 
-            String subId = subscribe(5,
-                    "http://localhost:8082/notify",
-                    snssaisArray[rand.nextInt(snssaisArray.length)],
-                    1,
-                    0,
-                    supi,
-                    rand.nextInt(30) + 40); /// rand.nextInt( high - low ) + low
+                String subId = subscribe(0,
+                        "http://localhost:8082/notify",
+                        snssaisArray[rand.nextInt(snssaisArray.length)],
+                        1,
+                        0,
+                        supi,
+                        rand.nextInt(30) + 40); /// rand.nextInt( high - low ) + low
 
-            //  System.out.println("Un-sub-URI : " + subId);
-            System.out.println("Length - " + subId.length());
-            String ID = subId.substring(subId.length() - 36, subId.length());
-            System.out.println("ID - " + ID);
-            String URI = subId.substring(0, subId.length() - 37);
-            System.out.println("URI - " + URI);
+                //  System.out.println("Un-sub-URI : " + subId);
+                System.out.println("Length - " + subId.length());
+                String ID = subId.substring(subId.length() - 36, subId.length());
+                System.out.println("ID - " + ID);
+                String URI = subId.substring(0, subId.length() - 37);
+                System.out.println("URI - " + URI);
 
-            //unSubURIMap.put(,ID);
+                //unSubURIMap.put(,ID);
 
-            unSubURIMap.put(ID, URI);
+                unSubURIMap.put(ID, URI);
 
-            // subIDList.add(subId);
+                // subIDList.add(subId);
+            }
         }
+        if (5 == eventID) {
+            for (int i = 0; i < subList; i++) {
+
+                // int eventIDvalue = eventIDArray[rand.nextInt(eventIDArray.length)];
+                System.out.println("even-ID-value = " + eventID);
+
+                String subId = subscribe(5,
+                        "http://localhost:8082/notify",
+                        snssaisArray[rand.nextInt(snssaisArray.length)],
+                        1,
+                        0,
+                        supi,
+                        rand.nextInt(30) + 40); /// rand.nextInt( high - low ) + low
+
+                //  System.out.println("Un-sub-URI : " + subId);
+                System.out.println("Length - " + subId.length());
+                String ID = subId.substring(subId.length() - 36, subId.length());
+                System.out.println("ID - " + ID);
+                String URI = subId.substring(0, subId.length() - 37);
+                System.out.println("URI - " + URI);
+
+                //unSubURIMap.put(,ID);
+
+                unSubURIMap.put(ID, URI);
+
+                // subIDList.add(subId);
+            }
+        }
+        if (3 == eventID) {
+            System.out.println("even-ID-value = " + eventID);
+            System.out.println("Qos_changes");
+        }
+
     }
 
 
@@ -94,15 +129,16 @@ public class AmfApplication extends Functionality {
 
         // Reading subscriber list From file
         ApplicationPropertiesValue properties = new ApplicationPropertiesValue();
-        String subcout = properties.getPropValues();
+        List<String> propValuesList = properties.getPropValues();
 
-        int subList = Integer.parseInt(subcout);
+        int subListInt = Integer.parseInt(propValuesList.get(0));
+        int eventIDInt = Integer.parseInt(propValuesList.get(1));
 
         AmfApplication amfApplication = new AmfApplication();
 
         // amfController.testJSONData();
 
-        //  amfApplication.test(subList);
+        amfApplication.test(subListInt, eventIDInt);
 
        /* for (int i = 0; i < amfController.getCorrelationIDList().size(); i++) {
             amfController.sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",

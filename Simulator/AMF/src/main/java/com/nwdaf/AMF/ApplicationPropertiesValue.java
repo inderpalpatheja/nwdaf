@@ -8,7 +8,9 @@ package com.nwdaf.AMF;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 
@@ -17,7 +19,9 @@ public class ApplicationPropertiesValue {
     String result = "";
     InputStream inputStream;
 
-    public String getPropValues() throws IOException {
+    public List<String> getPropValues() throws IOException {
+
+        List<String> propList = new ArrayList<>();
 
         try {
             Properties prop = new Properties();
@@ -35,10 +39,15 @@ public class ApplicationPropertiesValue {
 
             // get the property value and print it out
             String subList = prop.getProperty("spring.subscriber.count");
+            String eventVal = prop.getProperty("spring.event.value");
+
             // String company1 = prop.getProperty("company1");
             //String company2 = prop.getProperty("company2");
             //String company3 = prop.getProperty("company3");
 
+
+            propList.add(subList);
+            propList.add(eventVal);
 
             result = subList;
 
@@ -47,6 +56,6 @@ public class ApplicationPropertiesValue {
         } finally {
             inputStream.close();
         }
-        return result;
+        return propList;
     }
 }
