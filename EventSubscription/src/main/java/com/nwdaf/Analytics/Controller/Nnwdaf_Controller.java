@@ -160,6 +160,7 @@ public class Nnwdaf_Controller {
 
         nwdaf_service.notificationHandler(response, EventID.LOAD_LEVEL_INFORMATION);
 
+
     }
 
 

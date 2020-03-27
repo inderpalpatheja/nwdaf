@@ -587,6 +587,7 @@ public class Nnwdaf_Service extends BusinessLogic {
             repository.deleteEntry_UEMobilitySubscriptionTable(supi);
         }
 
+       // repository.getRefCount_UEmobilitySubscriptionTable()
         nwdaf_notification_manager_ForUEMobility();
 
     }

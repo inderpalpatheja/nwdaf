@@ -568,6 +568,7 @@ public class BusinessLogic extends ResourceValues {
             json.put("QosSustainabilityInfo", qosInfo);
         }
 
+
         /**************************************************************************************************************/
 
 
@@ -919,38 +920,42 @@ public class BusinessLogic extends ResourceValues {
 
             out.println("\n\nSubscriptionListsize" + subscriptionDataList.size());
 
+            if (0 == subscriptionDataList.size()) {
+                out.println("NO_subscription found");
+            } else {
+                for (int k = 0; k < subscriptionDataList.size(); k++) {
+                    out.println("\nsubscriptionID_VIA_supi " + subscriptionDataList.get(k));
+                    SubscriptionTable subscriptionData = repository.findById_subscriptionID(subscriptionDataList.get(k));
 
-            for (int k = 0; k < subscriptionDataList.size(); k++) {
-                out.println("\nsubscriptionID_VIA_supi " + subscriptionDataList.get(k));
-                SubscriptionTable subscriptionData = repository.findById_subscriptionID(subscriptionDataList.get(k));
+                    //out.println("\nEventID " + subscriptionData.getEventID() +
+                    //  "\nSubscriptionID - "+ subscriptionData.getSubscriptionID());
 
-                //out.println("\nEventID " + subscriptionData.getEventID() +
-                //  "\nSubscriptionID - "+ subscriptionData.getSubscriptionID());
-
-                out.println("\nnotificaitonURI - " + subscriptionData.getNotificationURI() +
-                        "\neventID - " + EventID.values()[subscriptionData.getEventID()].toString() +
-                        "\nsupi - " + supiList.get(i).getSupi() +
-                        "\nTai value - " + userLocation.getTai() +
-                        "\nSubscriptionID - " + subscriptionData.getSubscriptionID());
-
-
-                if (!subID_SET.contains(subscriptionDataList.get(k))) {
-                    subID_SET.add(subscriptionDataList.get(k));
-
-                    // send_notificaiton_to_NF_forUEMobility(subscriptionData.getNotificationURI(),
-                    //       EventID.values()[subscriptionData.getEventID()].toString());
+                    out.println("\nnotificaitonURI - " + subscriptionData.getNotificationURI() +
+                            "\neventID - " + EventID.values()[subscriptionData.getEventID()].toString() +
+                            "\nsupi - " + supiList.get(i).getSupi() +
+                            "\nTai value - " + userLocation.getTai() +
+                            "\nSubscriptionID - " + subscriptionData.getSubscriptionID());
 
 
-                    send_notificaiton_to_NF(subscriptionData.getNotificationURI(),
-                            EventID.values()[subscriptionData.getEventID()].toString(),
-                            "null",
+                    if (!subID_SET.contains(subscriptionDataList.get(k))) {
+                        subID_SET.add(subscriptionDataList.get(k));
 
-                            userLocations,
-                            supiList.get(i).getSupi(),
-                            0, subscriptionData.getSubscriptionID());
+                        // send_notificaiton_to_NF_forUEMobility(subscriptionData.getNotificationURI(),
+                        //       EventID.values()[subscriptionData.getEventID()].toString());
+
+
+                        send_notificaiton_to_NF(subscriptionData.getNotificationURI(),
+                                EventID.values()[subscriptionData.getEventID()].toString(),
+                                "null",
+
+                                userLocations,
+                                supiList.get(i).getSupi(),
+                                0, subscriptionData.getSubscriptionID());
+                    }
+
                 }
-
             }
+
 
         }
     }
@@ -1186,11 +1191,24 @@ public class BusinessLogic extends ResourceValues {
         sliceLoadLevelInfo.put("loadLevelInformation", currentLoadLevel);
         sliceLoadLevelInfo.put("snssais", snssaisArray);
 
-        eventNotificationObject.put("NwdafEvent", eventID);
-        eventNotificationObject.put("SliceLoadLevelInformation", sliceLoadLevelInfo);
-        eventNotificationObject.put("ueMobs", uEMobilityArray);
+        /*FIXED JSON PAYLOAD
+         * It will only send data for particular event-ID*/
 
-        eventNotificationArray.put(eventNotificationObject);
+        if (eventID == "LOAD_LEVEL_INFORMATION") {
+            eventNotificationObject.put("NwdafEvent", eventID);
+            eventNotificationObject.put("SliceLoadLevelInformation", sliceLoadLevelInfo);
+            eventNotificationArray.put(eventNotificationObject);
+        }
+        if (eventID == "UE_MOBILITY") {
+            eventNotificationObject.put("NwdafEvent", eventID);
+            eventNotificationObject.put("ueMobs", uEMobilityArray);
+            eventNotificationArray.put(eventNotificationObject);
+        }
+
+        if (eventID == "QOS_SUSTAINABILITY") {
+            /*add Qos Here*/
+        }
+
 
         eventNotificationFinalObject.put("eventNotifications", eventNotificationArray);
         eventNotificationFinalObject.put("subscriptionId", subscriptionID);
@@ -1486,9 +1504,9 @@ public class BusinessLogic extends ResourceValues {
                 con.setRequestProperty("Accept", "application/json");
 
                 // Function To Send CorrelationID to SIMULATOR
-              //  int responseCode = send_data_receieve_response(nnrfModel, con);
+                //  int responseCode = send_data_receieve_response(nnrfModel, con);
 
-                int responseCode = send_data_receieve_response_AMF(amfModel,con);
+                int responseCode = send_data_receieve_response_AMF(amfModel, con);
 
                 if (responseCode != HttpStatus.OK.value()) {
                     throw new Exception();

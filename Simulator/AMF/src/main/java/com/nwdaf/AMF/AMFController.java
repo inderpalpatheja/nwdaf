@@ -32,6 +32,11 @@ public class AMFController extends Functionality {
     Random rand = new Random();
 
     public static List<String> correlationIDList = new ArrayList<>();
+    public static List<String> correlationIDListForUE = new ArrayList<>();
+
+    public static List<String> getCorrelationIDListForUE() {
+        return correlationIDListForUE;
+    }
 
     public List<String> getCorrelationIDList() {
         return correlationIDList;
@@ -40,7 +45,7 @@ public class AMFController extends Functionality {
 
     @GetMapping("/sendDataToUEMobility/{correlationID}")
     public void sendUEData(@PathVariable String correlationID) throws IOException, JSONException {
-        for (int i = 0; i < correlationIDList.size(); i++) {
+        for (int i = 0; i < correlationIDListForUE.size(); i++) {
             // sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
             //       correlationIDList.get(i));
 
@@ -84,7 +89,7 @@ public class AMFController extends Functionality {
         //  out.println("subListSize - " + AmfApplication.getSubIDList().size());
 
         // Stirn
-        Integer size= AmfApplication.getUnSubURIMap().size();
+        Integer size = AmfApplication.getUnSubURIMap().size();
         // out.println("size of map " + size);
 
 
@@ -97,7 +102,8 @@ public class AMFController extends Functionality {
                 String UnSubURI = entry.getValue() + entry.getKey();
                 out.println("Un-SubURI - - - > " + UnSubURI);
 
-                unsubscribe(entry.getValue().trim(),entry.getKey().trim());
+//                unsubscribe(entry.getValue().trim(), entry.getKey().trim());
+                //              AmfApplication.getUnSubURIMap().remove(entry);
             }
 //            System.out.println("Key = " + entry.getKey() +
 //                    ", Value = " + entry.getValue());
@@ -134,7 +140,7 @@ public class AMFController extends Functionality {
         return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
     }
 
-
+    /*UE-Mobility*/
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/Namf_Event_Exposure_UnSubscribe")
     public ResponseEntity<String> unsubScribeFromNWDAFForUEMobility(@RequestBody String response) throws JSONException, IOException {
@@ -143,13 +149,15 @@ public class AMFController extends Functionality {
         String unSubCorrelationID = jsonObject.getString("mSubcorrelationID");
         String correlationID = jsonObject.getString("correlationID");
 
-        correlationIDList.remove(correlationID);
+        correlationIDListForUE.remove(correlationID);
         // list.delete();
         //     out.println("Unsubscribed from NWDAF WORKED for " + response);
 
 
         return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
     }
+
+    /*UE-Mobility*/
 
 
  /*   @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
@@ -180,12 +188,11 @@ public class AMFController extends Functionality {
 
         // Adding unSubCorrelationId into database;
         UUID unSubCorrelationId = UUID.randomUUID();
-        out.println("in-load-level----->> + "+obj.getNotificationTargetAddress() + "::"+obj.getCorrelationId());
+        out.println("in-load-level----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
         correlationIDList.add(obj.getCorrelationId());
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
     }
-
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/Namf_Event_Exposure_Subscribe")
@@ -202,9 +209,9 @@ public class AMFController extends Functionality {
         // Adding unSubCorrelationId into database;
         UUID unSubCorrelationId = UUID.randomUUID();
 
-        out.println("in-UE-Mobility----->> + "+obj.getNotificationTargetAddress() + "::"+obj.getCorrelationId());
+        out.println("in-UE-Mobility----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
 
-        correlationIDList.add(obj.getCorrelationId());
+        correlationIDListForUE.add(obj.getCorrelationId());
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
     }
@@ -299,14 +306,10 @@ public class AMFController extends Functionality {
     }
 
 
-
     //  @Override
     //public void getCorrelationList(List<String> correlationList) {
     //  out.println(correlationList.size());
     // }
-
-
-
 
 
     @PostMapping("/update/{qosLoadType}/{correlationID}")
@@ -344,14 +347,13 @@ public class AMFController extends Functionality {
 
         loadType = loadType.toLowerCase();
 
-        if(loadType.equals(ranUeThroughput))
-        { json.put("ranUeThroughput", 1 + rand.nextInt(85)); }
-
-        else if(loadType.equals(qosFlowRetain))
-        { json.put("qosFlowRetain", 1 + rand.nextInt(85)); }
-
-        else
-        { return new ResponseEntity<String>("Invalid load value", HttpStatus.NOT_ACCEPTABLE); }
+        if (loadType.equals(ranUeThroughput)) {
+            json.put("ranUeThroughput", 1 + rand.nextInt(85));
+        } else if (loadType.equals(qosFlowRetain)) {
+            json.put("qosFlowRetain", 1 + rand.nextInt(85));
+        } else {
+            return new ResponseEntity<String>("Invalid load value", HttpStatus.NOT_ACCEPTABLE);
+        }
 
         json.put("correlationID", correlationID);
 
@@ -397,14 +399,12 @@ public class AMFController extends Functionality {
         }
         //  return "Data send to " + updated_URL;
 
-        if(con != null)
-        { con.disconnect(); }
+        if (con != null) {
+            con.disconnect();
+        }
 
         return new ResponseEntity<String>("Send", HttpStatus.OK);
     }
-
-
-
 
 
     public ResponseEntity<String> sendDataForUEMobility(String notiTargetAddress,
@@ -528,8 +528,6 @@ public class AMFController extends Functionality {
         // return new ResponseEntity<String>(USER_LOCATION_ARRAY.toString(), HttpStatus.OK);
         return new ResponseEntity<>("Created", HttpStatus.OK);
     }
-
-
 
 
     public void testJSONData() throws JSONException {
