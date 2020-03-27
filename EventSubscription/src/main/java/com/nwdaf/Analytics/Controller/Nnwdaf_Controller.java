@@ -5,7 +5,6 @@ import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
-import com.nwdaf.Analytics.Model.RawData.UEUpdateRawData;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
 import io.swagger.annotations.ApiOperation;
 import org.json.JSONException;
@@ -24,6 +23,8 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.*;
 
 
+
+
 @RestController
 public class Nnwdaf_Controller {
 
@@ -32,7 +33,7 @@ public class Nnwdaf_Controller {
     private final Nnwdaf_Service nwdaf_service;
 
     final String EVENT_SUB = "/nnwdaf-eventssubscription/v1";
-    final String ANALYTICS = "/apiroot/nnwdaf-analyticsinfo/v1";
+    final String ANALYTICS ="/apiroot/nnwdaf-analyticsinfo/v1";
 
 
     @Autowired
@@ -45,6 +46,9 @@ public class Nnwdaf_Controller {
 
         logger.debug("Exit Nnwdaf_controller()");
     }
+
+
+
 
 
     /**
@@ -70,20 +74,6 @@ public class Nnwdaf_Controller {
         return nwdaf_service.nwdaf_analytics(snssais, anySlice, eventID);
 
     }
-
-    @GetMapping(ANALYTICS + "/{supi}/{eventID}")
-    @ApiOperation(value = "Get Analytics Details By supi or anySlice Details",
-            notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
-            response = Object.class)
-    public Object nwdaf_analyticsForUEMobility(@PathVariable("supi") String supi,
-                                               Boolean anySlice,
-                                               @PathVariable("eventID") int eventID) throws IOException, JSONException {
-
-
-        return nwdaf_service.nwdaf_analyticsUEmobility(supi, eventID);
-
-    }
-
 
 
 
@@ -121,6 +111,8 @@ public class Nnwdaf_Controller {
     }
 
 
+
+
     /*
     /**
      * @param subscriptionID
@@ -136,12 +128,6 @@ public class Nnwdaf_Controller {
     }
 
 
-   /* @PutMapping(EVENT_SUB + "/subscriptions/{subscriptionID}")
-    @ApiOperation(value = OperationInfo.UPDATE_SUBSCRIPTION_INFO, notes = OperationInfo.UPDATE_SUBSCRIPTION_NOTES, response = Object.class)
-    public ResponseEntity<?> update_nf_subscriptionForUE(@PathVariable("subscriptionID") String subscriptionID, @RequestBody  SubUpdateRawData updateData) {
-
-        return nwdaf_service.update_nf_subscription_ForUE(subscriptionID, updateData);
-    }*/
 
 
     /**
@@ -150,15 +136,13 @@ public class Nnwdaf_Controller {
      * @desc this function unsubscribe network function
      */
     @DeleteMapping(value = EVENT_SUB + "/subscriptions/{subscriptionID}")
-    // @RequestMapping(method = RequestMethod.DELETE, value = "/nnwdaf-eventssubscription/v1/subscriptions/b83e61e5-1326-4a56-9536-cde3696b4e36/{subscriptionID}")
     @ApiOperation(value = OperationInfo.UNSUBSCRICE_INFO, notes = OperationInfo.UNSUBSCRIBE_NOTES, response = Object.class)
     public ResponseEntity<?> unsubscription_nf(@PathVariable("subscriptionID") String subscriptionID) throws Exception {
 
-       // System.out.println("\n\n\n@@IN UN-SUBSCRIPTION@@\n\n");
-        System.out.println("subscriptionID - " + subscriptionID);
-
         return nwdaf_service.unsubscription_nf(subscriptionID);
     }
+
+
 
 
     @GetMapping(EVENT_SUB + "/subscriptions/{subscriptionID}")
@@ -166,6 +150,8 @@ public class Nnwdaf_Controller {
 
         return nwdaf_service.get_all_network_function(id);
     }
+
+
 
 
     // Accepting Notification [ from Simulator]
@@ -229,6 +215,10 @@ public class Nnwdaf_Controller {
     }*/
 
 
+
+
+
+
     /**
      * this function shows counters
      *
@@ -243,6 +233,8 @@ public class Nnwdaf_Controller {
     }
 
 
+
+
     /**
      * @return String
      * @desc this function will reset all the counters
@@ -255,6 +247,8 @@ public class Nnwdaf_Controller {
     }
 
 
+
+
     @RequestMapping(method = RequestMethod.GET, value = "/apiInfo")
     public Object check_api_details() throws IOException {
 
@@ -263,15 +257,6 @@ public class Nnwdaf_Controller {
     }
 
 
-    // Accepting Notification UE-Mobility [ from Simulator]
-    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{correlationID}")
-    public void acceptingNotificationFromUEMobility(@RequestBody String response) throws Exception {
-
-
-        nwdaf_service.notificationHandlerForUEMobility(response);
-
-
-    }
 
 
 

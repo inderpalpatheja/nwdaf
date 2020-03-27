@@ -1,9 +1,6 @@
 package com.nwdaf.Analytics.Controller.ConnectionCheck;
 
-import com.nwdaf.Analytics.Model.TableType.UEMobility.UserLocation;
-
 import java.util.Date;
-import java.util.List;
 
 public class EventConnectionForUEMobility {
 

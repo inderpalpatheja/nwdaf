@@ -124,27 +124,12 @@ public class Nnwdaf_Repository {
         return decrementRefCount(snssais, eventID);
     }
 
-    public String unsubscribeNFForUE(SubscriptionTable subscriber) throws Exception {
-
-        String supi = "";
-        Integer eventID = subscriber.getEventID();
-
-        supi = getSupi_UEmobilitySubscriptionData(subscriber.getSubscriptionID());
-        jdbcTemplate.update("DELETE FROM nwdafUEmobilitySubscriptionData WHERE subscriptionID = ?", subscriber.getSubscriptionID());
-
-        //  jdbcTemplate.update("DELETE FROM nwdafUEmobility WHERE supi = ?", supi);
-
-        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionID = ?", subscriber.getSubscriptionID());
-
-        //return decrementRefCount(supi, eventID);
-        return decrementRefCountForUE(supi, eventID);
-    }
-
 
     public List<Object> checkForData(String snssais, Boolean anySlice, Integer eventID) {
 
 
-        if (eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal()) {
+        if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+        {
             if (anySlice == true) {
                 String s = "select * From nwdafSliceLoadLevelInformation";
                 try {
@@ -160,7 +145,6 @@ public class Nnwdaf_Repository {
             } catch (EmptyResultDataAccessException e) {
                 return null;
             }
-
         }
 
 
@@ -392,14 +376,19 @@ public class Nnwdaf_Repository {
 
     public String decrementRefCount(String snssais, Integer eventID) throws Exception {
 
-        if (eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal()) {
+        if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+        {
             jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount - 1 WHERE snssais = ?", snssais);
 
             if (getRefCount(snssais, EventID.LOAD_LEVEL_INFORMATION) == 0) {
                 /* time to delete the entry from db, caller shall send the subscribe message towards peer first */
                 return snssais;
             }
-        } else if (eventID == EventID.QOS_SUSTAINABILITY.ordinal()) {
+        }
+
+
+        else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
+        {
             jdbcTemplate.update("UPDATE nwdafQosSustainabilitySubscriptionTable SET refCount = refCount - 1 WHERE snssais = ?", snssais);
 
             if (getRefCount(snssais, EventID.QOS_SUSTAINABILITY) == 0) {
@@ -449,7 +438,6 @@ public class Nnwdaf_Repository {
 
 
 
-
     public String getSnssais(String subID, EventID eventID) {
 
         String query = "";
@@ -466,24 +454,6 @@ public class Nnwdaf_Repository {
                 @Override
                 public String mapRow(ResultSet resultSet, int i) throws SQLException {
                     return resultSet.getString("snssais");
-                }
-            });
-            return snssais1;
-        } catch (EmptyResultDataAccessException e) {
-
-            return null;
-        }
-    }
-
-    public String getSupi_UEmobilitySubscriptionData(String subID) {
-        String query = "SELECT supi FROM nwdafUEmobilitySubscriptionData WHERE subscriptionID = '" + subID + "';";
-
-        try {
-
-            String snssais1 = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-                @Override
-                public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                    return resultSet.getString("supi");
                 }
             });
             return snssais1;
@@ -662,10 +632,16 @@ public class Nnwdaf_Repository {
     }
 
 
+
     // function to update UE-Mobility Data.
+    // Here we will insert values in to UE-mobility table;
+    public void add_data_into_UE_mobilityTable() {
+    }
+
 
 
     /***************************************Qos_Sustainability***************************************/
+
 
 
     public Boolean addDataQosSustainability(NnwdafEventsSubscription nnwdafEventsSubscription) {
@@ -688,14 +664,15 @@ public class Nnwdaf_Repository {
     }
 
 
-    public Boolean addDataQosSustainabilitySubscriptionData(NnwdafEventsSubscription nnwdafEventsSubscription) {
+    public Boolean addDataQosSustainabilitySubscriptionData(NnwdafEventsSubscription nnwdafEventsSubscription)
+    {
         String query;
 
-        if (nnwdafEventsSubscription.getRanUeThroughputThreshold() != null) {
-            query = "INSERT INTO nwdafQosSustainabilitySubscriptionData (subscriptionID, snssais, ranUeThroughputThreshold) VALUES(?, ?, ?)";
-        } else {
-            query = "INSERT INTO nwdafQosSustainabilitySubscriptionData (subscriptionID, snssais, qosFlowRetainThreshold) VALUES(?, ?, ?)";
-        }
+        if(nnwdafEventsSubscription.getRanUeThroughputThreshold() != null)
+        { query = "INSERT INTO nwdafQosSustainabilitySubscriptionData (subscriptionID, snssais, ranUeThroughputThreshold) VALUES(?, ?, ?)"; }
+
+        else
+        { query = "INSERT INTO nwdafQosSustainabilitySubscriptionData (subscriptionID, snssais, qosFlowRetainThreshold) VALUES(?, ?, ?)"; }
 
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
@@ -706,11 +683,11 @@ public class Nnwdaf_Repository {
                 preparedStatement.setString(1, nnwdafEventsSubscription.getSubscriptionID());
                 preparedStatement.setString(2, nnwdafEventsSubscription.getSnssais());
 
-                if (nnwdafEventsSubscription.getRanUeThroughputThreshold() != null) {
-                    preparedStatement.setInt(3, nnwdafEventsSubscription.getRanUeThroughputThreshold());
-                } else {
-                    preparedStatement.setInt(3, nnwdafEventsSubscription.getQosFlowRetainThreshold());
-                }
+                if(nnwdafEventsSubscription.getRanUeThroughputThreshold() != null)
+                { preparedStatement.setInt(3, nnwdafEventsSubscription.getRanUeThroughputThreshold()); }
+
+                else
+                { preparedStatement.setInt(3, nnwdafEventsSubscription.getQosFlowRetainThreshold()); }
 
                 return preparedStatement.execute();
             }
@@ -735,6 +712,8 @@ public class Nnwdaf_Repository {
             }
         });
     }
+
+
 
 
 
@@ -770,42 +749,6 @@ public class Nnwdaf_Repository {
 
     }
 
-    public Boolean addCorrealationIDAndUnSubCorrelationIDIntonwdafUEmobilitySubscriptionTable
-            (UEMobilitySubscriptionTable slice, boolean getAnalytics) {
-
-
-        if (supiExists(slice.getSupi())) {
-            jdbcTemplate.update("UPDATE nwdafUEmobilitySubscriptionTable  SET refCount = refCount + 1 WHERE supi = ?", slice.getSupi());
-
-            return true;
-        }
-
-
-        String query = "INSERT INTO nwdafUEmobilitySubscriptionTable (supi,subscriptionID,correlationID,refCount) VALUES (?,?,?,?);";
-
-
-        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
-
-            @Override
-            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
-
-
-                preparedStatement.setString(1, slice.getSupi());
-                preparedStatement.setString(2, String.valueOf(slice.getSubscriptionID()));
-                preparedStatement.setString(3, String.valueOf(slice.getCorrelationID()));
-
-                if (getAnalytics) {
-                    preparedStatement.setInt(4, 0);
-                } else {
-                    preparedStatement.setInt(4, 1);
-                }
-
-                return preparedStatement.execute();
-            }
-        });
-
-    }
-
 
 
 
@@ -822,8 +765,10 @@ public class Nnwdaf_Repository {
     }
 
     public Integer updateQosFlowRetain(Integer qosFlowRetain, String snssais) {
+
         return jdbcTemplate.update("UPDATE nwdafQosSustainabilityInformation SET qosFlowRetain = ? WHERE snssais = ?", new Object[]{qosFlowRetain, snssais});
     }
+
 
     public List<QosNotificationData> getAllQosNotificationData(String snssais, Integer loadVal,  QosType qosType) {
 
@@ -1001,8 +946,9 @@ public class Nnwdaf_Repository {
             return Supi;
         } catch (EmptyResultDataAccessException e) {
 
+            return null;
         }
-      
+
     }
 
 
@@ -1052,49 +998,6 @@ public class Nnwdaf_Repository {
 
     }
 
-    public Integer deleteEntry_UEMobilitySubscriptionTable(String supi) {
-
-        return jdbcTemplate.update("DELETE FROM nwdafUEmobilitySubscriptionTable WHERE supi = ?", supi);
-    }
-
-
-    public String getSupiValueByCorrelationID(String correlationID) {
-
-        String query = "SELECT supi FROM nwdafUEmobilitySubscriptionTable WHERE correlationID = '" + correlationID + "';";
-
-        //  System.out.println(query);
-
-        try {
-
-            String Supi = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-                @Override
-                public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                    return resultSet.getString("supi");
-                }
-            });
-            return Supi;
-        } catch (EmptyResultDataAccessException e) {
-
-            return null;
-        }
-
-    }
-
-    public Integer updateLocatoinValueToUEMobilityTable(List<Integer> UPDATED_ID, String supi) {
-        return jdbcTemplate.update("UPDATE nwdafUEmobility SET location = '" + UPDATED_ID + "' WHERE supi = '" + supi + "';");
-    }
-
-
-    public List<UEMobility> getAllSupi() {
-
-        String query = "SELECT supi, DurationSec,location FROM nwdafUEmobility";
-        try {
-            return jdbcTemplate.query(query, new UEMobilityMapper());
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-
-    }
 
 
 
@@ -1400,24 +1303,6 @@ public class Nnwdaf_Repository {
         }
     }
 
-    public String getUnSubCorrelationID_UEMobility(String supi) {
-
-        //String query = "select snssais from nwdafSliceLoadLevelSubscriptionTable where subscriptionID "
-        String query = "SELECT subscriptionID FROM nwdafUEmobilitySubscriptionTable WHERE supi = '" + supi + "';";
-        try {
-
-            String unSubID = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-                @Override
-                public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                    return resultSet.getString("subscriptionID");
-                }
-            });
-            return unSubID;
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-
 
 
     public String getCorrelationID_UEMobility(String mCorrelationID) {
@@ -1433,88 +1318,15 @@ public class Nnwdaf_Repository {
                 }
             });
             return correlationID;
-          
+
         } catch (EmptyResultDataAccessException e) {
             // return e;
         }
-
         return null;
-    }
-
-
-    public List<String> findById_supi(String supi) {
-
-        String query = "SELECT subscriptionID FROM nwdafUEmobilitySubscriptionData WHERE supi = '" + supi + "';";
-
-        System.out.println(query);
-
-        try {
-            return jdbcTemplate.query(query, new RowMapper<String>() {
-                @Override
-                public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                    return resultSet.getString("subscriptionID");
-                }
-            });
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
 
     }
 
-    public Integer increment_ref_count_ofSupi(String supi) {
-        return jdbcTemplate.update("UPDATE nwdafUEmobilitySubscriptionTable SET refCount = refCount + 1 WHERE supi = ?", supi);
-
-
-    }
-
-
-    public boolean snsExistsQosSubscriptionTable(String snssais) {
-        String query = "SELECT IFNULL ((SELECT snssais FROM nwdafQosSustainabilitySubscriptionTable WHERE snssais = '" + snssais + "'), null) AS snssais;";
-
-        String result = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
-
-            @Override
-            public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getString("snssais");
-            }
-        });
-
-        return (result != null);
-    }
-
-
-    public String decrementRefCountForUE(String supi, Integer eventID) throws Exception {
-
-
-        jdbcTemplate.update("UPDATE nwdafUEmobilitySubscriptionTable SET refCount = refCount - 1 WHERE supi = ?", supi);
-
-        if (getRefCount_UEmobilitySubscriptionTable(supi) == 0) {
-            /* time to delete the entry from db, caller shall send the subscribe message towards peer first */
-            return supi;
-        }
-
-        return null;
-    }
-
-
-    public Integer getRefCount_UEmobilitySubscriptionTable(String supi) {
-        String query = "SELECT refCount FROM nwdafUEmobilitySubscriptionTable WHERE supi = '" + supi + "';";
-
-        try {
-
-            return jdbcTemplate.queryForObject(query, new RowMapper<Integer>() {
-                @Override
-                public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
-                    return resultSet.getInt("refCount");
-                }
-            });
-
-        } catch (EmptyResultDataAccessException e) {
-            return 0;
-        }
-    }
 
     /************************************************************************************************/
-
 
 }

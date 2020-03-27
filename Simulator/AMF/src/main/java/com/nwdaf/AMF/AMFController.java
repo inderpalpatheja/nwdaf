@@ -41,8 +41,8 @@ public class AMFController extends Functionality {
     @GetMapping("/sendDataToUEMobility/{correlationID}")
     public void sendUEData(@PathVariable String correlationID) throws IOException, JSONException {
         for (int i = 0; i < correlationIDList.size(); i++) {
-           // sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
-             //       correlationIDList.get(i));
+            // sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
+            //       correlationIDList.get(i));
 
             sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
                     correlationID);
@@ -68,34 +68,34 @@ public class AMFController extends Functionality {
 
         JSONObject jsonObject = new JSONObject(string);
 
-        //String subId = jsonObject.getString("subscriptionID");
-        //String notificationURI = jsonObject.getString("notificaionURI");
-        //Integer loadLevel = jsonObject.getInt("currentLoadLevel");
-        //String snssais = jsonObject.getString("snssais");
+        String suscriptionIDFromFinalNotificaion = jsonObject.getString("subscriptionId");
+        // out.println("suscriptionIDFromFinalNotificaion -- > " + suscriptionIDFromFinalNotificaion);
+
+
+        //  String subId = jsonObject.getString("subscriptionID");
+        //  String notificationURI = jsonObject.getString("notificaionURI");
+        // Integer loadLevel = jsonObject.getInt("currentLoadLevel");
+        // String snssais = jsonObject.getString("snssais");
 
 
         //  out.println(subId + " loadLevel " + loadLevel + "snssais" + snssais + "NotifcaionURI" + notificationURI);
         //  out.println("notification URI - " + notificationURI);
         // Unsubscribe
-
-        //unsubscribe(notificationURI, subId);
-
         //  out.println("subListSize - " + AmfApplication.getSubIDList().size());
 
         // Stirn
         Integer size= AmfApplication.getUnSubURIMap().size();
-       // out.println("size of map " + size);
+        // out.println("size of map " + size);
 
 
         // using for-each loop for iteration over Map.entrySet()
         for (Map.Entry<String, String> entry : AmfApplication.getUnSubURIMap().entrySet()) {
 
             if (entry.getKey().equals(suscriptionIDFromFinalNotificaion)) {
-               // out.println("URI found -- > " + entry.getValue());
-              //  out.println("ID found --- > " + entry.getKey());
+                // out.println("URI found -- > " + entry.getValue());
+                //  out.println("ID found --- > " + entry.getKey());
                 String UnSubURI = entry.getValue() + entry.getKey();
                 out.println("Un-SubURI - - - > " + UnSubURI);
-
 
                 unsubscribe(entry.getValue().trim(),entry.getKey().trim());
             }
@@ -398,20 +398,6 @@ public class AMFController extends Functionality {
         return new ResponseEntity<String>("Send", HttpStatus.OK);
     }
 
-
-
-
-    @GetMapping("/sendDataToUEMobility/{correlationID}")
-    public void sendUEData(@PathVariable String correlationID) throws IOException, JSONException {
-        for (int i = 0; i < correlationIDList.size(); i++) {
-            // sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
-            //       correlationIDList.get(i));
-
-            sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
-                    correlationID);
-
-        }
-    }
 
 
 

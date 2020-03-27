@@ -13,15 +13,9 @@ public class SubscriptionRawData {
     Object loadLevelThreshold;
     Object anySlice;
 
-    Object Supi;
 
-    public Object getSupi() {
-        return Supi;
-    }
 
-    public void setSupi(Object supi) {
-        Supi = supi;
-    }
+
 
     /**********************Qos_Sustainability*************************************************/
 

@@ -13,19 +13,6 @@ public class NnwdafEventsSubscription {
     Boolean anySlice;
 
 
-
-
-    /*****************UE-mobility parameters*********************/
-   String supi;
-
-    public String getSupi() {
-        return supi;
-    }
-
-    public void setSupi(String supi) {
-        this.supi = supi;
-    }
-
     /*****************QOS_SUSTAINABILITY parameters*********************/
 
 
