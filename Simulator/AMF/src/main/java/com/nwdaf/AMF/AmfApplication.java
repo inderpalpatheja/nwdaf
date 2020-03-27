@@ -90,7 +90,7 @@ public class AmfApplication extends Functionality {
         SpringApplication.run(AmfApplication.class, args);
         logger.debug("In AmfApplication class");
 
-        AMFController amfController = new AMFController();
+/*      AMFController amfController = new AMFController();
 
         // Reading subscriber list From file
         ApplicationPropertiesValue properties = new ApplicationPropertiesValue();
@@ -143,14 +143,5 @@ public class AmfApplication extends Functionality {
 
             Thread.sleep(20 * 1000);
         }
-
-
-
-        // AMFController amfController = new AMFController();
-
-        // TestHarshit testHarshit = new TestHarshit();
-        // testHarshit.fetchData();
-
-
     }
 }

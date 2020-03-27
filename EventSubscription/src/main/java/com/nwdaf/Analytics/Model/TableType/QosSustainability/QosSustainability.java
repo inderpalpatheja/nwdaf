@@ -1,6 +1,6 @@
 package com.nwdaf.Analytics.Model.TableType.QosSustainability;
 
-import com.nwdaf.Analytics.Model.CustomData.PlmnID;
+import com.nwdaf.Analytics.Model.CustomData.QosSustainabilityData.PlmnID;
 
 import java.util.UUID;
 

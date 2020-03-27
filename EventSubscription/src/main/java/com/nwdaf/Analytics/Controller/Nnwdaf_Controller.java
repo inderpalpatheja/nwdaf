@@ -1,6 +1,7 @@
 package com.nwdaf.Analytics.Controller;
 
 
+import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
@@ -56,6 +57,7 @@ public class Nnwdaf_Controller {
      * @desc this will hold functions for Analytics information
      */
 
+    // For both LOADL_LEVEL_INFORMATION and QOS_SUSTAINABILITY
     @GetMapping(ANALYTICS + "/{snssais}/{anySlice}/{eventID}")
     @ApiOperation(value = "Get Analytics Details By snssais or anySlice Details",
             notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
@@ -83,7 +85,25 @@ public class Nnwdaf_Controller {
     }
 
 
-    /*  /**
+
+
+    // For UE_MOBILITY only
+    @GetMapping(ANALYTICS + "/{supi}/{eventID}")
+    @ApiOperation(value = "Get Analytics Details By supi or anySlice Details",
+            notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
+            response = Object.class)
+    public Object nwdaf_analyticsForUEMobility(@PathVariable("supi") String supi,
+                                               Boolean anySlice,
+                                               @PathVariable("eventID") int eventID) throws IOException, JSONException {
+
+
+        return nwdaf_service.nwdaf_analyticsUEmobility(supi, eventID);
+
+    }
+
+
+
+  /*  /**
      * @param nnwdafEventsSubscription
      * @return
      * @throws SQLIntegrityConstraintViolationException
@@ -152,10 +172,30 @@ public class Nnwdaf_Controller {
     @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusNotify/{correlationID}")
     public void acceptingNotification(@RequestBody String response) throws Exception {
 
-        nwdaf_service.notificationHandler(response);
+        nwdaf_service.notificationHandler(response, EventID.LOAD_LEVEL_INFORMATION);
 
     }
 
+
+
+    // Accepting Notification related to QOS_SUSTAINABILITY [ from Simulator]
+    @RequestMapping(method = RequestMethod.POST, value = "/Noam_NFManagement_NFStatusNotify/{correlationID}")
+    public void acceptingNotification_Qos(@RequestBody String response) throws Exception {
+
+        nwdaf_service.notificationHandler(response, EventID.QOS_SUSTAINABILITY);
+
+    }
+
+
+    // Accepting Notification UE-Mobility [ from Simulator]
+    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{correlationID}")
+    public void acceptingNotificationFromUEMobility(@RequestBody String response) throws Exception {
+
+
+        nwdaf_service.notificationHandlerForUEMobility(response);
+
+
+    }
 
 
 
@@ -232,6 +272,7 @@ public class Nnwdaf_Controller {
 
 
     }
+
 
 
 }

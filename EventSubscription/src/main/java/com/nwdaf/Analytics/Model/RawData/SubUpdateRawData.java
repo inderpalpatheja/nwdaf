@@ -22,6 +22,31 @@ public class SubUpdateRawData {
         this.supi = supi;
     }
 
+    /******************QOS_SUSTAINABILITY************************/
+
+    Object ranUeThroughputThreshold;
+    Object qosFlowRetainThreshold;
+
+
+    public Object getRanUeThroughputThreshold() {
+        return ranUeThroughputThreshold;
+    }
+
+    public void setRanUeThroughputThreshold(Object ranUeThroughputThreshold) {
+        this.ranUeThroughputThreshold = ranUeThroughputThreshold;
+    }
+
+    public Object getQosFlowRetainThreshold() {
+        return qosFlowRetainThreshold;
+    }
+
+    public void setQosFlowRetainThreshold(Object qosFlowRetainThreshold) {
+        this.qosFlowRetainThreshold = qosFlowRetainThreshold;
+    }
+
+    /***********************************************************/
+
+
     public Object getEventID() {
         return eventID;
     }

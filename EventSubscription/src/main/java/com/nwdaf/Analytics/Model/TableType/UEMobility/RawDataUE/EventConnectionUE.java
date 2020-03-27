@@ -5,7 +5,6 @@ package com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE;
  * @author  sheetalkumar
  */
 
-import com.nwdaf.Analytics.Model.TableType.UEMobility.UserLocation;
 
 import java.util.Date;
 

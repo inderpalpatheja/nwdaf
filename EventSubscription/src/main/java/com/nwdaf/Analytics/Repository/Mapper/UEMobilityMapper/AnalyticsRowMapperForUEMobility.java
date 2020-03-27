@@ -1,6 +1,5 @@
 package com.nwdaf.Analytics.Repository.Mapper.UEMobilityMapper;
 
-import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnectionForUEMobility;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.EventConnectionUE;
 import org.springframework.jdbc.core.RowMapper;
 

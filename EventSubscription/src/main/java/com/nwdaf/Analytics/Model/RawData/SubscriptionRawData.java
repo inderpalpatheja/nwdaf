@@ -90,6 +90,20 @@ public class SubscriptionRawData {
 
 
 
+    /***************************UE_MOBILITY**********************************************/
+
+
+    Object supi;
+
+    public Object getSupi() {
+        return supi;
+    }
+
+    public void setSupi(Object supi) {
+        this.supi = supi;
+    }
+
+    /*******************************************************************************************/
 
 
     public Object getEventID() {
