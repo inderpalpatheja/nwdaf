@@ -18,7 +18,7 @@ import java.net.URL;
 import java.util.*;
 
 
-import static java.lang.System.setOut;
+
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 import static java.lang.System.out;
 
@@ -31,21 +31,27 @@ public class AMFController extends Functionality {
 
     Random rand = new Random();
 
-    public static List<String> correlationIDList = new ArrayList<>();
-    public static List<String> correlationIDListForUE = new ArrayList<>();
+    public static List<String> correlationIDList_LOAD_LEVEL_INFORMATION = new ArrayList<String>();
+    public static List<String> correlationIDList_UE_MOBILITY = new ArrayList<String>();
+    public static List<String> correlationIDList_QOS_SUSTAINABILITY = new ArrayList<String>();
 
-    public static List<String> getCorrelationIDListForUE() {
-        return correlationIDListForUE;
+
+    public static List<String> getCorrelationIDList_LOAD_LEVEL_INFORMATION() {
+        return correlationIDList_LOAD_LEVEL_INFORMATION;
     }
 
-    public List<String> getCorrelationIDList() {
-        return correlationIDList;
+    public static List<String> getCorrelationIDList_UE_MOBILITY() {
+        return correlationIDList_UE_MOBILITY;
+    }
+
+    public static List<String> getCorrelationIDList_QOS_SUSTAINABILITY() {
+        return correlationIDList_QOS_SUSTAINABILITY;
     }
 
 
     @GetMapping("/sendDataToUEMobility/{correlationID}")
     public void sendUEData(@PathVariable String correlationID) throws IOException, JSONException {
-        for (int i = 0; i < correlationIDListForUE.size(); i++) {
+        for (int i = 0; i < correlationIDList_UE_MOBILITY.size(); i++) {
             // sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
             //       correlationIDList.get(i));
 
@@ -69,51 +75,12 @@ public class AMFController extends Functionality {
         //  out.println("in final-notification-test");
         System.out.println("\n\nNotification Received From NWDAF -" + string);
 
-        // JSONArray jsonArray = new JSONArray(string);
 
-        JSONObject jsonObject = new JSONObject(string);
-
-        String suscriptionIDFromFinalNotificaion = jsonObject.getString("subscriptionId");
-        // out.println("suscriptionIDFromFinalNotificaion -- > " + suscriptionIDFromFinalNotificaion);
+        JSONObject json = new JSONObject(string);
+        String subscriptionID = json.getString("subscriptionId");
 
 
-        //  String subId = jsonObject.getString("subscriptionID");
-        //  String notificationURI = jsonObject.getString("notificaionURI");
-        // Integer loadLevel = jsonObject.getInt("currentLoadLevel");
-        // String snssais = jsonObject.getString("snssais");
-
-
-        //  out.println(subId + " loadLevel " + loadLevel + "snssais" + snssais + "NotifcaionURI" + notificationURI);
-        //  out.println("notification URI - " + notificationURI);
-        // Unsubscribe
-        //  out.println("subListSize - " + AmfApplication.getSubIDList().size());
-
-        // Stirn
-        Integer size = AmfApplication.getUnSubURIMap().size();
-        // out.println("size of map " + size);
-
-
-        // using for-each loop for iteration over Map.entrySet()
-        for (Map.Entry<String, String> entry : AmfApplication.getUnSubURIMap().entrySet()) {
-
-            if (entry.getKey().equals(suscriptionIDFromFinalNotificaion)) {
-                // out.println("URI found -- > " + entry.getValue());
-                //  out.println("ID found --- > " + entry.getKey());
-                String UnSubURI = entry.getValue() + entry.getKey();
-                out.println("Un-SubURI - - - > " + UnSubURI);
-
-//                unsubscribe(entry.getValue().trim(), entry.getKey().trim());
-                //              AmfApplication.getUnSubURIMap().remove(entry);
-            }
-//            System.out.println("Key = " + entry.getKey() +
-//                    ", Value = " + entry.getValue());
-//
-        }
-
-
-        // unsubscribe();
-
-        // out.println("subID - " + subId);
+        unsubscribe(subscriptionID);
     }
 
 
@@ -125,6 +92,7 @@ public class AMFController extends Functionality {
     }
 
 
+    //LOAD_LEVEL_INFORMATION
     @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
     public ResponseEntity<String> unsubScribeFromNWDAFForSliceLoadLevel(@RequestBody String response) throws JSONException, IOException {
 
@@ -132,7 +100,7 @@ public class AMFController extends Functionality {
         String unSubCorrelationID = jsonObject.getString("mSubcorrelationID");
         String correlationID = jsonObject.getString("correlationID");
 
-        correlationIDList.remove(correlationID);
+        correlationIDList_LOAD_LEVEL_INFORMATION.remove(correlationID);
         // list.delete();
         //     out.println("Unsubscribed from NWDAF WORKED for " + response);
 
@@ -140,8 +108,8 @@ public class AMFController extends Functionality {
         return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
     }
 
-    /*UE-Mobility*/
 
+    //UE_MOBILITY
     @RequestMapping(method = RequestMethod.DELETE, value = "/Namf_Event_Exposure_UnSubscribe")
     public ResponseEntity<String> unsubScribeFromNWDAFForUEMobility(@RequestBody String response) throws JSONException, IOException {
 
@@ -149,7 +117,7 @@ public class AMFController extends Functionality {
         String unSubCorrelationID = jsonObject.getString("mSubcorrelationID");
         String correlationID = jsonObject.getString("correlationID");
 
-        correlationIDListForUE.remove(correlationID);
+        correlationIDList_UE_MOBILITY.remove(correlationID);
         // list.delete();
         //     out.println("Unsubscribed from NWDAF WORKED for " + response);
 
@@ -160,20 +128,20 @@ public class AMFController extends Functionality {
     /*UE-Mobility*/
 
 
- /*   @RequestMapping(method = RequestMethod.DELETE, value = "/Nnrf_NFManagement_NFStatusUnSubscribe")
-    public ResponseEntity<String> unsubScribeFromNWDAFForUEMobility(@RequestBody String response) throws JSONException, IOException {
+    @RequestMapping(method = RequestMethod.DELETE, value = "/Noam_NFManagement_NFStatusUnSubscribe")
+    public ResponseEntity<String> unsubscribeForQosSustainability(@RequestBody String response) throws JSONException, IOException {
 
         JSONObject jsonObject = new JSONObject(response);
         String unSubCorrelationID = jsonObject.getString("mSubcorrelationID");
         String correlationID = jsonObject.getString("correlationID");
 
-        correlationIDList.remove(correlationID);
+        correlationIDList_QOS_SUSTAINABILITY.remove(correlationID);
         // list.delete();
         //     out.println("Unsubscribed from NWDAF WORKED for " + response);
 
 
         return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
-    } */
+    }
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusSubscribe")
@@ -189,10 +157,32 @@ public class AMFController extends Functionality {
         // Adding unSubCorrelationId into database;
         UUID unSubCorrelationId = UUID.randomUUID();
         out.println("in-load-level----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
-        correlationIDList.add(obj.getCorrelationId());
+        correlationIDList_LOAD_LEVEL_INFORMATION.add(obj.getCorrelationId());
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
     }
+
+
+
+    @RequestMapping(method = RequestMethod.POST, value = "/Noam_NFManagement_NFStatusSubscribe")
+    public ResponseEntity<String> qosSustainabilityDataFunction(@RequestBody String response) throws JSONException, IOException {
+
+        //  list.add();
+
+        JSONObject json = new JSONObject(response);
+        Namf_EventExposure_Subscribe obj = new Namf_EventExposure_Subscribe();
+        obj.setCorrelationId(json.getString("correlationID"));
+        obj.setNotificationTargetAddress(json.getString("notificationTargetAddress"));
+
+        // Adding unSubCorrelationId into database;
+        UUID unSubCorrelationId = UUID.randomUUID();
+
+        out.println("in-load-level----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
+        correlationIDList_QOS_SUSTAINABILITY.add(obj.getCorrelationId());
+
+        return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
+    }
+
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/Namf_Event_Exposure_Subscribe")
@@ -211,7 +201,7 @@ public class AMFController extends Functionality {
 
         out.println("in-UE-Mobility----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
 
-        correlationIDListForUE.add(obj.getCorrelationId());
+        correlationIDList_UE_MOBILITY.add(obj.getCorrelationId());
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
     }

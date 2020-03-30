@@ -19,6 +19,9 @@ public class ResourceValues {
     @Value("${spring.NRF.Subscribe.url}")
     String POST_NRF_URL;
 
+    @Value("${spring.OAM.Subscribe.url}")
+    String POST_OAM_URL;
+
     @Value("${spring.AMF.Subscribe.url}")
     String POST_AMF_URL;
 
@@ -28,4 +31,6 @@ public class ResourceValues {
     @Value("${spring.AMF.UnSubscribe.url}")
     String DELETE_AMF_URL;
 
+    @Value("${spring.OAM.UnSubscribe.url}")
+    String DELETE_OAM_URL;
 }
