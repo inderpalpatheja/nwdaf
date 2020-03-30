@@ -6,20 +6,28 @@ import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.NnwdafEventsSubscriptionUEmobility;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionModel;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
-import com.nwdaf.Analytics.Service.Validator.ErrorReport.EssentialsError;
-import com.nwdaf.Analytics.Service.Validator.ErrorReport.QosSustainabilityError;
-import com.nwdaf.Analytics.Service.Validator.ErrorReport.SliceLoadLevelError;
-import com.nwdaf.Analytics.Service.Validator.ErrorReport.UeMobilityError;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.EssentialsValidator;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.QosSustainabilityValidator;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.SliceLoadLevelValidator;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.UeMobilityValidator;
+import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.AnalyticsError;
+import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.EventError;
+import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.UeMobilityAnalyticsError;
+import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator.EventValidator;
+import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator.QosSustainabilityAnalyticsValidator;
+import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator.SliceLoadLevelAnalyticsValidator;
+import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator.UeMobilityAnalyticsValidator;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.EssentialsError;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.QosSustainabilityError;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.SliceLoadLevelError;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.UeMobilityError;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.EssentialsValidator;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.QosSustainabilityValidator;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.SliceLoadLevelValidator;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.UeMobilityValidator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,16 +71,37 @@ public class Nnwdaf_Service extends BusinessLogic {
 
     /************************************************************************************************************************/
 
-    public Object nwdaf_analytics(String snssais, boolean anySlice, int eventID) throws IOException, JSONException {
+    public Object nwdaf_analytics(AnalyticsRawData rawData) throws IOException, JSONException {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
+        Object validate;
 
-        nnwdafEventsSubscription.setSnssais(snssais);
-        nnwdafEventsSubscription.setAnySlice(anySlice);
-        nnwdafEventsSubscription.setEventID(eventID);
+        // Validate EventID
+        if((validate = EventValidator.check(rawData, nnwdafEventsSubscription)) instanceof EventError)
+        { return new ResponseEntity<EventError>((EventError)validate, HttpStatus.NOT_ACCEPTABLE); }
+
+        nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
+
+
+        // Validate other attributes for specific EventID
+        if(nnwdafEventsSubscription.getEventID() == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+        {
+            if((validate = SliceLoadLevelAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof AnalyticsError)
+            { return new ResponseEntity<AnalyticsError>((AnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+        }
+
+
+        else if(nnwdafEventsSubscription.getEventID() == EventID.QOS_SUSTAINABILITY.ordinal())
+        {
+            if((validate = QosSustainabilityAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof AnalyticsError)
+            { return new ResponseEntity<AnalyticsError>((AnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+        }
+
+        nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
+
 
         Object snssaisDataList = check_For_data(nnwdafEventsSubscription, true);
 
@@ -594,16 +623,32 @@ public class Nnwdaf_Service extends BusinessLogic {
 
     /****UEmobility******/
 
-    public Object nwdaf_analyticsUEmobility(String supi, int eventID) throws IOException, JSONException {
+    public Object nwdaf_analyticsUEmobility(AnalyticsRawData rawData) throws IOException, JSONException {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        if (eventID == EventID.UE_MOBILITY.ordinal()) {
+
+        NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
+        Object validate;
+
+
+        if((validate = EventValidator.check(rawData, nnwdafEventsSubscription)) instanceof EventError)
+        { return new ResponseEntity<EventError>((EventError)validate, HttpStatus.NOT_ACCEPTABLE); }
+
+        nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
+
+
+        if (nnwdafEventsSubscription.getEventID() == EventID.UE_MOBILITY.ordinal()) {
+
+            if((validate = UeMobilityAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof UeMobilityAnalyticsError)
+            { return new ResponseEntity<UeMobilityAnalyticsError>((UeMobilityAnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+
+            nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
+
 
             NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE = new NnwdafEventsSubscriptionUEmobility();
-            nnwdafEventsSubscriptionUE.setSupi(supi);
-
+            nnwdafEventsSubscriptionUE.setSupi(nnwdafEventsSubscription.getSupi());
 
             Object supiDataList = check_For_dataUEmobility(nnwdafEventsSubscriptionUE, true);
 

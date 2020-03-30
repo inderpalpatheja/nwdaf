@@ -1,10 +1,10 @@
-package com.nwdaf.Analytics.Service.Validator.SubscriptionValidator;
+package com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator;
 
 import com.nwdaf.Analytics.Model.CustomData.NotificationMethod;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Validator.ErrorMessage;
-import com.nwdaf.Analytics.Service.Validator.ErrorReport.UeMobilityError;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.UeMobilityError;
 
 public class UeMobilityValidator {
 

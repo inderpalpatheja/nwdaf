@@ -3,6 +3,7 @@ package com.nwdaf.Analytics.Controller;
 
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
+import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
@@ -67,11 +68,11 @@ public class Nnwdaf_Controller {
             notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
             response = Object.class)
     public Object nwdaf_analytics(@PathVariable("snssais") String snssais,
-                                  @PathVariable("anySlice") Boolean anySlice,
-                                  @PathVariable("eventID") int eventID) throws IOException, JSONException {
+                                  @PathVariable("anySlice") String anySlice,
+                                  @PathVariable("eventID") String eventID) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analytics(snssais, anySlice, eventID);
+        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(eventID, snssais, anySlice));
 
     }
 
@@ -83,11 +84,10 @@ public class Nnwdaf_Controller {
             notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
             response = Object.class)
     public Object nwdaf_analyticsForUEMobility(@PathVariable("supi") String supi,
-                                               Boolean anySlice,
-                                               @PathVariable("eventID") int eventID) throws IOException, JSONException {
+                                               @PathVariable("eventID") String eventID) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analyticsUEmobility(supi, eventID);
+        return nwdaf_service.nwdaf_analyticsUEmobility(new AnalyticsRawData(eventID, supi));
 
     }
 
