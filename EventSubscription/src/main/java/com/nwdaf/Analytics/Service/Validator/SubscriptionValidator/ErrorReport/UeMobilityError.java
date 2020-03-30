@@ -1,4 +1,4 @@
-package com.nwdaf.Analytics.Service.Validator.ErrorReport;
+package com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport;
 
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;

@@ -1,4 +1,4 @@
-package com.nwdaf.Analytics.Service.Validator.ErrorReport;
+package com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport;
 
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import org.springframework.http.HttpStatus;
