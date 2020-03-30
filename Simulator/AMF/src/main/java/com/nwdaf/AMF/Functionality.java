@@ -1,5 +1,6 @@
 package com.nwdaf.AMF;
 
+import com.nwdaf.AMF.model.EventID;
 import org.json.JSONObject;
 
 import static java.lang.System.out;
@@ -18,15 +19,10 @@ public class Functionality {
     BufferedReader reader;
 
     final String NWDAF = "http://localhost:8081/nnwdaf-eventssubscription/v1";
+    final String UNSUB = "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions/";
 
 
-    public String subscribe(Integer eventID,
-                            String notificatoinURI,
-                            String snssais,
-                            Integer notifMethod,
-                            Integer repPeriod,
-                            String supi,
-                            Integer ldLevel) throws Exception {
+    public String subscribe(EventID eventID) throws Exception {
         String line;
         StringBuffer responseContent = new StringBuffer();
 
@@ -38,15 +34,8 @@ public class Functionality {
         con.setRequestProperty("Accept", "application/json");
         con.setDoOutput(true);
 
-        JSONObject json = new JSONObject();
+        JSONObject json = EventData.getData(eventID);
 
-        json.put("eventID", eventID);
-        json.put("notificationURI", notificatoinURI);
-        json.put("snssais", snssais);
-        json.put("notifMethod", notifMethod);
-        json.put("repetitionPeriod", repPeriod);
-        json.put("loadLevelThreshold", ldLevel);
-        json.put("supi", supi);
 
         try (OutputStream os = con.getOutputStream()) {
             byte[] input = json.toString().getBytes("utf-8");
@@ -111,12 +100,12 @@ public class Functionality {
     }
 
 
-    public void unsubscribe(String notificationURI, String subID) throws Exception {
+    public void unsubscribe(String subscriptionID) throws Exception {
         // out.println("SubscriptionID to be deleted - " + subID);
         String line;
         // out.println("unSubscribe URL" + notificationURI + "/" + subID);
 
-        String updatedURL = notificationURI + "/" + subID;
+        String updatedURL = UNSUB + "/" + subscriptionID;
         out.println("updated URL - " + updatedURL);
 
         StringBuffer responseContent = new StringBuffer();

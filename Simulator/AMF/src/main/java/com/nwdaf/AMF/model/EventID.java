@@ -1,4 +1,4 @@
-package com.nwdaf.Analytics.Model.CustomData;
+package com.nwdaf.AMF.model;
 
 
 public enum EventID {

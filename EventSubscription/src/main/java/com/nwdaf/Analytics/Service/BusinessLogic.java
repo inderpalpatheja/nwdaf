@@ -109,7 +109,9 @@ public class BusinessLogic extends ResourceValues {
 
                     //throw new NullPointerException("Data not found!");
                     return eventConnection;
+
                 } else if (eventID == EventID.QOS_SUSTAINABILITY.ordinal()) {
+
                     repository.setNwdafQosSustainabilityInformation(nnwdafEventsSubscription.getSnssais());
 
                     QosAnalyticsInfo qosInfo = new QosAnalyticsInfo(nnwdafEventsSubscription.getSnssais(), HttpStatus.NOT_FOUND);
@@ -185,7 +187,14 @@ public class BusinessLogic extends ResourceValues {
             // POST_NRF_URL = NRF URL ------> [ Reading from ]application.properties
             try {
 
-                URL obj = new URL(POST_NRF_URL);
+                URL obj = null;
+
+                if(nnwdafEventsSubscription.getEventID() == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+                { obj = new URL(POST_NRF_URL); }
+
+                else if(nnwdafEventsSubscription.getEventID() == EventID.QOS_SUSTAINABILITY.ordinal())
+                { obj = new URL(POST_OAM_URL); }
+
                 HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
                 con.setRequestMethod("POST");
@@ -530,22 +539,39 @@ public class BusinessLogic extends ResourceValues {
         //String jsonInputString = "Hey I am Notification";
 
         JSONObject json = new JSONObject();
+        JSONArray eventNotifications = new JSONArray();
 
-        json.put("eventID", eventID.toString());
-
-        if (eventID == EventID.LOAD_LEVEL_INFORMATION) {
-            json.put("snssais", snssais);
+        json.put("subscriptionId", subscriptionID);
 
 
-            // This value will be fetched from nwdafSliceLoadLevelSubscriptionData send by NF
-            json.put("notificaionURI", "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions");
-            json.put("subscriptionID", subscriptionID);
+        if(eventID == EventID.LOAD_LEVEL_INFORMATION)
+        {
+            JSONObject LOAD_LEVEL_INFORMATION = new JSONObject();
+
+            JSONObject sliceLoadLevelInfo = new JSONObject();
+
+            JSONArray snssais_arr = new JSONArray();
+            snssais_arr.put(snssais);
+
+            sliceLoadLevelInfo.put("loadLevelInformation", currentLoadLevel);
+            sliceLoadLevelInfo.put("snssais", snssais_arr);
+
+            LOAD_LEVEL_INFORMATION.put("event", eventID.toString());
+            LOAD_LEVEL_INFORMATION.put("sliceLoadLevelInfo", sliceLoadLevelInfo);
+
+            eventNotifications.put(LOAD_LEVEL_INFORMATION);
+
+            json.put("eventNotifications", eventNotifications);
+        }
 
 
-            json.put("currentLoadLevel", currentLoadLevel);
-        } else if (eventID == EventID.QOS_SUSTAINABILITY) {
+        else if(eventID == EventID.QOS_SUSTAINABILITY)
+        {
+            JSONObject QOS_SUSTAINABILITY = new JSONObject();
 
             QosSustainabilityInfo qosSustainabilityInfo = repository.getPlmnID_Tac(subscriptionID, currentLoadLevel, qosType);
+
+            JSONArray qosSustainInfos = new JSONArray();
 
             JSONObject qosInfo = new JSONObject();
             JSONObject areaInfo = new JSONObject();
@@ -554,18 +580,29 @@ public class BusinessLogic extends ResourceValues {
             plmnID.put("mcc", qosSustainabilityInfo.getAreaInfo().getPlmnID().getMcc());
             plmnID.put("mnc", qosSustainabilityInfo.getAreaInfo().getPlmnID().getMnc());
 
-            areaInfo.put("plmnID", plmnID);
+            areaInfo.put("plmnId", plmnID);
             areaInfo.put("tac", qosSustainabilityInfo.getAreaInfo().getTac());
 
             qosInfo.put("areaInfo", areaInfo);
 
-            if (qosType == QosType.RAN_UE_THROUGHPUT) {
-                qosInfo.put("crossedRanUeThroughputThreshold", currentLoadLevel);
-            } else {
-                qosInfo.put("crossedQosFlowRetainThreshold", currentLoadLevel);
-            }
 
-            json.put("QosSustainabilityInfo", qosInfo);
+            JSONArray arrayThreshold = new JSONArray();
+            arrayThreshold.put(currentLoadLevel);
+
+            if(qosType == QosType.RAN_UE_THROUGHPUT)
+            { qosInfo.put("crossedRanUeThroughputThreshold", arrayThreshold); }
+
+            else
+            { qosInfo.put("crossedQosFlowRetainThreshold", arrayThreshold); }
+
+            qosSustainInfos.put(qosInfo);
+
+            QOS_SUSTAINABILITY.put("event", eventID.toString());
+            QOS_SUSTAINABILITY.put("qosSustainInfos", qosSustainInfos);
+
+            eventNotifications.put(QOS_SUSTAINABILITY);
+
+            json.put("eventNotifications", eventNotifications);
         }
 
 
@@ -610,7 +647,15 @@ public class BusinessLogic extends ResourceValues {
 
         // String subscriptionID =  repository.getUnSubCorrelationID(snssais);
 
-        URL obj = new URL(DELETE_NRF_URL);
+        URL obj = null;
+
+        if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+        { obj = new URL(DELETE_NRF_URL); }
+
+        else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
+        { obj = new URL(DELETE_OAM_URL); }
+
+
         //  out.println(DELETE_NRF_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
