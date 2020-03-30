@@ -33,7 +33,7 @@ public class Nnwdaf_Controller {
     private final Nnwdaf_Service nwdaf_service;
 
     final String EVENT_SUB = "/nnwdaf-eventssubscription/v1";
-    final String ANALYTICS ="/apiroot/nnwdaf-analyticsinfo/v1";
+    final String ANALYTICS ="/nnwdaf-analyticsinfo/v1/analytics";
 
 
     @Autowired
@@ -160,6 +160,7 @@ public class Nnwdaf_Controller {
 
         nwdaf_service.notificationHandler(response, EventID.LOAD_LEVEL_INFORMATION);
 
+
     }
 
 
@@ -174,7 +175,7 @@ public class Nnwdaf_Controller {
 
 
     // Accepting Notification UE-Mobility [ from Simulator]
-    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Notify/{correlationID}")
+    @RequestMapping(method = RequestMethod.POST, value = "/Namf_Event_Exposure_Notify/{correlationID}")
     public void acceptingNotificationFromUEMobility(@RequestBody String response) throws Exception {
 
 

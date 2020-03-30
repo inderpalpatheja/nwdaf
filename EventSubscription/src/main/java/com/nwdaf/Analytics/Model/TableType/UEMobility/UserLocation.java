@@ -11,26 +11,25 @@ public class UserLocation {
     private String cellID;
     private Integer timeDuration;
 
-    @Override
-    public String toString() {
-        return "UserLocation{" +
-                "ID=" + ID +
-                ", tai='" + tai + '\'' +
-                ", cellID='" + cellID + '\'' +
-                ", timeDuration=" + timeDuration +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "UserLocation{" +
+//                "ID=" + ID +
+//                ", tai='" + tai + '\'' +
+//                ", cellID='" + cellID + '\'' +
+//                ", timeDuration=" + timeDuration +
+//                '}';
+//    }
 
     public UserLocation() {
     }
+//    public int getID() {
+//        return ID;
+//    }
 
-    public int getID() {
-        return ID;
-    }
-
-    public void setID(int ID) {
-        this.ID = ID;
-    }
+//    public void setID(int ID) {
+//        this.ID = ID;
+//    }
 
     public String getTai() {
         return tai;

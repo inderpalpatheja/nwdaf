@@ -8,7 +8,10 @@ public class ResourceValues {
     String URI;
 
     @Value("${spring.NRF_NotificationTarget.Url}")
-    String notificationTargetUrl;
+    String notificationTargetUrlForNRF;
+
+    @Value("${spring.AMF_NotificationTarget.Url}")
+    String notificationTargetUrlForAMF;
 
     @Value("${spring.Simulator.testConnection}")
     String testConnect_URI;
