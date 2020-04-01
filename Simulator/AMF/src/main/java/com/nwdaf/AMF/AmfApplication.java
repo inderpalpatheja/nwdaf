@@ -26,9 +26,7 @@ public class AmfApplication extends Functionality {
     Random random = new Random();
 
 
-    public void test(int subList, int eventID) throws Exception {
-
-        AMFController amfController = new AMFController();
+    public void test(int subList, int eventID, AMFController amfController) throws Exception {
 
 
 
@@ -75,17 +73,15 @@ public class AmfApplication extends Functionality {
 
 
 
-                    if (amfController.getCorrelationIDList_UE_MOBILITY().size() != 0) {
-                        for (int j = 0; j < amfController.getCorrelationIDList_UE_MOBILITY().size(); j++) {
+                       for (int j = 0; j < amfController.getCorrelationIDList_UE_MOBILITY().size(); j++) {
 
                             System.out.println("Sending data for UE :: correlationListSIze " + amfController.getCorrelationIDList_UE_MOBILITY().size());
                             System.out.println("correlationID  - " + amfController.getCorrelationIDList_UE_MOBILITY().get(j));
                             amfController.sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
                                     amfController.getCorrelationIDList_UE_MOBILITY().get(j));
 
-
                         }
-                    }
+
 
 
                     Thread.sleep(3 * 1000);
@@ -149,7 +145,7 @@ public class AmfApplication extends Functionality {
         AmfApplication amfApplication = new AmfApplication();
 
 
-        amfApplication.test(subListInt, eventIDInt);
+       // amfApplication.test(subListInt, eventIDInt, amfController);
 
     }
 }

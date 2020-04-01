@@ -32,7 +32,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonarsource.scanner.api.internal.shaded.minimaljson.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
@@ -108,7 +107,8 @@ public class BusinessLogic extends ResourceValues {
                             "DataStatus:  " + eventConnection.getDataStatus());
 
                     //throw new NullPointerException("Data not found!");
-                    return eventConnection;
+                    //return eventConnection;
+                    return new ResponseEntity<EventConnection>(eventConnection, HttpStatus.NOT_FOUND);
 
                 } else if (eventID == EventID.QOS_SUSTAINABILITY.ordinal()) {
 
@@ -122,7 +122,8 @@ public class BusinessLogic extends ResourceValues {
                             " qosFlowRetain: " + qosInfo.getQosFlowRetain() + "\n" +
                             "DataStatus:  " + qosInfo.getDataStatus());
 
-                    return qosInfo;
+                    //return qosInfo;
+                    return new ResponseEntity<QosAnalyticsInfo>(qosInfo, HttpStatus.NOT_FOUND);
                 }
 
 
@@ -136,7 +137,8 @@ public class BusinessLogic extends ResourceValues {
                 }
 
                 // if Data found returning JSON
-                return snssaisDataList;
+                //return snssaisDataList;
+                return new ResponseEntity(snssaisDataList, HttpStatus.OK);
             }
 
         } else {
@@ -1043,7 +1045,7 @@ public class BusinessLogic extends ResourceValues {
                         "DataStatus:  " + eventConnectionUE.getDataStatus());
 
                 //throw new NullPointerException("Data not found!");
-                return eventConnectionUE;
+                return new ResponseEntity<EventConnectionUE>(eventConnectionUE, HttpStatus.NOT_FOUND);
 
             } else {
                 // flag to check if getAnalytics ref count will be updated or not
@@ -1055,7 +1057,7 @@ public class BusinessLogic extends ResourceValues {
                 }
 
                 // if Data found returning JSON
-                return supiDataList;
+                return new ResponseEntity(supiDataList, HttpStatus.OK);
             }
 
         } else {
@@ -1709,4 +1711,36 @@ public class BusinessLogic extends ResourceValues {
 
 
     /************************************************************************************************************************/
+
+
+
+    public void updateForSliceLoadLevelInformation(NnwdafEventsSubscription subscription)
+    {
+        boolean hasNotifMethod = subscription.getNotifMethod() != null;
+        boolean hasRepetitionPeriod = subscription.getRepetitionPeriod() != null;
+        boolean hasLoadLevelThreshold = subscription.getLoadLevelThreshold() != null;
+
+        if(hasLoadLevelThreshold)
+        { repository.updateSliceLoadLevelEntry(subscription, 1); }
+
+        if(hasNotifMethod && hasRepetitionPeriod)
+        { repository.updateSliceLoadLevelEntry(subscription, 2); }
+
+        else if(hasNotifMethod)
+        { repository.updateSliceLoadLevelEntry(subscription, 3); }
+
+        else if(hasRepetitionPeriod)
+        { repository.updateSliceLoadLevelEntry(subscription, 4); }
+
+    }
+
+
+    public void updateForQosSustainability(NnwdafEventsSubscription subscription)
+    {
+        if(subscription.getRanUeThroughputThreshold() != null)
+        { repository.updateQosSustainabilityEntry(subscription, QosType.RAN_UE_THROUGHPUT); }
+
+        else if(subscription.getQosFlowRetainThreshold() != null)
+        { repository.updateQosSustainabilityEntry(subscription, QosType.QOS_FLOW_RETAIN); }
+    }
 }

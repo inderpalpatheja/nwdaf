@@ -62,34 +62,34 @@ public class Nnwdaf_Controller {
      * @desc this will hold functions for Analytics information
      */
 
-    // For both LOADL_LEVEL_INFORMATION and QOS_SUSTAINABILITY
-    @GetMapping(ANALYTICS + "/{snssais}/{anySlice}/{eventID}")
+    // getAnalytics for all eventIDs
+    @GetMapping(ANALYTICS)
     @ApiOperation(value = "Get Analytics Details By snssais or anySlice Details",
             notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
             response = Object.class)
-    public Object nwdaf_analytics(@PathVariable("snssais") String snssais,
-                                  @PathVariable("anySlice") String anySlice,
-                                  @PathVariable("eventID") String eventID) throws IOException, JSONException {
+    public Object nwdaf_analytics(@RequestParam(value = "snssais", required = false) String snssais,
+                                  @RequestParam(value = "anySlice", required = false) String anySlice,
+                                  @RequestParam("eventID") String eventID,
+                                  @RequestParam(value = "supi", required = false) String supi) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(eventID, snssais, anySlice));
-
+        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(eventID, snssais, anySlice, supi));
     }
 
 
 
     // For UE_MOBILITY only
-    @GetMapping(ANALYTICS + "/{supi}/{eventID}")
+   /* @GetMapping(ANALYTICS)
     @ApiOperation(value = "Get Analytics Details By supi or anySlice Details",
             notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
             response = Object.class)
-    public Object nwdaf_analyticsForUEMobility(@PathVariable("supi") String supi,
-                                               @PathVariable("eventID") String eventID) throws IOException, JSONException {
+    public Object nwdaf_analyticsForUEMobility(@RequestParam("supi") String supi,
+                                               @RequestParam("eventID") String eventID) throws IOException, JSONException {
 
 
         return nwdaf_service.nwdaf_analyticsUEmobility(new AnalyticsRawData(eventID, supi));
 
-    }
+    } */
 
 
 
