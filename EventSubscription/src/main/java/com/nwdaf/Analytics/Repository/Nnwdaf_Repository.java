@@ -1329,4 +1329,32 @@ public class Nnwdaf_Repository {
 
     /************************************************************************************************/
 
+
+    public void updateSliceLoadLevelEntry(NnwdafEventsSubscription subscription, int order)
+    {
+
+        if(order == 1)
+        { jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionData SET loadLevelThreshold = ? WHERE subscriptionID = ?;", new Object[] { subscription.getLoadLevelThreshold(), subscription.getSubscriptionID() }); }
+
+        if(order == 2)
+        { jdbcTemplate.update("UPDATE nwdafSubscriptionTable SET notifMethod = ?, repetitionPeriod = ? WHERE subscriptionID = ?;", new Object[] { subscription.getNotifMethod(), subscription.getRepetitionPeriod(), subscription.getSubscriptionID() }); }
+
+        else if(order == 3)
+        { jdbcTemplate.update("UPDATE nwdafSubscriptionTable SET notifMethod = ? WHERE subscriptionID = ?;", new Object[] { subscription.getNotifMethod(), subscription.getSubscriptionID() }); }
+
+        else if(order == 4)
+        { jdbcTemplate.update("UPDATE nwdafSubscriptionTable SET repetitionPeriod = ? WHERE subscriptionID = ?;", new Object[] { subscription.getRepetitionPeriod(), subscription.getSubscriptionID() }); }
+
+    }
+
+
+    public void updateQosSustainabilityEntry(NnwdafEventsSubscription subscription, QosType qosType)
+    {
+        if(qosType == QosType.RAN_UE_THROUGHPUT)
+        { jdbcTemplate.update("UPDATE nwdafQosSustainabilitySubscriptionData SET ranUeThroughputThreshold = ?, qosFlowRetainThreshold = null WHERE subscriptionID = ?;", new Object[] { subscription.getRanUeThroughputThreshold(), subscription.getSubscriptionID()}); }
+
+        else if(qosType == QosType.QOS_FLOW_RETAIN)
+        { jdbcTemplate.update("UPDATE nwdafQosSustainabilitySubscriptionData SET ranUeThroughputThreshold = null, qosFlowRetainThreshold = ? WHERE subscriptionID = ?;", new Object[] { subscription.getQosFlowRetainThreshold(), subscription.getSubscriptionID()}); }
+    }
+
 }

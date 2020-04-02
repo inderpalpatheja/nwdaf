@@ -28,6 +28,8 @@ import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.Ess
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.QosSustainabilityValidator;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.SliceLoadLevelValidator;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.UeMobilityValidator;
+import com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator.QosSustainabilityUpdateValidator;
+import com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator.SliceLoadLevelUpdateValidator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -79,11 +81,13 @@ public class Nnwdaf_Service extends BusinessLogic {
         NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
         Object validate;
 
+
         // Validate EventID
         if((validate = EventValidator.check(rawData, nnwdafEventsSubscription)) instanceof EventError)
         { return new ResponseEntity<EventError>((EventError)validate, HttpStatus.NOT_ACCEPTABLE); }
 
         nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
+
 
 
         // Validate other attributes for specific EventID
@@ -93,14 +97,24 @@ public class Nnwdaf_Service extends BusinessLogic {
             { return new ResponseEntity<AnalyticsError>((AnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
         }
 
-
         else if(nnwdafEventsSubscription.getEventID() == EventID.QOS_SUSTAINABILITY.ordinal())
         {
             if((validate = QosSustainabilityAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof AnalyticsError)
             { return new ResponseEntity<AnalyticsError>((AnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
         }
 
+        else if(nnwdafEventsSubscription.getEventID() == EventID.UE_MOBILITY.ordinal())
+        {
+            if((validate = UeMobilityAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof UeMobilityAnalyticsError)
+            { return new ResponseEntity<UeMobilityAnalyticsError>((UeMobilityAnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+        }
+
+
         nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
+
+
+        if(nnwdafEventsSubscription.getEventID() == EventID.UE_MOBILITY.ordinal())
+        { return nwdaf_analyticsUEmobility(nnwdafEventsSubscription); }
 
 
         Object snssaisDataList = check_For_data(nnwdafEventsSubscription, true);
@@ -248,52 +262,50 @@ public class Nnwdaf_Service extends BusinessLogic {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
+
         logger.info("subscriptionID:  " + subscriptionID + "\n" +
-                "eventID:  " + updateData.getEventID() + "\n" +
                 "notifMethod:  " + updateData.getNotifMethod() + "\n" +
-                "repetitionPeriod:  " + updateData.getRepetitionPeriod());
+                "repetitionPeriod:  " + updateData.getRepetitionPeriod() +
+                "loadLevelThreshold:  " + updateData.getLoadLevelThreshold() + "\n" +
+                "ranUeThroughputThreshold:  " + updateData.getRanUeThroughputThreshold() + "\n" +
+                "qosFlowRetainThreshold:  " + updateData.getQosFlowRetainThreshold() + "\n");
 
-        SubscriptionTable nwdafSubscriptionTableModel = repository.findById_subscriptionID(subscriptionID);
+        SubscriptionTable subscription = repository.findById_subscriptionID(subscriptionID);
 
-        if (nwdafSubscriptionTableModel == null) {
+        if (subscription == null) {
             logger.warn("no Content");
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
         }
 
-        NnwdafEventsSubscription nnwdafEventsSubscription;
-        Object checkForData;
+        NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
+        nnwdafEventsSubscription.setSubscriptionID(subscriptionID);
 
-        /*
-        if((checkForData = TypeChecker.checkForUpdateSub(updateData)) instanceof NnwdafEventsSubscription)
-        { nnwdafEventsSubscription = (NnwdafEventsSubscription)checkForData; }
+        Object validator;
 
-        else
-        { return new ResponseEntity<InvalidType>((InvalidType)checkForData, HttpStatus.NOT_ACCEPTABLE); }
+        EventID eventID = EventID.values()[subscription.getEventID()];
 
 
-
-        Integer threshold = null;
-
-        if(nnwdafEventsSubscription.getEventID() == EventID.LOAD_LEVEL_INFORMATION.ordinal())
-        { threshold = repository.getLoadLevelThreshold(subscriptionID); }
-
-        else if(nnwdafEventsSubscription.getEventID() == EventID.QOS_SUSTAINABILITY.ordinal())
+        if(eventID == EventID.LOAD_LEVEL_INFORMATION)
         {
-            if((threshold = repository.getRanUeThroughputThreshold(subscriptionID)) == null)
-            { threshold = repository.getLoadLevelThreshold(subscriptionID); }
+            if(!((validator = SliceLoadLevelUpdateValidator.check(updateData, nnwdafEventsSubscription)) instanceof NnwdafEventsSubscription))
+            { return new ResponseEntity(validator, HttpStatus.NOT_ACCEPTABLE); }
+
+            nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
+
+            updateForSliceLoadLevelInformation(nnwdafEventsSubscription);
+        }
+
+        else if(eventID == EventID.QOS_SUSTAINABILITY)
+        {
+            if(!((validator = QosSustainabilityUpdateValidator.check(updateData, nnwdafEventsSubscription)) instanceof NnwdafEventsSubscription))
+            { return new ResponseEntity(validator, HttpStatus.NOT_ACCEPTABLE); }
+
+            nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
+
+            updateForQosSustainability(nnwdafEventsSubscription);
         }
 
 
-
-        if((checkForData = UpdateValidator.check(nnwdafEventsSubscription, updateData, nwdafSubscriptionTableModel, threshold)) instanceof MissingData)
-        { return new ResponseEntity<MissingData>((MissingData)checkForData, HttpStatus.NOT_ACCEPTABLE); }
-
-        nnwdafEventsSubscription = (NnwdafEventsSubscription)checkForData;
-
-        // Updating user via subscriptionID
-        repository.updateNF(nnwdafEventsSubscription, subscriptionID);
-*/
-        // Incrementing update counter
         Counters.incrementSubscriptionUpdates();
 
 
@@ -623,29 +635,13 @@ public class Nnwdaf_Service extends BusinessLogic {
 
     /****UEmobility******/
 
-    public Object nwdaf_analyticsUEmobility(AnalyticsRawData rawData) throws IOException, JSONException {
+    public Object nwdaf_analyticsUEmobility(NnwdafEventsSubscription nnwdafEventsSubscription) throws IOException, JSONException {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
 
-        NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
-        Object validate;
-
-
-        if((validate = EventValidator.check(rawData, nnwdafEventsSubscription)) instanceof EventError)
-        { return new ResponseEntity<EventError>((EventError)validate, HttpStatus.NOT_ACCEPTABLE); }
-
-        nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
-
-
         if (nnwdafEventsSubscription.getEventID() == EventID.UE_MOBILITY.ordinal()) {
-
-            if((validate = UeMobilityAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof UeMobilityAnalyticsError)
-            { return new ResponseEntity<UeMobilityAnalyticsError>((UeMobilityAnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
-
-            nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
-
 
             NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE = new NnwdafEventsSubscriptionUEmobility();
             nnwdafEventsSubscriptionUE.setSupi(nnwdafEventsSubscription.getSupi());

@@ -75,13 +75,13 @@ public class EventData {
     public static JSONObject getUeMobilityData() throws JSONException
     {
         //  System.out.println("Subscribers Count - " + subList);
-        int MCC = random.nextInt(900) + 100;
+       // int MCC = random.nextInt(900) + 100;
         // System.out.println("MCC - " + MCC);
-        int MNC = random.nextInt(900) + 100;
+       // int MNC = random.nextInt(900) + 100;
         // System.out.println("MNC - " + MNC);
-        int IMSI = random.nextInt(900000000) + 100000000;
+       // int IMSI = random.nextInt(900000000) + 100000000;
         // System.out.println("IMSI" + IMSI);
-        String supi = String.valueOf(MCC) + String.valueOf(MNC) + String.valueOf(IMSI);
+       // String supi = String.valueOf(MCC) + String.valueOf(MNC) + String.valueOf(IMSI);
 
 
         JSONObject json = new JSONObject();
@@ -90,7 +90,7 @@ public class EventData {
         json.put("notificationURI", notificationURI);
         json.put("notifMethod", 0);
         json.put("repetitionPeriod", 10 + random.nextInt(10));
-        json.put("supi", supi);
+        json.put("supi", RandomStringUtils.randomNumeric(7));
 
         return json;
     }
