@@ -63,8 +63,8 @@ public class Nnwdaf_Service extends BusinessLogic {
     @Autowired
     Nnwdaf_Repository repository;
 
-    @Autowired
-    BuildProperties buildProperties;
+   @Autowired
+   BuildProperties buildProperties;
 
 
     private static final Logger logger = LoggerFactory.getLogger(Nnwdaf_Service.class);
@@ -321,7 +321,7 @@ public class Nnwdaf_Service extends BusinessLogic {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        Counters.incrementUnSubscriptions();
+        //Counters.incrementUnSubscriptions();
 
         SubscriptionTable subscriber = repository.findById_subscriptionID(subscriptionID);
         //String snssais = repository.getSnssais_LoadLevelSubscriptionData(subscriptionID);
@@ -359,7 +359,7 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         }
 
-
+        Counters.incrementUnSubscriptions();
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
     }
@@ -395,6 +395,9 @@ public class Nnwdaf_Service extends BusinessLogic {
         if(eventID == EventID.LOAD_LEVEL_INFORMATION)
         {
             // here subID == correlationID
+            /********************/
+            Counters.incrementCollectorSubscriptionNotifications();
+            /*********************/
 
             JSONObject json = new JSONObject(response);
 
@@ -426,6 +429,12 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         else if(eventID == EventID.QOS_SUSTAINABILITY)
         {
+            /***************************/
+            Counters.incrementCollectorSubscriptionNotifications();
+            /**************************/
+
+
+
             JSONObject json = new JSONObject(response);
 
             Integer ranUeThroughput = null;
@@ -458,8 +467,7 @@ public class Nnwdaf_Service extends BusinessLogic {
         }
 
 
-        // incrementing notification Counter
-        Counters.incrementCollectorSubscriptionNotifications();
+
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }

@@ -83,6 +83,35 @@ public class Counters {
 
 
 
+
+
+
+
+
+
+
+    /*********************************counters*****************************************/
+
+    static private BigInteger getAnalytics = BigInteger.ZERO;
+
+    public static BigInteger getGetAnalytics() {
+        return getAnalytics;
+    }
+    public static void incrementGetAnalytics()
+    { getAnalytics = getAnalytics.add(BigInteger.ONE); }
+
+    /*****************************counters*****************************************/
+
+
+
+
+
+
+
+
+
+
+
     /****************************************************************************************************************/
 
 
@@ -97,6 +126,12 @@ public class Counters {
         collectorSubscriptionNotifications = BigInteger.ZERO;
         analyticsSubscriptions = BigInteger.ZERO;
         analyticsNotifications = BigInteger.ZERO;
+
+        /************************/
+        getAnalytics = BigInteger.ZERO;
+        /************************/
+
+
     }
 
 }

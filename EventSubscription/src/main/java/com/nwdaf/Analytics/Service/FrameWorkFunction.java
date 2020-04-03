@@ -28,8 +28,12 @@ public class FrameWorkFunction {
 
         counterStats.put("Collector_Subscriptions", Counters.getCollectorSubscriptions());
         counterStats.put("Collector_SubscriptionNotifications", Counters.getCollectorSubscriptionNotifications());
-        counterStats.put("Collector_AnalyticsSubscriptions", Counters.getAnalyticsSubscriptions());
-        counterStats.put("Collector_AnalyticsNotifications", Counters.getAnalyticsNotifications());
+        //counterStats.put("Collector_AnalyticsSubscriptions", Counters.getAnalyticsSubscriptions());
+        //counterStats.put("Collector_AnalyticsNotifications", Counters.getAnalyticsNotifications());
+
+        /*************************************************/
+        counterStats.put("Nnwdaf_AnalyticsInfo_Request ", Counters.getGetAnalytics());
+        /*************************************************/
 
         return counterStats;
     }
