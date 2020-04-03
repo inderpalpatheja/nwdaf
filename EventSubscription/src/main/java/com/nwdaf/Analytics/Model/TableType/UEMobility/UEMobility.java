@@ -55,4 +55,11 @@ public class UEMobility {
         DurationSec = durationSec;
         this.locationInfo = locationInfo;
     }
+
+    public UEMobility(String supi, Integer DurationSec, String locationInfo)
+    {
+        this.supi = supi;
+        this.DurationSec = DurationSec;
+        this.locationInfo = locationInfo;
+    }
 }

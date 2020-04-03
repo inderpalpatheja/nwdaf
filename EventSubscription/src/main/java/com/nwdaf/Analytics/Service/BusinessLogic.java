@@ -16,7 +16,6 @@ import com.nwdaf.Analytics.Model.QosNotificationData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelInformation;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionTable;
-import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilityInformation;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.EventConnectionUE;
@@ -58,8 +57,8 @@ public class BusinessLogic extends ResourceValues {
     public int subThValue = 0;
     public int currentLoadLevel = 0;
 
-    List<UserLocation> userLocations = new ArrayList<>();
-    UserLocation userLocation = new UserLocation();
+
+    //UserLocation userLocation = new UserLocation();
 
 
     /**
@@ -138,6 +137,7 @@ public class BusinessLogic extends ResourceValues {
 
                 // if Data found returning JSON
                 //return snssaisDataList;
+                Counters.incrementAnalyticsNotifications();
                 return new ResponseEntity(snssaisDataList, HttpStatus.OK);
             }
 
@@ -220,6 +220,8 @@ public class BusinessLogic extends ResourceValues {
             } catch (Exception ex) {
                 return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(), HttpStatus.NOT_FOUND);
             }
+
+            Counters.incrementCollectorSubscriptions();
 
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
             return correlationID;
@@ -907,20 +909,75 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-    public void updateUEMobilityTable(String correlationID) {
+
+    /*
+    public void updateUEMobilityTable(String correlationID, List<String> taiList) {
 
         //Fetch all IDs from UserLcoation table
-        List<Integer> IDs = repository.getAllIDFromUserLocationTable();
+        List<Integer> IDs = repository.getAllIDFromUserLocationTable(taiList);
 
         // finding the supi value by correlationID
         String supi = repository.getSupiValueByCorrelationID(correlationID);
 
         //Updating the location of supi;
         repository.updateLocatoinValueToUEMobilityTable(IDs, supi);
+    }*/
+
+
+    public void updateUEMobilityTable(String supi, List<String> tai_cellIDs) {
+
+        //Fetch all IDs from UserLcoation table
+        List<Integer> IDs = new ArrayList<Integer>();
+
+        for(String tai_cellID: tai_cellIDs)
+        {
+            String areaInfo[] = tai_cellID.split(" ");
+            IDs.add(repository.getID_UserTable(areaInfo[0], areaInfo[1]));
+        }
+
+
+        // finding the supi value by correlationID
+        //String supi = repository.getSupiValueByCorrelationID(correlationID);
+
+        //Updating the location of supi;
+        repository.updateLocatoinValueToUEMobilityTable(IDs, supi);
     }
 
 
-    protected void nwdaf_notification_manager_ForUEMobility() throws IOException, JSONException {
+    protected void nwdaf_notification_manager_ForUEMobility(String supi) throws IOException, JSONException {
+
+        UEMobility supiData = repository.getUEmobilityData(supi);
+
+        if (supiData == null) {
+            logger.warn("supi value: " + supi + " not found");
+            return;
+        }
+
+        String location = supiData.getLocationInfo().substring(1, supiData.getLocationInfo().length() - 1);
+        String locationData[] = location.split(", ");
+
+        List<UserLocation> userLocations = new ArrayList<UserLocation>();
+
+        for(String location_id: locationData)
+        { userLocations.add(repository.getUserLocationFromID(Integer.valueOf(location_id))); }
+
+        out.println("supi value = " + supiData.getSupi());
+
+        String subscriptionID = repository.getSubscriptionIdBySupi(supiData.getSupi());
+
+        if (subscriptionID == null) {
+            out.println("No subscriptionID found for supi: " + supiData.getSupi());
+            return;
+        }
+
+        String notificationURI = repository.getNotificationURI(subscriptionID);
+
+        send_notificaiton_to_NF_UEeMobility(notificationURI, userLocations, supiData.getSupi(), subscriptionID);
+    }
+
+
+
+   /* protected void nwdaf_notification_manager_ForUEMobility() throws IOException, JSONException {
 
         List<String> subcriptionIDSet = new ArrayList<>();
 
@@ -932,80 +989,73 @@ public class BusinessLogic extends ResourceValues {
 
         List<UEMobility> supiList = repository.getAllSupi();
 
-        if (repository.getALLsnssais() == null) {
+        if (supiList == null || supiList.isEmpty()) {
             logger.warn("no snssais Found [ Null object ]");
+            return;
         }
 
-        for (int i = 0; i < supiList.size(); i++) {
+
+        for(UEMobility supi: supiList)
+        {
             // Generic Function to get all location via supi value
-            String location = repository.getAllNotificationDataForUEMobility(supiList.get(i).getSupi());
+            String location = repository.getAllNotificationDataForUEMobility(supi.getSupi());
 
             // Removing [ ] from location String
             String splitLocationString = location.substring(1, location.length() - 1);
 
             // Splitting location via ,
-            String[] splitedString = splitLocationString.split(",");
+            String[] splitedString = splitLocationString.split(", ");
 
             // iterating through split string and finding User Location from particular ID
-            for (int j = 0; j < splitedString.length; j++) {
+            for(String location_id: splitedString)
+            { userLocations.add(repository.getUserLocationFromID(Integer.valueOf(location_id))); }
 
-                /* now it's time to find the UserLocation by particular ID */
 
-                // Type Casting String ID value to Integer Value;
-                Integer ID = Integer.valueOf(splitedString[j].trim());
+            out.println("supi value = " + supi.getSupi());
 
-                //Finding UseLocation Via ID.
-                userLocation = repository.getUserLocationFromID(ID);
-
-                userLocations.add(userLocation);
-                // out.println("user-location : Tai-value " + userLocation.getTai());
-            }
-
-            out.println("supi value = " + supiList.get(i).getSupi());
-
-            List<String> subscriptionDataList = repository.findById_supi(supiList.get(i).getSupi());
+            List<String> subscriptionDataList = repository.findById_supi(supi.getSupi());
 
             out.println("\n\nSubscriptionListsize" + subscriptionDataList.size());
 
-            if (0 == subscriptionDataList.size()) {
+            if (subscriptionDataList == null || subscriptionDataList.isEmpty()) {
                 out.println("NO_subscription found");
-            } else {
-                for (int k = 0; k < subscriptionDataList.size(); k++) {
-                    out.println("\nsubscriptionID_VIA_supi " + subscriptionDataList.get(k));
-                    SubscriptionTable subscriptionData = repository.findById_subscriptionID(subscriptionDataList.get(k));
-
-                    //out.println("\nEventID " + subscriptionData.getEventID() +
-                    //  "\nSubscriptionID - "+ subscriptionData.getSubscriptionID());
-
-                    out.println("\nnotificaitonURI - " + subscriptionData.getNotificationURI() +
-                            "\neventID - " + EventID.values()[subscriptionData.getEventID()].toString() +
-                            "\nsupi - " + supiList.get(i).getSupi() +
-                            "\nTai value - " + userLocation.getTai() +
-                            "\nSubscriptionID - " + subscriptionData.getSubscriptionID());
-
-
-                    if (!subID_SET.contains(subscriptionDataList.get(k))) {
-                        subID_SET.add(subscriptionDataList.get(k));
-
-                        // send_notificaiton_to_NF_forUEMobility(subscriptionData.getNotificationURI(),
-                        //       EventID.values()[subscriptionData.getEventID()].toString());
-
-
-                        send_notificaiton_to_NF(subscriptionData.getNotificationURI(),
-                                EventID.values()[subscriptionData.getEventID()].toString(),
-                                "null",
-
-                                userLocations,
-                                supiList.get(i).getSupi(),
-                                0, subscriptionData.getSubscriptionID());
-                    }
-
-                }
+                return;
             }
 
 
+            for(String subscription: subscriptionDataList)
+            {
+                out.println("\nsubscriptionID_VIA_supi " + subscription);
+                SubscriptionTable subscriptionData = repository.findById_subscriptionID(subscription);
+
+                //out.println("\nEventID " + subscriptionData.getEventID() +
+                //  "\nSubscriptionID - "+ subscriptionData.getSubscriptionID());
+
+                out.println("\nnotificaitonURI - " + subscriptionData.getNotificationURI() +
+                        "\neventID - " + EventID.values()[subscriptionData.getEventID()].toString() +
+                        "\nsupi - " + supi.getSupi() +
+                        "\nTai value - " + userLocation.getTai() +
+                        "\nSubscriptionID - " + subscriptionData.getSubscriptionID());
+
+
+                if (!subID_SET.contains(subscription)) {
+                    subID_SET.add(subscription);
+
+                    // send_notificaiton_to_NF_forUEMobility(subscriptionData.getNotificationURI(),
+                    //       EventID.values()[subscriptionData.getEventID()].toString());
+
+
+                    send_notificaiton_to_NF(subscriptionData.getNotificationURI(),
+                            EventID.values()[subscriptionData.getEventID()].toString(),
+                            "null",
+
+                            userLocations,
+                            supi.getSupi(),
+                            0, subscriptionData.getSubscriptionID());
+                }
+            }
         }
-    }
+    } */
 
 
     protected Object check_For_dataUEmobility(NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE, boolean getAnalytics) throws IOException, JSONException {
@@ -1142,12 +1192,9 @@ public class BusinessLogic extends ResourceValues {
      * @desc this function will send notification to network function
      */
     //For UE_MOBILITY only
-    protected void send_notificaiton_to_NF(String notificationURI,
-                                           String eventID,
-                                           String snssais,
+    protected void send_notificaiton_to_NF_UEeMobility(String notificationURI,
                                            List<UserLocation> userLocations,
                                            String supi,
-                                           int currentLoadLevel,
                                            String subscriptionID) throws IOException, JSONException {
 
 //        JSONObject jsonForUEMobility = new JSONObject();
@@ -1163,8 +1210,8 @@ public class BusinessLogic extends ResourceValues {
         JSONObject eventNotificationFinalObject = new JSONObject();
         JSONObject eventNotificationObject = new JSONObject();
         JSONArray uEMobilityArray = new JSONArray();
-        JSONObject sliceLoadLevelInfo = new JSONObject();
-        JSONArray snssaisArray = new JSONArray();
+       // JSONObject sliceLoadLevelInfo = new JSONObject();
+       // JSONArray snssaisArray = new JSONArray();
         JSONObject ueMobilityObject = new JSONObject();
         JSONArray locationInfoArray = new JSONArray();
 
@@ -1235,14 +1282,14 @@ public class BusinessLogic extends ResourceValues {
 
         uEMobilityArray.put(ueMobilityObject);
 
-        snssaisArray.put(snssais);
+      /*  snssaisArray.put(snssais);
         sliceLoadLevelInfo.put("loadLevelInformation", currentLoadLevel);
-        sliceLoadLevelInfo.put("snssais", snssaisArray);
+        sliceLoadLevelInfo.put("snssais", snssaisArray); */
 
         /*FIXED JSON PAYLOAD
          * It will only send data for particular event-ID*/
 
-        if (eventID == "LOAD_LEVEL_INFORMATION") {
+      /*  if (eventID == "LOAD_LEVEL_INFORMATION") {
             eventNotificationObject.put("NwdafEvent", eventID);
             eventNotificationObject.put("SliceLoadLevelInformation", sliceLoadLevelInfo);
             eventNotificationArray.put(eventNotificationObject);
@@ -1254,8 +1301,12 @@ public class BusinessLogic extends ResourceValues {
         }
 
         if (eventID == "QOS_SUSTAINABILITY") {
-            /*add Qos Here*/
-        }
+
+        } */
+
+        eventNotificationObject.put("NwdafEvent", EventID.UE_MOBILITY.toString());
+        eventNotificationObject.put("ueMobs", uEMobilityArray);
+        eventNotificationArray.put(eventNotificationObject);
 
 
         eventNotificationFinalObject.put("eventNotifications", eventNotificationArray);
@@ -1456,6 +1507,7 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
+    //Need to make changes here also
     public List<EventConnectionForUEMobility> getUElocation(String supi) {
 
 
@@ -1488,6 +1540,7 @@ public class BusinessLogic extends ResourceValues {
 
                 // Type Casting String ID value to Integer Value;
                 Integer ID = Integer.valueOf(splitedString[j].trim());
+                UserLocation userLocation = new UserLocation();
 
                 //Finding UseLocation Via ID.
                 userLocation = repository.getUserLocationFromID(ID);
@@ -1495,7 +1548,7 @@ public class BusinessLogic extends ResourceValues {
                 out.println("userlocation - " + userLocation.toString());
 
                 userLocationsForAnalytics.add(userLocation);
-                // out.println("user-location : Tai-value " + userLocation.getTai());
+                out.println("user-location : Tai-value " + userLocation.getTai());
             }
 
             out.println("userlocations - > " + userLocationsForAnalytics.toString());

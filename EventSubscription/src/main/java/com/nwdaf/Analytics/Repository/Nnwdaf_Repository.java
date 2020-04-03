@@ -908,6 +908,9 @@ public class Nnwdaf_Repository {
 
     public Boolean addValuesToUserLocationTable(String taiValue, String cellID, Integer timeDuration) {
 
+        if(taiCellIdExists(taiValue, cellID))
+        { return Boolean.FALSE; }
+
         String query = "INSERT INTO nwdafUserLocation(Tai,cellID,timeDuration) VALUES(?,?,?)";
         //String query1= "CREATE UNIQUE INDEX Tai ON UserLocation (plmnID,Tac,cellId);";
 
@@ -925,6 +928,37 @@ public class Nnwdaf_Repository {
                 return preparedStatement.execute();
             }
         });
+    }
+
+
+    public boolean taiCellIdExists(String tai, String cellID)
+    {
+        String tai_query = "SELECT IFNULL ((SELECT Tai FROM nwdafUserLocation WHERE Tai = '" + tai + "'), null) AS Tai;";
+
+
+        String taiExists = jdbcTemplate.queryForObject(tai_query, new RowMapper<String>() {
+
+            @Override
+            public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getString("Tai");
+            }
+        });
+
+        if(taiExists != null)
+        {
+            String cellID_query = "SELECT IFNULL ((SELECT cellID FROM nwdafUserLocation WHERE cellID = '" + cellID + "'), null) AS cellID;";
+
+            String cellIDExists = jdbcTemplate.queryForObject(cellID_query, new RowMapper<String>() {
+                @Override
+                public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getString("cellID");
+                }
+            });
+
+            return (cellIDExists != null);
+        }
+
+        return false;
     }
 
 
@@ -1001,9 +1035,9 @@ public class Nnwdaf_Repository {
 
 
 
-    public List<Integer> getAllIDFromUserLocationTable() {
+  /*  public List<Integer> getAllIDFromUserLocationTable(List<String> taiList) {
 
-        String query = "SELECT ID FROM nwdafUserLocation";
+        String query = "SELECT ID FROM nwdafUserLocation WHERE Tai = '" + tai + "';";
 
         try {
             return jdbcTemplate.query(query, new RowMapper<Integer>() {
@@ -1016,7 +1050,25 @@ public class Nnwdaf_Repository {
 
             return null;
         }
+    } */
+
+
+    public Integer getID_UserTable(String tai, String cellID) {
+
+        String query = "SELECT ID FROM nwdafUserLocation WHERE Tai = ? AND cellID = ?;";
+
+        try {
+            return jdbcTemplate.queryForObject(query, new Object[] { tai, cellID } , new RowMapper<Integer>() {
+                @Override
+                public Integer mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getInt("ID");
+                }
+            });
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
+
 
 
     public Integer updateLocatoinValueToUEMobilityTable(List<Integer> UPDATED_ID, String supi) {
@@ -1036,18 +1088,56 @@ public class Nnwdaf_Repository {
 
     }
 
+    public UEMobility getUEmobilityData(String supi)
+    {
+        String query = "SELECT supi, DurationSec, location FROM nwdafUEmobility WHERE supi = ?;";
+
+        try
+        {
+            return jdbcTemplate.queryForObject(query, new Object[] {supi}, new RowMapper<UEMobility>() {
+
+                @Override
+                public UEMobility mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return new UEMobility(resultSet.getString("supi"), resultSet.getInt("DurationSec"), resultSet.getString("location"));
+                }
+            });
+        }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
+
+
+    public String getSubscriptionIdBySupi(String supi)
+    {
+        String query = "SELECT subscriptionID FROM nwdafUEmobilitySubscriptionData WHERE supi = ?;";
+
+        try
+        {
+            return jdbcTemplate.queryForObject(query, new Object[]{supi}, new RowMapper<String>() {
+                @Override
+                public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getString("subscriptionID");
+                }
+            });
+        }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
+
 
 
 
     public String getAllNotificationDataForUEMobility(String supi) {
 
-        String query = "SELECT location FROM nwdafUEmobility WHERE supi = '" + supi + "';";
+        String query = "SELECT location FROM nwdafUEmobility WHERE supi = ?;";
 
         System.out.println(query);
 
         try {
 
-            String Supi = jdbcTemplate.queryForObject(query, new RowMapper<String>() {
+            String Supi = jdbcTemplate.queryForObject(query, new Object[] {supi}, new RowMapper<String>() {
                 @Override
                 public String mapRow(ResultSet resultSet, int i) throws SQLException {
                     return resultSet.getString("location");
@@ -1058,7 +1148,6 @@ public class Nnwdaf_Repository {
 
             return null;
         }
-
     }
 
 
@@ -1099,12 +1188,12 @@ public class Nnwdaf_Repository {
 
     public List<String> findById_supi(String supi) {
 
-        String query = "SELECT subscriptionID FROM nwdafUEmobilitySubscriptionData WHERE supi = '" + supi + "';";
+        String query = "SELECT subscriptionID FROM nwdafUEmobilitySubscriptionData WHERE supi = ?";
 
         System.out.println(query);
 
         try {
-            return jdbcTemplate.query(query, new RowMapper<String>() {
+            return jdbcTemplate.query(query, new Object[] {supi} ,new RowMapper<String>() {
                 @Override
                 public String mapRow(ResultSet resultSet, int i) throws SQLException {
                     return resultSet.getString("subscriptionID");
@@ -1113,7 +1202,6 @@ public class Nnwdaf_Repository {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
-
     }
 
 

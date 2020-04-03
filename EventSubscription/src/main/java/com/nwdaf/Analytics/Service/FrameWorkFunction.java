@@ -27,6 +27,7 @@ public class FrameWorkFunction {
         counterStats.put("Event_SubscriptionNotifications", Counters.getSubscriptionNotifications());
 
         counterStats.put("Collector_Subscriptions", Counters.getCollectorSubscriptions());
+        counterStats.put("Collector_UnSubscriptions", Counters.getCollectorUnSubscriptions());
         counterStats.put("Collector_SubscriptionNotifications", Counters.getCollectorSubscriptionNotifications());
         counterStats.put("Collector_AnalyticsSubscriptions", Counters.getAnalyticsSubscriptions());
         counterStats.put("Collector_AnalyticsNotifications", Counters.getAnalyticsNotifications());
