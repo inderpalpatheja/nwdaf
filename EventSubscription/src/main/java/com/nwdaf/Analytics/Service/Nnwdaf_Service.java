@@ -119,6 +119,8 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         Object snssaisDataList = check_For_data(nnwdafEventsSubscription, true);
 
+        Counters.incrementAnalyticsSubscriptions();
+
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return snssaisDataList;
     }
@@ -321,7 +323,6 @@ public class Nnwdaf_Service extends BusinessLogic {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        Counters.incrementUnSubscriptions();
 
         SubscriptionTable subscriber = repository.findById_subscriptionID(subscriptionID);
         //String snssais = repository.getSnssais_LoadLevelSubscriptionData(subscriptionID);
@@ -357,8 +358,11 @@ public class Nnwdaf_Service extends BusinessLogic {
             else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
             { repository.deleteEntry_QosSustainabilitySubscriptionTable(snssais); }
 
+            Counters.incrementCollectorUnSubscriptions();
         }
 
+
+        Counters.incrementUnSubscriptions();
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
@@ -595,6 +599,8 @@ public class Nnwdaf_Service extends BusinessLogic {
         Integer MNC_value;
         JSONObject plmnObject = new JSONObject();
 
+        List<String> tai_cellIDs = new ArrayList<String>();
+
         // At 0 position I am sending CorrelationID;
         for (int i = 1; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
@@ -615,6 +621,8 @@ public class Nnwdaf_Service extends BusinessLogic {
 
             // update all the location of supi received in JsonArray;
             add_value_to_userLocationTable(TaiValue, cellID, timeDurationValue);
+
+            tai_cellIDs.add(TaiValue + " " + cellID);
         }
 
         String supi = repository.getSupiValueByCorrelationID(correlationID);
@@ -622,14 +630,14 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         // now time to update UE-MobilityTable;
         // First Fetch all ID
-        updateUEMobilityTable(correlationID);
+        updateUEMobilityTable(supi, tai_cellIDs);
 
         if (repository.getRefCount_UEmobilitySubscriptionTable(supi) == 0) {
             repository.deleteEntry_UEMobilitySubscriptionTable(supi);
         }
 
        // repository.getRefCount_UEmobilitySubscriptionTable()
-        nwdaf_notification_manager_ForUEMobility();
+        nwdaf_notification_manager_ForUEMobility(supi);
 
     }
 
@@ -674,6 +682,7 @@ public class Nnwdaf_Service extends BusinessLogic {
 
             repository.deleteEntry_UEMobilitySubscriptionTable(supi);
 
+            Counters.incrementCollectorUnSubscriptions();
         }
     }
 

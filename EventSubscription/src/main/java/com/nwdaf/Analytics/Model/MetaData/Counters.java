@@ -1,29 +1,23 @@
 package com.nwdaf.Analytics.Model.MetaData;
 
+import lombok.Getter;
+
 import java.math.BigInteger;
 
 public class Counters {
 
+    @Getter
     static private BigInteger subscriptions = BigInteger.ZERO;
+
+    @Getter
     static private BigInteger unSubscriptions = BigInteger.ZERO;
+
+    @Getter
     static private BigInteger subscriptionUpdates = BigInteger.ZERO;
+
+    @Getter
     static private BigInteger subscriptionNotifications = BigInteger.ZERO;
 
-    public static BigInteger getSubscriptions() {
-        return subscriptions;
-    }
-
-    public static BigInteger getUnSubscriptions() {
-        return unSubscriptions;
-    }
-
-    public static BigInteger getSubscriptionUpdates() {
-        return subscriptionUpdates;
-    }
-
-    public static BigInteger getSubscriptionNotifications() {
-        return subscriptionNotifications;
-    }
 
     public static void incrementSubscriptions()
     { subscriptions = subscriptions.add(BigInteger.ONE); }
@@ -45,32 +39,29 @@ public class Counters {
 
 
 
-
+    @Getter
     static private BigInteger collectorSubscriptions = BigInteger.ZERO;
+
+    @Getter
+    static private BigInteger collectorUnSubscriptions = BigInteger.ZERO;
+
+    @Getter
     static private BigInteger collectorSubscriptionNotifications = BigInteger.ZERO;
+
+    @Getter
     static private BigInteger analyticsSubscriptions = BigInteger.ZERO;
+
+    @Getter
     static private BigInteger analyticsNotifications = BigInteger.ZERO;
 
 
-    public static BigInteger getCollectorSubscriptions() {
-        return collectorSubscriptions;
-    }
-
-    public static BigInteger getCollectorSubscriptionNotifications() {
-        return collectorSubscriptionNotifications;
-    }
-
-    public static BigInteger getAnalyticsSubscriptions() {
-        return analyticsSubscriptions;
-    }
-
-    public static BigInteger getAnalyticsNotifications() {
-        return analyticsNotifications;
-    }
 
 
     public static void incrementCollectorSubscriptions()
     { collectorSubscriptions = collectorSubscriptions.add(BigInteger.ONE); }
+
+    public static void incrementCollectorUnSubscriptions()
+    { collectorUnSubscriptions = collectorUnSubscriptions.add(BigInteger.ONE); }
 
     public static void incrementCollectorSubscriptionNotifications()
     { collectorSubscriptionNotifications = collectorSubscriptionNotifications.add(BigInteger.ONE); }
@@ -80,6 +71,8 @@ public class Counters {
 
     public static void incrementAnalyticsNotifications()
     { analyticsNotifications = analyticsNotifications.add(BigInteger.ONE); }
+
+
 
 
 
@@ -94,6 +87,7 @@ public class Counters {
         subscriptionNotifications = BigInteger.ZERO;
 
         collectorSubscriptions = BigInteger.ZERO;
+        collectorUnSubscriptions = BigInteger.ZERO;
         collectorSubscriptionNotifications = BigInteger.ZERO;
         analyticsSubscriptions = BigInteger.ZERO;
         analyticsNotifications = BigInteger.ZERO;

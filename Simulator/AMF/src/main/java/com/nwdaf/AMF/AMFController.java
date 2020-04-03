@@ -49,16 +49,11 @@ public class AMFController extends Functionality {
     }
 
 
-    @GetMapping("/sendDataToUEMobility/{correlationID}")
+    @PostMapping("/sendDataToUEMobility/{correlationID}")
     public void sendUEData(@PathVariable String correlationID) throws IOException, JSONException {
-        for (int i = 0; i < correlationIDList_UE_MOBILITY.size(); i++) {
-            // sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
-            //       correlationIDList.get(i));
 
-            sendDataForUEMobility("http://localhost:8081/Namf_Event_Exposure_Notify",
-                    correlationID);
-
-        }
+        sendDataForUEMobility("http://localhost:8081/Namf_Event_Exposure_Notify",
+                correlationID);
     }
 
 

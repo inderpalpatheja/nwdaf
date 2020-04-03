@@ -33,4 +33,5 @@ public class ResourceValues {
 
     @Value("${spring.OAM.UnSubscribe.url}")
     String DELETE_OAM_URL;
+
 }
