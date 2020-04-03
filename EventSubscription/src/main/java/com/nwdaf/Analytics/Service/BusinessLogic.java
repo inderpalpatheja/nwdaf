@@ -77,6 +77,11 @@ public class BusinessLogic extends ResourceValues {
 
         if (getAnalytics) {
 
+            /*************/
+            Counters.incrementGetAnalytics();
+            /*************/
+
+
             List<Object> snssaisDataList = repository.checkForData(nnwdafEventsSubscription.getSnssais(),
                     nnwdafEventsSubscription.getAnySlice(), nnwdafEventsSubscription.getEventID());
 
@@ -509,7 +514,7 @@ public class BusinessLogic extends ResourceValues {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        Counters.incrementSubscriptionNotifications();
+        //Counters.incrementSubscriptionNotifications();
 
 
         // URL url = null;
@@ -636,6 +641,8 @@ public class BusinessLogic extends ResourceValues {
         } finally {
             con.disconnect();
         }
+
+        Counters.incrementSubscriptionNotifications();
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
 
