@@ -1445,4 +1445,25 @@ public class Nnwdaf_Repository {
         { jdbcTemplate.update("UPDATE nwdafQosSustainabilitySubscriptionData SET ranUeThroughputThreshold = null, qosFlowRetainThreshold = ? WHERE subscriptionID = ?;", new Object[] { subscription.getQosFlowRetainThreshold(), subscription.getSubscriptionID()}); }
     }
 
+
+
+    public String subscriptionExists(String subscriptionID)
+    {
+        String query = "SELECT subscriptionID FROM nwdafSubscriptionTable WHERE subscriptionID = ?";
+
+        try
+        {
+            return jdbcTemplate.queryForObject(query, new Object[] {subscriptionID}, new RowMapper<String>() {
+
+                @Override
+                public String mapRow(ResultSet resultSet, int i) throws SQLException {
+                    return resultSet.getString("subscriptionID");
+                }
+            });
+        }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
+
 }

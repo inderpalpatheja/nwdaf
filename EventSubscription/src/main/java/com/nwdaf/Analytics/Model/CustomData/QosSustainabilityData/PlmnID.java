@@ -1,31 +1,21 @@
 package com.nwdaf.Analytics.Model.CustomData.QosSustainabilityData;
 
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+
+@AllArgsConstructor
+@Getter @Setter
 public class PlmnID {
 
     String mcc;
     String mnc;
 
-    public PlmnID(String mcc, String mnc)
-    {
-        this.mcc = mcc;
-        this.mnc = mnc;
-    }
 
-    public String getMcc() {
-        return mcc;
+    @Override
+    public String toString() {
+        return mcc + "-" + mnc;
     }
-
-    public void setMcc(String mcc) {
-        this.mcc = mcc;
-    }
-
-    public String getMnc() {
-        return mnc;
-    }
-
-    public void setMnc(String mnc) {
-        this.mnc = mnc;
-    }
-
 }

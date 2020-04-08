@@ -1,31 +1,25 @@
 package com.nwdaf.Analytics.Model.TableType.QosSustainability;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.UUID;
 
 public class QosSustainabilitySubscriptionTable {
 
+    @Getter @Setter
     private Integer ID;
+
+    @Getter @Setter
     private String snssais;
+
     private UUID subscriptionID;
+
     private UUID correlationID;
+
+    @Getter @Setter
     private Integer refCount;
 
-
-    public Integer getID() {
-        return ID;
-    }
-
-    public void setID(Integer ID) {
-        this.ID = ID;
-    }
-
-    public String getSnssais() {
-        return snssais;
-    }
-
-    public void setSnssais(String snssais) {
-        this.snssais = snssais;
-    }
 
     public String getSubscriptionID() {
         return String.valueOf(subscriptionID);
@@ -43,11 +37,4 @@ public class QosSustainabilitySubscriptionTable {
         this.correlationID = UUID.fromString(correlationID);
     }
 
-    public Integer getRefCount() {
-        return refCount;
-    }
-
-    public void setRefCount(Integer refCount) {
-        this.refCount = refCount;
-    }
 }

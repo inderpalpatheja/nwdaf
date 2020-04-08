@@ -6,18 +6,11 @@ import lombok.Setter;
 
 
 @AllArgsConstructor
+@Getter @Setter
 public class AnalyticsRawData {
 
-    @Getter @Setter
     String eventID;
-
-    @Getter @Setter
     String snssais;
-
-    @Getter @Setter
     String anySlice;
-
-    @Getter @Setter
     String supi;
-
 }

@@ -1,23 +1,26 @@
 package com.nwdaf.Analytics.Model.TableType.QosSustainability;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.UUID;
 
 public class QosSustainabilitySubscriptionData {
 
+    @Getter @Setter
     private Integer ID;
+
     private UUID subscriptionID;
+
+    @Getter @Setter
     private String snssais;
+
+    @Getter @Setter
     private Integer ranUeThroughputThreshold;
+
+    @Getter @Setter
     private Integer qosFlowRetainThreshold;
 
-
-    public Integer getID() {
-        return ID;
-    }
-
-    public void setID(Integer ID) {
-        this.ID = ID;
-    }
 
     public String getSubscriptionID() {
         return String.valueOf(subscriptionID);
@@ -27,27 +30,4 @@ public class QosSustainabilitySubscriptionData {
         this.subscriptionID = UUID.fromString(subscriptionID);
     }
 
-    public String getSnssais() {
-        return snssais;
-    }
-
-    public void setSnssais(String snssais) {
-        this.snssais = snssais;
-    }
-
-    public Integer getRanUeThroughputThreshold() {
-        return ranUeThroughputThreshold;
-    }
-
-    public void setRanUeThroughputThreshold(Integer ranUeThroughputThreshold) {
-        this.ranUeThroughputThreshold = ranUeThroughputThreshold;
-    }
-
-    public Integer getQosFlowRetainThreshold() {
-        return qosFlowRetainThreshold;
-    }
-
-    public void setQosFlowRetainThreshold(Integer qosFlowRetainThreshold) {
-        this.qosFlowRetainThreshold = qosFlowRetainThreshold;
-    }
 }

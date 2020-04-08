@@ -2,6 +2,7 @@ package com.nwdaf.Analytics.Controller;
 
 
 import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
@@ -9,6 +10,7 @@ import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
 import io.swagger.annotations.ApiOperation;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +38,17 @@ public class Nnwdaf_Controller {
     final String EVENT_SUB = "/nnwdaf-eventssubscription/v1";
     final String ANALYTICS ="/nnwdaf-analyticsinfo/v1/analytics";
 
+    public static Counters EventCounters[] = new Counters[EventID.values().length];
+
 
     @Autowired
     public Nnwdaf_Controller(Nnwdaf_Service nwdaf_service) {
 
         logger.debug("Entered Nnwdaf_controller()");
         //logger.info("Thread started");
+
+        for(int i = 0; i < EventCounters.length; i++)
+        { EventCounters[i] = new Counters(); }
 
         this.nwdaf_service = nwdaf_service;
 
@@ -76,20 +83,6 @@ public class Nnwdaf_Controller {
         return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(eventID, snssais, anySlice, supi));
     }
 
-
-
-    // For UE_MOBILITY only
-   /* @GetMapping(ANALYTICS)
-    @ApiOperation(value = "Get Analytics Details By supi or anySlice Details",
-            notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
-            response = Object.class)
-    public Object nwdaf_analyticsForUEMobility(@RequestParam("supi") String supi,
-                                               @RequestParam("eventID") String eventID) throws IOException, JSONException {
-
-
-        return nwdaf_service.nwdaf_analyticsUEmobility(new AnalyticsRawData(eventID, supi));
-
-    } */
 
 
 
@@ -226,11 +219,11 @@ public class Nnwdaf_Controller {
      * @return
      * @throws Exception
      */
-    @GetMapping("/nwdaf/counter")
+    @GetMapping("/counters")
     @ApiOperation(value = OperationInfo.COUNTERS_INFO, notes = OperationInfo.COUNTERS_NOTES, response = Object.class)
-    public HashMap<String, BigInteger> nwdaf_counters() throws Exception {
+    public Object nwdaf_counters(@RequestParam(value = "eventID", required = false) Integer eventID) {
 
-        return nwdaf_service.nwdaf_counters();
+        return nwdaf_service.nwdaf_counters(eventID);
     }
 
 
@@ -240,7 +233,7 @@ public class Nnwdaf_Controller {
      * @return String
      * @desc this function will reset all the counters
      */
-    @PostMapping("/nwdaf/counter")
+    @PostMapping("/counters/reset")
     @ApiOperation(value = OperationInfo.COUNTERS_ZERO_INFO, notes = OperationInfo.COUNTERS_ZERO_NOTES, response = Object.class)
     public String nwdaf_reset_counter() {
 
