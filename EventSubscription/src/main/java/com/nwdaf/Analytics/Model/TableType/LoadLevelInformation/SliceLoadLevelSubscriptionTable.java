@@ -1,43 +1,25 @@
 package com.nwdaf.Analytics.Model.TableType.LoadLevelInformation;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.UUID;
 
 public class SliceLoadLevelSubscriptionTable {
 
-
+    @Getter @Setter
     private Integer ID;
+
+    @Getter @Setter
     private String snssais;
+
     private UUID subscriptionID;
+
     private UUID correlationID;
-    private Integer referenceCount;
 
-    public Integer getReferenceCount() {
-        return referenceCount;
-    }
+    @Getter @Setter
+    private Integer refCount;
 
-    public void setReferenceCount(Integer refrenceCount) {
-        this.referenceCount = refrenceCount;
-    }
-
-    public SliceLoadLevelSubscriptionTable() {
-    }
-
-
-    public Integer getID() {
-        return ID;
-    }
-
-    public void setID(Integer ID) {
-        this.ID = ID;
-    }
-
-    public String getSnssais() {
-        return snssais;
-    }
-
-    public void setSnssais(String snssais) {
-        this.snssais = snssais;
-    }
 
     public String getSubscriptionID() {
         return String.valueOf(subscriptionID);

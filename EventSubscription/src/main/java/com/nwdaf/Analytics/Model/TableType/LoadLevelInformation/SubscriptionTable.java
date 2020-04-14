@@ -3,20 +3,24 @@ package com.nwdaf.Analytics.Model.TableType.LoadLevelInformation;
 import java.util.UUID;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.CustomData.NotificationMethod;
+import lombok.Getter;
+import lombok.Setter;
 
 
 public class SubscriptionTable {
 
 
     private UUID subscriptionID;
+
     private EventID eventID;
+
+    @Getter @Setter
     private String notificationURI;
+
     private NotificationMethod notifMethod;
+
+    @Getter @Setter
     private Integer repetitionPeriod;
-
-
-    public SubscriptionTable() {
-    }
 
 
     public String getSubscriptionID() {
@@ -35,14 +39,6 @@ public class SubscriptionTable {
         this.eventID = (ID != null) ? EventID.values()[ID] : null;
     }
 
-    public String getNotificationURI() {
-        return notificationURI;
-    }
-
-    public void setNotificationURI(String notificationURI) {
-        this.notificationURI = notificationURI;
-    }
-
     public Integer getNotifMethod() {
         return notifMethod != null ? notifMethod.ordinal() : null;
     }
@@ -51,19 +47,4 @@ public class SubscriptionTable {
         this.notifMethod = (method_no != null) ? notifMethod.values()[method_no] : null;
     }
 
-    public Integer getRepetitionPeriod() {
-        return repetitionPeriod;
-    }
-
-    public void setRepetitionPeriod(Integer repetitionPeriod) {
-        this.repetitionPeriod = repetitionPeriod;
-    }
-
-    public SubscriptionTable(UUID subscriptionID, EventID eventID, String notificationURI, NotificationMethod notifMethod, Integer repetitionPeriod) {
-        this.subscriptionID = subscriptionID;
-        this.eventID = eventID;
-        this.notificationURI = notificationURI;
-        this.notifMethod = notifMethod;
-        this.repetitionPeriod = repetitionPeriod;
-    }
 }

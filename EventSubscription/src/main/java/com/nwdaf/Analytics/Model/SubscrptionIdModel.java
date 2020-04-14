@@ -1,22 +1,11 @@
 package com.nwdaf.Analytics.Model;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class SubscrptionIdModel {
 
     private String subsctiptionId;
     //private Even
-
-    public SubscrptionIdModel() {
-    }
-
-    public String getSubsctiptionId() {
-        return subsctiptionId;
-    }
-
-    public void setSubsctiptionId(String subsctiptionId) {
-        this.subsctiptionId = subsctiptionId;
-    }
-
-    public SubscrptionIdModel(String subsctiptionId) {
-        this.subsctiptionId = subsctiptionId;
-    }
 }

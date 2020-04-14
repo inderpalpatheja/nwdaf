@@ -8,7 +8,6 @@ import com.nwdaf.Analytics.Model.AMFModel.AMFModel;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.CustomData.QosSustainabilityData.QosSustainabilityInfo;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
-import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.Nnrf.Nnrf_Model;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.NotificationData;
@@ -41,6 +40,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import static com.nwdaf.Analytics.Controller.Nnwdaf_Controller.EventCounters;
 import static java.lang.System.out;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 
@@ -137,7 +137,6 @@ public class BusinessLogic extends ResourceValues {
 
                 // if Data found returning JSON
                 //return snssaisDataList;
-                Counters.incrementAnalyticsNotifications();
                 return new ResponseEntity(snssaisDataList, HttpStatus.OK);
             }
 
@@ -217,11 +216,13 @@ public class BusinessLogic extends ResourceValues {
                     con.disconnect();
                 }
 
+                EventCounters[nnwdafEventsSubscription.getEventID()].incrementSubscriptionsSent();
+
             } catch (Exception ex) {
                 return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(), HttpStatus.NOT_FOUND);
             }
 
-            Counters.incrementCollectorSubscriptions();
+
 
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
             return correlationID;
@@ -319,8 +320,6 @@ public class BusinessLogic extends ResourceValues {
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            // incrementing Counter
-            Counters.incrementCollectorSubscriptions();
 
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     con.getInputStream()));
@@ -511,7 +510,7 @@ public class BusinessLogic extends ResourceValues {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        Counters.incrementSubscriptionNotifications();
+
 
 
         // URL url = null;
@@ -639,6 +638,8 @@ public class BusinessLogic extends ResourceValues {
             con.disconnect();
         }
 
+
+        EventCounters[eventID.ordinal()].incrementSubscriptionNotificationsSent();
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
 
     }
@@ -1248,19 +1249,19 @@ public class BusinessLogic extends ResourceValues {
             plmnObject.put("MCC", MCC);
 
             JSONObject EcqiObject = new JSONObject();
-            EcqiObject.put("plmn", plmnObject);
-            EcqiObject.put("cellID", cellIDValue);
+            EcqiObject.put("plmnId", plmnObject);
+            EcqiObject.put("EutraCellId", cellIDValue);
 
 
             JSONObject taiObject = new JSONObject();
-            taiObject.put("plmn", plmnObject);
+            taiObject.put("plmnId", plmnObject);
             taiObject.put("Tac", tacValue);
 
 
             JSONObject userLocation = new JSONObject();
             userLocation.put("timeDuration", timeDuration);
             userLocation.put("Tai", taiObject);
-            userLocation.put("Ecqi", EcqiObject);
+            userLocation.put("Ecgi", EcqiObject);
 
 
             locationInfoObject.put(key, userLocation);
@@ -1271,7 +1272,7 @@ public class BusinessLogic extends ResourceValues {
 
         ueTrajectoryObject.put("ts", "Date-time-value");
         ueTrajectoryObject.put("recurringTime", "recurringTime-value");
-        ueTrajectoryObject.put("duration", 30);
+        //ueTrajectoryObject.put("duration", 30);
         ueMobilityObject.put("supi", supi);
         ueTrajectoryObject.put("locInfo", locationInfoArray);
 
@@ -1320,7 +1321,7 @@ public class BusinessLogic extends ResourceValues {
      /*   final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);*/
 
-        Counters.incrementSubscriptionNotifications();
+
 
 
         // out.println("eventID - " + eventID);
@@ -1504,6 +1505,8 @@ public class BusinessLogic extends ResourceValues {
         // jsonArrayFinalNotification.remove(0);
 
         // logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+
+        EventCounters[EventID.UE_MOBILITY.ordinal()].incrementSubscriptionNotificationsSent();
     }
 
 
@@ -1671,8 +1674,8 @@ public class BusinessLogic extends ResourceValues {
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            // incrementing Counter
-            Counters.incrementCollectorSubscriptions();
+
+
 
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     con.getInputStream()));
@@ -1723,7 +1726,7 @@ public class BusinessLogic extends ResourceValues {
 
         if (responseCode == HttpURLConnection.HTTP_OK) { //success
             // incrementing Counter
-            Counters.incrementCollectorSubscriptions();
+            //Counters.incrementCollectorSubscriptions();
 
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     con.getInputStream()));
