@@ -1,5 +1,6 @@
 package com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator;
 
+import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Validator.ErrorMessage;
@@ -43,7 +44,12 @@ public class QosSustainabilityValidator {
     public static boolean checkForSnssais(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getSnssais() == null)
-        { rawData.setSnssais(ErrorMessage.IS_NULL); }
+        {
+            rawData.setSnssais(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullSnssais();
+        }
 
         else if(!(rawData.getSnssais() instanceof String))
         { rawData.setSnssais(ErrorMessage.NOT_STRING); }
@@ -59,7 +65,12 @@ public class QosSustainabilityValidator {
     public static boolean checkFor5Qi(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.get_5Qi() == null)
-        { rawData.set_5Qi(ErrorMessage.IS_NULL); }
+        {
+            rawData.set_5Qi(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNull_5Qi();
+        }
 
         else if(!(rawData.get_5Qi() instanceof Integer))
         { rawData.set_5Qi(ErrorMessage.NOT_INTEGER); }
@@ -69,7 +80,12 @@ public class QosSustainabilityValidator {
             Integer _5Qi = (Integer)rawData.get_5Qi();
 
             if(_5Qi < 0 || _5Qi > 255)
-            { rawData.set_5Qi(ErrorMessage.INVALID_5QI); }
+            {
+                rawData.set_5Qi(ErrorMessage.INVALID_5QI);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalid_5Qi();
+            }
 
             else
             { subscription.set_5Qi(_5Qi); }
@@ -83,7 +99,12 @@ public class QosSustainabilityValidator {
     public static boolean checkForMcc(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getMcc() == null)
-        { rawData.setMcc(ErrorMessage.IS_NULL); }
+        {
+            rawData.setMcc(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullMcc();
+        }
 
         else if(!(rawData.getMcc() instanceof String))
         { rawData.setMcc(ErrorMessage.NOT_STRING); }
@@ -96,7 +117,12 @@ public class QosSustainabilityValidator {
             { subscription.setMcc(mcc); }
 
             else
-            { rawData.setMcc(ErrorMessage.INVALID_MCC); }
+            {
+                rawData.setMcc(ErrorMessage.INVALID_MCC);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidMcc();
+            }
         }
 
         return subscription.getMcc() != null;
@@ -106,7 +132,12 @@ public class QosSustainabilityValidator {
     public static boolean checkForMnc(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getMnc() == null)
-        { rawData.setMnc(ErrorMessage.IS_NULL); }
+        {
+            rawData.setMnc(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullMnc();
+        }
 
         else if(!(rawData.getMnc() instanceof String))
         { rawData.setMnc(ErrorMessage.NOT_STRING); }
@@ -119,7 +150,12 @@ public class QosSustainabilityValidator {
             { subscription.setMnc(mnc); }
 
             else
-            { rawData.setMnc(ErrorMessage.INVALID_MNC); }
+            {
+                rawData.setMnc(ErrorMessage.INVALID_MNC);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidMnc();
+            }
         }
 
         return subscription.getMnc() != null;
@@ -129,7 +165,12 @@ public class QosSustainabilityValidator {
     public static boolean checkForTac(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getTac() == null)
-        { rawData.setTac(ErrorMessage.IS_NULL); }
+        {
+            rawData.setTac(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullTac();
+        }
 
         else if(!(rawData.getTac() instanceof String))
         { rawData.setTac(ErrorMessage.NOT_STRING); }
@@ -155,7 +196,12 @@ public class QosSustainabilityValidator {
             Integer ranUeThroughputThreshold = (Integer)rawData.getRanUeThroughputThreshold();
 
             if(ranUeThroughputThreshold < 0)
-            { rawData.setRanUeThroughputThreshold(ErrorMessage.LESS_THAN_ZERO); }
+            {
+                rawData.setRanUeThroughputThreshold(ErrorMessage.LESS_THAN_ZERO);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidRanUeThroughputThreshold();
+            }
 
             else
             { subscription.setRanUeThroughputThreshold(ranUeThroughputThreshold); }
@@ -178,7 +224,12 @@ public class QosSustainabilityValidator {
             Integer qosFlowRetainThreshold = (Integer)rawData.getQosFlowRetainThreshold();
 
             if(qosFlowRetainThreshold < 0)
-            { rawData.setQosFlowRetainThreshold(ErrorMessage.LESS_THAN_ZERO); }
+            {
+                rawData.setQosFlowRetainThreshold(ErrorMessage.LESS_THAN_ZERO);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidQosFlowRetainThreshold();
+            }
 
             else
             { subscription.setQosFlowRetainThreshold(qosFlowRetainThreshold); }

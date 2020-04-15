@@ -24,6 +24,7 @@ public class QosSustainabilityInformationMapper implements RowMapper {
 
         QosSustainabilityInformation qosSustainabilityInformation = new QosSustainabilityInformation();
 
+        qosSustainabilityInformation.setPlmnID(resultSet.getString("plmnID"));
         qosSustainabilityInformation.setSnssais(resultSet.getString("snssais"));
 
         if(loadVal == 1 || loadVal == 0)

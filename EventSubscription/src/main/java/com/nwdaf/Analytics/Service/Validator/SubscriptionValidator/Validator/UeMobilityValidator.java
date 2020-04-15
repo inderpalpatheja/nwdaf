@@ -1,6 +1,7 @@
 package com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator;
 
 import com.nwdaf.Analytics.Model.CustomData.NotificationMethod;
+import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Validator.ErrorMessage;
@@ -62,7 +63,12 @@ public class UeMobilityValidator {
             { subscription.setNotifMethod(notifMethod); }
 
             else
-            { rawData.setNotifMethod(ErrorMessage.INVALID_NOTIFICATION_METHOD); }
+            {
+                rawData.setNotifMethod(ErrorMessage.INVALID_NOTIFICATION_METHOD);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidNotifMethod();
+            }
         }
 
         return subscription.getNotifMethod() != null;
@@ -83,7 +89,12 @@ public class UeMobilityValidator {
             Integer repetitionPeriod = (Integer)rawData.getRepetitionPeriod();
 
             if(repetitionPeriod < 0)
-            { rawData.setRepetitionPeriod(ErrorMessage.LESS_THAN_ZERO); }
+            {
+                rawData.setRepetitionPeriod(ErrorMessage.LESS_THAN_ZERO);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidRepetitonPeriod();
+            }
 
             else
             { subscription.setRepetitionPeriod(repetitionPeriod); }
@@ -107,7 +118,12 @@ public class UeMobilityValidator {
             Integer loadLevelThreshold = (Integer)rawData.getLoadLevelThreshold();
 
             if(loadLevelThreshold < 0)
-            { rawData.setLoadLevelThreshold(ErrorMessage.LESS_THAN_ZERO); }
+            {
+                rawData.setLoadLevelThreshold(ErrorMessage.LESS_THAN_ZERO);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidLoadLevelThreshold();
+            }
 
             else
             { subscription.setLoadLevelThreshold(loadLevelThreshold); }
@@ -120,7 +136,12 @@ public class UeMobilityValidator {
     public static boolean checkForSupi(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getSupi() == null)
-        { rawData.setSupi(ErrorMessage.IS_NULL); }
+        {
+            rawData.setSupi(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullSupi();
+        }
 
         else if(!(rawData.getSupi() instanceof String))
         { rawData.setSupi(ErrorMessage.NOT_STRING); }

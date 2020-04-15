@@ -4,6 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigInteger;
+import java.util.HashMap;
+
+import static com.nwdaf.Analytics.Controller.Nnwdaf_Controller.EventCounter;
 
 @Getter @Setter
 public class Counters {
@@ -48,6 +51,7 @@ public class Counters {
 
         analyticsRequest = BigInteger.ZERO;
         analyticsResponse = BigInteger.ZERO;
+
     }
 
 
@@ -99,6 +103,7 @@ public class Counters {
 
 
 
+
     /****************************************************************************************************************/
 
 
@@ -122,5 +127,35 @@ public class Counters {
         analyticsRequest = BigInteger.ZERO;
         analyticsResponse = BigInteger.ZERO;
     }
+
+
+
+
+
+    public HashMap<Object, Object> getCountersData()
+    {
+        HashMap<Object, Object> counterStats = new HashMap<>();
+
+        counterStats.put("Subscriptions_Received", subscriptions_received);
+        counterStats.put("Subscriptions_Response", subscriptions_response);
+
+        counterStats.put("Un-Subscriptions_Received", unSubscriptions_received);
+        counterStats.put("Un-Subscriptions_Response", unSubscriptions_response);
+
+        counterStats.put("SubscriptionUpdates_Received", subscriptionUpdates_received);
+        counterStats.put("SubscriptionUpdates_Response", subscriptionUpdates_response);
+
+        counterStats.put("SubscriptionNotifications_Sent", subscriptionNotifications_sent);
+
+        counterStats.put("Subscriptions_Sent", subscriptions_sent);
+        counterStats.put("Un-Subscriptions_Sent", unSubscriptions_sent);
+        counterStats.put("SubscriptionNotifications_Received", subscriptionNotifications_received);
+
+        counterStats.put("Analytics_Request", analyticsRequest);
+        counterStats.put("Analytics_Response", analyticsResponse);
+
+        return counterStats;
+    }
+
 
 }

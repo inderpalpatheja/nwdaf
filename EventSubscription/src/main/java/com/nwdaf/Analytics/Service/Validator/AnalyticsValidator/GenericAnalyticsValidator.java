@@ -1,5 +1,6 @@
 package com.nwdaf.Analytics.Service.Validator.AnalyticsValidator;
 
+import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Service.Validator.ErrorMessage;
@@ -12,7 +13,12 @@ public abstract class GenericAnalyticsValidator {
     public static boolean checkForSnssais(AnalyticsRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getSnssais() == null || rawData.getSnssais().isEmpty())
-        { rawData.setSnssais(ErrorMessage.IS_NULL); }
+        {
+            rawData.setSnssais(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullSnssais();
+        }
 
         else
         { subscription.setSnssais(rawData.getSnssais()); }

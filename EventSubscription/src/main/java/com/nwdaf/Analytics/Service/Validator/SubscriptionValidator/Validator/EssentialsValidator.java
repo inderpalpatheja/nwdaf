@@ -1,6 +1,7 @@
 package com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator;
 
 import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Validator.ErrorMessage;
@@ -12,7 +13,7 @@ public class EssentialsValidator {
     public static Object check(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
         boolean hasEventID = checkForEventID(rawData, subscription);
-        boolean hasNotificationURI = checkForNotificationMethod(rawData, subscription);
+        boolean hasNotificationURI = checkForNotificationURI(rawData, subscription);
 
         return (hasEventID && hasNotificationURI) ? subscription : new EssentialsError(rawData);
     }
@@ -24,7 +25,12 @@ public class EssentialsValidator {
     {
 
         if(rawData.getEventID() == null)
-        { rawData.setEventID(ErrorMessage.IS_NULL); }
+        {
+            rawData.setEventID(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullEventID();
+        }
 
         else if(!(rawData.getEventID() instanceof Integer))
         { rawData.setEventID(ErrorMessage.NOT_INTEGER); }
@@ -34,7 +40,12 @@ public class EssentialsValidator {
             Integer eventID = (Integer)rawData.getEventID();
 
             if(eventID < 0 || eventID >= EventID.values().length)
-            { rawData.setEventID(ErrorMessage.INVALID_EVENT_ID); }
+            {
+                rawData.setEventID(ErrorMessage.INVALID_EVENT_ID);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidEventID();
+            }
 
             else
             { subscription.setEventID(eventID); }
@@ -46,11 +57,16 @@ public class EssentialsValidator {
 
 
     // Validates NotificationURI
-    public static boolean checkForNotificationMethod(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
+    public static boolean checkForNotificationURI(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
 
         if(rawData.getNotificationURI() == null)
-        { rawData.setNotificationURI(ErrorMessage.IS_NULL); }
+        {
+            rawData.setNotificationURI(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullNotificationURI();
+        }
 
         else if(!(rawData.getNotificationURI() instanceof String))
         { rawData.setNotificationURI(ErrorMessage.NOT_STRING); }

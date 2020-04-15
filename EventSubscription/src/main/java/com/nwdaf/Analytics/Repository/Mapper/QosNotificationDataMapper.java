@@ -18,10 +18,10 @@ public class QosNotificationDataMapper implements RowMapper {
     public Object mapRow(ResultSet resultSet, int i) throws SQLException {
 
         if(qosType == QosType.RAN_UE_THROUGHPUT)
-        { return new QosNotificationData(resultSet.getString("subscriptionID"), resultSet.getInt("ranUeThroughputThreshold"), QosType.RAN_UE_THROUGHPUT); }
+        { return new QosNotificationData(resultSet.getString("subscriptionID"), resultSet.getString("tac"),resultSet.getInt("ranUeThroughputThreshold"), QosType.RAN_UE_THROUGHPUT); }
 
         else if(qosType == QosType.QOS_FLOW_RETAIN)
-        { return new QosNotificationData(resultSet.getString("subscriptionID"), resultSet.getInt("qosFlowRetainThreshold"), QosType.QOS_FLOW_RETAIN); }
+        { return new QosNotificationData(resultSet.getString("subscriptionID"), resultSet.getString("tac") ,resultSet.getInt("qosFlowRetainThreshold"), QosType.QOS_FLOW_RETAIN); }
 
         return null;
     }

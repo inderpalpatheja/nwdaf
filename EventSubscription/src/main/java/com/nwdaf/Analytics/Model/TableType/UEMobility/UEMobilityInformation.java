@@ -11,19 +11,17 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter @Setter
-public class UEMobility {
+public class UEMobilityInformation {
 
 
     String supi;
     Date ts;
     Integer DurationSec;
-    String locationInfo;
 
 
-    public UEMobility(String supi, Integer DurationSec, String locationInfo)
+    public UEMobilityInformation(String supi, Integer DurationSec)
     {
         this.supi = supi;
         this.DurationSec = DurationSec;
-        this.locationInfo = locationInfo;
     }
 }

@@ -1,9 +1,4 @@
 package com.nwdaf.Analytics.Repository.Mapper.UEMobilityMapper;
-/*
- * @created 20/03/2020 - 2:17 PM
- * @project Analytics
- * @author  sheetalkumar
- */
 
 
 
