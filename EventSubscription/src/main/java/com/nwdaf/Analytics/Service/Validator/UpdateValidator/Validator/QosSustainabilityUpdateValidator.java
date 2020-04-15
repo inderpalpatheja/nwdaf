@@ -1,6 +1,7 @@
 package com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator;
 
 import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Service.Validator.ErrorMessage;
@@ -77,7 +78,12 @@ public class QosSustainabilityUpdateValidator {
             Integer qosFlowRetainThreshold = (Integer)rawData.getQosFlowRetainThreshold();
 
             if(qosFlowRetainThreshold < 0)
-            { rawData.setQosFlowRetainThreshold(ErrorMessage.LESS_THAN_ZERO); }
+            {
+                rawData.setQosFlowRetainThreshold(ErrorMessage.LESS_THAN_ZERO);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidQosFlowRetainThreshold();
+            }
 
             else
             { subscription.setQosFlowRetainThreshold(qosFlowRetainThreshold); }

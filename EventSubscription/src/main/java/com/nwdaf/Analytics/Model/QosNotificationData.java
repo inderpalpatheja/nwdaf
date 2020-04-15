@@ -16,15 +16,19 @@ public class QosNotificationData {
     @Getter @Setter
     Integer qosFlowRetainThreshold;
 
-    public QosNotificationData(String subscriptionID, Integer threshold, QosType qosType)
+    @Getter @Setter
+    String tac;
+
+    public QosNotificationData(String subscriptionID, String tac, Integer threshold, QosType qosType)
     {
-        setSubscriptionID(subscriptionID);
+        this.setSubscriptionID(subscriptionID);
+        this.setTac(tac);
 
         if(qosType == QosType.RAN_UE_THROUGHPUT)
-        { setRanUeThroughputThreshold(threshold); }
+        { this.setRanUeThroughputThreshold(threshold); }
 
         else if(qosType == QosType.QOS_FLOW_RETAIN)
-        { setQosFlowRetainThreshold(threshold); }
+        { this.setQosFlowRetainThreshold(threshold); }
     }
 
     public String getSubscriptionID() {

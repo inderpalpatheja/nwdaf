@@ -3,13 +3,14 @@ package com.nwdaf.Analytics.Service;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Model.APIBuildInformation;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
-import com.nwdaf.Analytics.Model.CustomData.NotificationMethod;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
+import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.NnwdafEventsSubscriptionUEmobility;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionModel;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
@@ -30,7 +31,7 @@ import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.Sli
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.UeMobilityValidator;
 import com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator.QosSustainabilityUpdateValidator;
 import com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator.SliceLoadLevelUpdateValidator;
-import lombok.*;
+import org.apache.maven.wagon.ConnectionException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,10 +51,10 @@ import springfox.documentation.spring.web.plugins.Docket;
 
 import java.io.*;
 import java.net.*;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.*;
 
-import static com.nwdaf.Analytics.Controller.Nnwdaf_Controller.EventCounters;
+
+import static com.nwdaf.Analytics.Controller.Nnwdaf_Controller.EventCounter;
 import static org.springframework.http.HttpHeaders.USER_AGENT;
 
 
@@ -69,46 +70,38 @@ public class Nnwdaf_Service extends BusinessLogic {
     BuildProperties buildProperties;
 
 
-    @RequiredArgsConstructor
-    public class TimedNotification extends Thread {
+/*
+    @AllArgsConstructor
+    public class TimedNotification extends TimerTask {
 
-        @NonNull
         private String subscriptionID;
-
-        @NonNull
-        private Integer repetitionPeriod;
-
-        @NonNull
         private EventID eventID;
-
-        @Getter @Setter
-        private boolean continueNotify = true;
 
         @Override
         public void run() {
 
             try
             {
-                while(continueNotify && repository.subscriptionExists(subscriptionID) != null)
-                {
-                    Thread.sleep(repetitionPeriod * 1000);
+                String notificationURI = repository.getNotificationURI(subscriptionID);
+                String snssais = repository.getSnssais_SliceLoadLevel(subscriptionID);
 
-                    String notificationURI = repository.getNotificationURI(subscriptionID);
-                    String snssais = repository.getSnssais(subscriptionID, eventID);
+                if(eventID == EventID.LOAD_LEVEL_INFORMATION)
+                { send_notificaiton_to_NF(notificationURI, EventID.LOAD_LEVEL_INFORMATION, snssais, repository.getCurrentLoadLevel(snssais), subscriptionID, null); }
+            }
 
-                    if(eventID == EventID.LOAD_LEVEL_INFORMATION)
-                    { send_notificaiton_to_NF(notificationURI, EventID.LOAD_LEVEL_INFORMATION, snssais, repository.getCurrentLoadLevel(snssais), subscriptionID, null); }
-                }
+            catch(IOException e)
+            { e.printStackTrace(); }
 
-            } catch(Exception e)
+            catch(JSONException e)
             { e.printStackTrace(); }
         }
-    }
+    } */
 
 
 
 
 
+    private HashMap<String, Timer> timedNotify_subscriptions = new HashMap<>();
 
     private static final Logger logger = LoggerFactory.getLogger(Nnwdaf_Service.class);
     List<UUID> subIDs;
@@ -117,197 +110,243 @@ public class Nnwdaf_Service extends BusinessLogic {
     /************************************************************************************************************************/
 
 
-    public Object nwdaf_analytics(AnalyticsRawData rawData) throws IOException, JSONException {
+    public Object nwdaf_analytics(AnalyticsRawData rawData)  {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
-        Object validate;
-
-
-        // Validate EventID
-        if((validate = EventValidator.check(rawData, nnwdafEventsSubscription)) instanceof EventError)
-        { return new ResponseEntity<EventError>((EventError)validate, HttpStatus.NOT_ACCEPTABLE); }
-
-        nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
-
-
-        int eventID = nnwdafEventsSubscription.getEventID();
-        EventCounters[eventID].incrementAnalyticsRequest();
-
-
-        // Validate other attributes for specific EventID
-        if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+        try
         {
-            if((validate = SliceLoadLevelAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof AnalyticsError)
-            { return new ResponseEntity<AnalyticsError>((AnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+            NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
+            Object validate;
+
+
+            // Validate EventID
+            if((validate = EventValidator.check(rawData, nnwdafEventsSubscription)) instanceof EventError)
+            { return new ResponseEntity<EventError>((EventError)validate, HttpStatus.NOT_ACCEPTABLE); }
+
+            nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
+
+
+            int eventID = nnwdafEventsSubscription.getEventID();
+            EventCounter[eventID].incrementAnalyticsRequest();
+
+
+            // Validate other attributes for specific EventID
+            if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+            {
+                if((validate = SliceLoadLevelAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof AnalyticsError)
+                { return new ResponseEntity<AnalyticsError>((AnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+            }
+
+            else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
+            {
+                if((validate = QosSustainabilityAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof AnalyticsError)
+                { return new ResponseEntity<AnalyticsError>((AnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+            }
+
+            else if(eventID == EventID.UE_MOBILITY.ordinal())
+            {
+                if((validate = UeMobilityAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof UeMobilityAnalyticsError)
+                { return new ResponseEntity<UeMobilityAnalyticsError>((UeMobilityAnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+            }
+
+
+            nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
+
+
+            if(eventID == EventID.UE_MOBILITY.ordinal())
+            { return nwdaf_analyticsUEmobility(nnwdafEventsSubscription); }
+
+
+            Object snssaisDataList = check_For_data(nnwdafEventsSubscription, true);
+
+
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+
+            EventCounter[eventID].incrementAnalyticsResponse();
+            return snssaisDataList;
         }
 
-        else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
+
+        catch(IOException e)
         {
-            if((validate = QosSustainabilityAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof AnalyticsError)
-            { return new ResponseEntity<AnalyticsError>((AnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+            ErrorCounters.incrementIOException();
+            e.printStackTrace();
         }
 
-        else if(eventID == EventID.UE_MOBILITY.ordinal())
+        catch(JSONException e)
         {
-            if((validate = UeMobilityAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof UeMobilityAnalyticsError)
-            { return new ResponseEntity<UeMobilityAnalyticsError>((UeMobilityAnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+            ErrorCounters.incrementJsonException();
+            e.printStackTrace();
         }
 
 
-        nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
-
-
-        if(eventID == EventID.UE_MOBILITY.ordinal())
-        { return nwdaf_analyticsUEmobility(nnwdafEventsSubscription); }
-
-
-        Object snssaisDataList = check_For_data(nnwdafEventsSubscription, true);
-
-
-        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
-
-        EventCounters[eventID].incrementAnalyticsResponse();
-        return snssaisDataList;
+        return null;
     }
 
 
 
-    public Object nwdaf_subscription(SubscriptionRawData subscriptionRawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
+    public Object nwdaf_subscription(SubscriptionRawData subscriptionRawData) {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        //Test Simulator Connection
-        if (!testConnection()) {
-            return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(), HttpStatus.NOT_FOUND);
-        }
-
-        NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
-        Object validator;
-
-
-        //Check for essential attributes
-        if((validator = EssentialsValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof EssentialsError)
-        { return new ResponseEntity<EssentialsError>((EssentialsError)validator, HttpStatus.NOT_ACCEPTABLE); }
-
-        nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
-
-
-        int eventID = nnwdafEventsSubscription.getEventID();
-        EventCounters[eventID].incrementSubscriptionsReceived();
-
-
-        //Validate Event specific data
-        if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+        try
         {
-            if((validator = SliceLoadLevelValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof SliceLoadLevelError)
-            { return new ResponseEntity<SliceLoadLevelError>((SliceLoadLevelError)validator, HttpStatus.NOT_ACCEPTABLE); }
-        }
+            //Test Simulator Connection
+            if (!testConnection()) {
+                return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(), HttpStatus.NOT_FOUND);
+            }
 
-        else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
-        {
-            if((validator = QosSustainabilityValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof QosSustainabilityError)
-            { return new ResponseEntity<QosSustainabilityError>((QosSustainabilityError)validator, HttpStatus.NOT_ACCEPTABLE); }
-        }
+            NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
+            Object validator;
 
 
-        else if(eventID == EventID.UE_MOBILITY.ordinal())
-        {
-            if((validator = UeMobilityValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof UeMobilityError)
-            { return new ResponseEntity<UeMobilityError>((UeMobilityError)validator, HttpStatus.NOT_ACCEPTABLE); }
-        }
+            //Check for essential attributes
+            if((validator = EssentialsValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof EssentialsError)
+            { return new ResponseEntity<EssentialsError>((EssentialsError)validator, HttpStatus.NOT_ACCEPTABLE); }
+
+            nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
 
 
-        nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
+            int eventID = nnwdafEventsSubscription.getEventID();
+            EventCounter[eventID].incrementSubscriptionsReceived();
 
 
-        logger.info("consumer is subscribing for an event and providing these details. eventID:  " + nnwdafEventsSubscription.getEventID() + "\n" + " notificationURI:  " + nnwdafEventsSubscription.getNotificationURI() + "\n" +
-                " snssais:  " + nnwdafEventsSubscription.getSnssais() + "\n" + " notifMethod:  " + nnwdafEventsSubscription.getNotifMethod() + "\n" +
-                " repetitionPeriod:  " + nnwdafEventsSubscription.getRepetitionPeriod() + "\n" + " loadLevelThreshold: " + nnwdafEventsSubscription.getLoadLevelThreshold());
+            //Validate Event specific data
+            if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+            {
+                if((validator = SliceLoadLevelValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof SliceLoadLevelError)
+                { return new ResponseEntity<SliceLoadLevelError>((SliceLoadLevelError)validator, HttpStatus.NOT_ACCEPTABLE); }
+            }
 
-        // Random generating SubscriptionID
-        UUID subscriptionID = FrameWorkFunction.getUniqueID();
-
-        // setting subscription ID
-        nnwdafEventsSubscription.setSubscriptionID(String.valueOf(subscriptionID));
-
-
-        if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
-        {
-            // Adding data into NwdafSubscriptionTable   [ Database ]
-            repository.subscribeNF(nnwdafEventsSubscription, EventID.LOAD_LEVEL_INFORMATION);
-
-            // adding values into subscriptionData
-            add_values_into_subscriptionData(subscriptionID, nnwdafEventsSubscription.getSnssais(),
-                    nnwdafEventsSubscription.getLoadLevelThreshold());
+            else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
+            {
+                if((validator = QosSustainabilityValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof QosSustainabilityError)
+                { return new ResponseEntity<QosSustainabilityError>((QosSustainabilityError)validator, HttpStatus.NOT_ACCEPTABLE); }
+            }
 
 
-            // if eventId is set to UEMobility then add values into UEMobility Table;
-            // repository.add_data_into_UE_mobilityTable();
+            else if(eventID == EventID.UE_MOBILITY.ordinal())
+            {
+                if((validator = UeMobilityValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof UeMobilityError)
+                { return new ResponseEntity<UeMobilityError>((UeMobilityError)validator, HttpStatus.NOT_ACCEPTABLE); }
+            }
 
-            // Storing data into loadlevelInformation Table
-            repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
+
+            nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
 
 
-            // JSON payload send by NF to NWDAF
+            logger.info("consumer is subscribing for an event and providing these details. eventID:  " + nnwdafEventsSubscription.getEventID() + "\n" + " notificationURI:  " + nnwdafEventsSubscription.getNotificationURI() + "\n" +
+                    " snssais:  " + nnwdafEventsSubscription.getSnssais() + "\n" + " notifMethod:  " + nnwdafEventsSubscription.getNotifMethod() + "\n" +
+                    " repetitionPeriod:  " + nnwdafEventsSubscription.getRepetitionPeriod() + "\n" + " loadLevelThreshold: " + nnwdafEventsSubscription.getLoadLevelThreshold());
+
+            // Random generating SubscriptionID
+            UUID subscriptionID = FrameWorkFunction.getUniqueID();
+
+            // setting subscription ID
+            nnwdafEventsSubscription.setSubscriptionID(String.valueOf(subscriptionID));
+
+
+            if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+            {
+                // Adding data into NwdafSubscriptionTable   [ Database ]
+                repository.subscribeNF(nnwdafEventsSubscription, EventID.LOAD_LEVEL_INFORMATION);
+
+                // adding values into subscriptionData
+                add_values_into_subscriptionData(subscriptionID, nnwdafEventsSubscription.getSnssais(),
+                        nnwdafEventsSubscription.getLoadLevelThreshold());
+
+
+
+                // Storing data into loadlevelInformation Table
+                repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
+
+
+                // JSON payload send by NF to NWDAF
         /* logger.info("\n" + "SubID : " + nnwdafEventsSubscription.getSubscriptionID() + " NotificationURI : " + nnwdafEventsSubscription.getEventID() +
                 " snssais : " + nnwdafEventsSubscription.getSnssais() + " anySlice : " + nnwdafEventsSubscription.getAnySlice() +
                 " notifMethod : " + nnwdafEventsSubscription.getNotifMethod() + " repetition Method : " + nnwdafEventsSubscription.getRepetitionPeriod() +
                 " LoadLevelThreshold : " + nnwdafEventsSubscription.getLoadLevelThreshold()); */
-            //getAnalytics = false;
-            // function to check snssais data
+                //getAnalytics = false;
+                // function to check snssais data
 
-            Object obj = check_For_data(nnwdafEventsSubscription, false);
+                Object obj = check_For_data(nnwdafEventsSubscription, false);
 
-            if (obj instanceof ResponseEntity) {
-                return obj;
-            }
+                if (obj instanceof ResponseEntity) {
+                    return obj;
+                }
 
-            if(nnwdafEventsSubscription.getNotifMethod() == NotificationMethod.PERIODIC.ordinal())
+           /* if(nnwdafEventsSubscription.getNotifMethod() == NotificationMethod.PERIODIC.ordinal())
             {
-                TimedNotification notify = new TimedNotification(nnwdafEventsSubscription.getSubscriptionID(), nnwdafEventsSubscription.getRepetitionPeriod(), EventID.LOAD_LEVEL_INFORMATION);
-                notify.start();
+                timedNotify_subscriptions.put(nnwdafEventsSubscription.getSubscriptionID(), new Timer(true));
+                timedNotify_subscriptions.get(nnwdafEventsSubscription.getSubscriptionID()).scheduleAtFixedRate(new TimedNotification(nnwdafEventsSubscription.getSubscriptionID(), EventID.LOAD_LEVEL_INFORMATION), nnwdafEventsSubscription.getRepetitionPeriod() * 1000, nnwdafEventsSubscription.getRepetitionPeriod() * 1000);
+            } */
             }
-        }
 
 
-        else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
-        {
-            repository.subscribeNF(nnwdafEventsSubscription, EventID.QOS_SUSTAINABILITY);
+            else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
+            {
+                repository.subscribeNF(nnwdafEventsSubscription, EventID.QOS_SUSTAINABILITY);
 
-            repository.addDataQosSustainability(nnwdafEventsSubscription);
-            repository.addDataQosSustainabilitySubscriptionData(nnwdafEventsSubscription);
-            repository.setNwdafQosSustainabilityInformation(nnwdafEventsSubscription.getSnssais());
+                repository.addDataQosSustainabilitySubscriptionData(nnwdafEventsSubscription);
+                repository.setNwdafQosSustainabilityInformation(nnwdafEventsSubscription.getPlmnID(), nnwdafEventsSubscription.getSnssais());
 
-            Object obj = check_For_data(nnwdafEventsSubscription, false);
+                Object obj = check_For_data(nnwdafEventsSubscription, false);
 
-            if (obj instanceof ResponseEntity) {
-                return obj;
+                if (obj instanceof ResponseEntity) {
+                    return obj;
+                }
             }
+
+
+            else if(eventID == EventID.UE_MOBILITY.ordinal())
+            {
+                repository.subscribeNF(nnwdafEventsSubscription, EventID.UE_MOBILITY);
+                return perform_UEMobility(nnwdafEventsSubscription);
+            }
+
+
+
+
+            logger.info("sending response to NF");
+            // function to send response header to NF
+            HttpHeaders responseHeaders = send_response_header_to_NF(subscriptionID);
+
+
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+
+            EventCounter[eventID].incrementSubscriptionsResponse();
+            return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
         }
 
 
-        else if(eventID == EventID.UE_MOBILITY.ordinal())
+        catch (IOException e)
         {
-            repository.subscribeNF(nnwdafEventsSubscription, EventID.UE_MOBILITY);
-            return perform_UEMobility(nnwdafEventsSubscription);
+            ErrorCounters.incrementIOException();
+            e.printStackTrace();
         }
 
+        catch (JSONException e)
+        {
+            ErrorCounters.incrementJsonException();
+            e.printStackTrace();
+        }
 
+        catch(URISyntaxException e)
+        {
+            ErrorCounters.incrementUriSyntaxException();
+            e.printStackTrace();
+        }
 
+        catch(NullPointerException e)
+        {
+            ErrorCounters.incrementNullPointerException();
+            e.printStackTrace();
+        }
 
-        logger.info("sending response to NF");
-        // function to send response header to NF
-        HttpHeaders responseHeaders = send_response_header_to_NF(subscriptionID);
-
-
-        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
-
-        EventCounters[eventID].incrementSubscriptionsResponse();
-        return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
+        return null;
     }
 
 
@@ -321,68 +360,82 @@ public class Nnwdaf_Service extends BusinessLogic {
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
 
-        logger.info("subscriptionID:  " + subscriptionID + "\n" +
-                "notifMethod:  " + updateData.getNotifMethod() + "\n" +
-                "repetitionPeriod:  " + updateData.getRepetitionPeriod() +
-                "loadLevelThreshold:  " + updateData.getLoadLevelThreshold() + "\n" +
-                "ranUeThroughputThreshold:  " + updateData.getRanUeThroughputThreshold() + "\n" +
-                "qosFlowRetainThreshold:  " + updateData.getQosFlowRetainThreshold() + "\n");
-
-        SubscriptionTable subscription = repository.findById_subscriptionID(subscriptionID);
-
-        if (subscription == null) {
-            logger.warn("no Content");
-            return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
-        }
-
-        NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
-        nnwdafEventsSubscription.setSubscriptionID(subscriptionID);
-
-        Object validator;
-        EventCounters[subscription.getEventID()].incrementSubscriptionUpdatesReceived();
-
-        EventID eventID = EventID.values()[subscription.getEventID()];
-
-
-        if(eventID == EventID.LOAD_LEVEL_INFORMATION)
+        try
         {
-            if(!((validator = SliceLoadLevelUpdateValidator.check(updateData, nnwdafEventsSubscription)) instanceof NnwdafEventsSubscription))
-            { return new ResponseEntity(validator, HttpStatus.NOT_ACCEPTABLE); }
+            logger.info("subscriptionID:  " + subscriptionID + "\n" +
+                    "notifMethod:  " + updateData.getNotifMethod() + "\n" +
+                    "repetitionPeriod:  " + updateData.getRepetitionPeriod() +
+                    "loadLevelThreshold:  " + updateData.getLoadLevelThreshold() + "\n" +
+                    "ranUeThroughputThreshold:  " + updateData.getRanUeThroughputThreshold() + "\n" +
+                    "qosFlowRetainThreshold:  " + updateData.getQosFlowRetainThreshold() + "\n");
 
-            nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
+            SubscriptionTable subscription = repository.findById_subscriptionID(subscriptionID);
 
-            updateForSliceLoadLevelInformation(nnwdafEventsSubscription);
+            if (subscription == null) {
+                logger.warn("no Content");
+
+                ErrorCounters.incrementDataNotFound();
+                return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
+            }
+
+            NnwdafEventsSubscription nnwdafEventsSubscription = new NnwdafEventsSubscription();
+            nnwdafEventsSubscription.setSubscriptionID(subscriptionID);
+
+            Object validator;
+            EventCounter[subscription.getEventID()].incrementSubscriptionUpdatesReceived();
+
+            EventID eventID = EventID.values()[subscription.getEventID()];
+
+
+            if(eventID == EventID.LOAD_LEVEL_INFORMATION)
+            {
+                if(!((validator = SliceLoadLevelUpdateValidator.check(updateData, nnwdafEventsSubscription)) instanceof NnwdafEventsSubscription))
+                { return new ResponseEntity(validator, HttpStatus.NOT_ACCEPTABLE); }
+
+                nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
+
+                updateForSliceLoadLevelInformation(nnwdafEventsSubscription);
+            }
+
+            else if(eventID == EventID.QOS_SUSTAINABILITY)
+            {
+                if(!((validator = QosSustainabilityUpdateValidator.check(updateData, nnwdafEventsSubscription)) instanceof NnwdafEventsSubscription))
+                { return new ResponseEntity(validator, HttpStatus.NOT_ACCEPTABLE); }
+
+                nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
+
+                updateForQosSustainability(nnwdafEventsSubscription);
+            }
+
+
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+
+            EventCounter[subscription.getEventID()].incrementSubscriptionUpdatesResponse();
+            return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.OK);
         }
 
-        else if(eventID == EventID.QOS_SUSTAINABILITY)
+        catch (NullPointerException e)
         {
-            if(!((validator = QosSustainabilityUpdateValidator.check(updateData, nnwdafEventsSubscription)) instanceof NnwdafEventsSubscription))
-            { return new ResponseEntity(validator, HttpStatus.NOT_ACCEPTABLE); }
-
-            nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
-
-            updateForQosSustainability(nnwdafEventsSubscription);
+            ErrorCounters.incrementNullPointerException();
+            e.printStackTrace();
         }
 
-
-        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
-
-        EventCounters[subscription.getEventID()].incrementSubscriptionUpdatesResponse();
-        return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.OK);
+        return null;
     }
 
 
 
 
-    public ResponseEntity<?> unsubscription_nf(String subscriptionID) throws Exception {
+    public ResponseEntity<?> unsubscription_nf(String subscriptionID)  {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-
-        SubscriptionTable subscriber = repository.findById_subscriptionID(subscriptionID);
-        //String snssais = repository.getSnssais_LoadLevelSubscriptionData(subscriptionID);
-        //String unsubId = repository.getUnSubCorrelationID(snssais);
+        try
+        {
+            SubscriptionTable subscriber = repository.findById_subscriptionID(subscriptionID);
+            //String snssais = repository.getSnssais_LoadLevelSubscriptionData(subscriptionID);
+            //String unsubId = repository.getUnSubCorrelationID(snssais);
 
        /* if(repository.getRefCount(snssais) < 1){
             out.println("Call Unsubscribe From NWDAF");
@@ -390,43 +443,77 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         }*/
 
-        if (subscriber == null) {
-            logger.warn("subscriptionID= not found");
-            //  out.println("subscriptionID= not found");
-            return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NOT_FOUND);
-        }
+            if (subscriber == null) {
+                logger.warn("subscriptionID= not found");
 
-        EventCounters[subscriber.getEventID()].incrementUnSubscriptionsReceived();
-
-        if (subscriber.getEventID() == EventID.UE_MOBILITY.ordinal()) {
-            unsubscribeNF_forUEMobility(subscriber);
-        }
-
-        else
-        {
-            String snssais;
-
-            if ((snssais = repository.unsubscribeNF(subscriber)) != null) {
-
-                Integer eventID = subscriber.getEventID();
-
-                unsubscribeFromNWDAF(snssais, eventID);
-
-                if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
-                { repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais); }
-
-                else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
-                { repository.deleteEntry_QosSustainabilitySubscriptionTable(snssais); }
-
-                EventCounters[eventID].incrementUnSubscriptionsSent();
+                ErrorCounters.incrementDataNotFound();
+                return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NOT_FOUND);
             }
+
+            EventCounter[subscriber.getEventID()].incrementUnSubscriptionsReceived();
+
+            int eventID = subscriber.getEventID();
+
+
+            if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
+            {
+                String snssais;
+
+                if((snssais = repository.unsubscribeNF_SliceLoadLevel(subscriber)) != null)
+                {
+                    unsubscribeFromNWDAF(snssais, eventID);
+                    repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais);
+
+                    EventCounter[eventID].incrementUnSubscriptionsSent();
+                }
+            }
+
+
+            else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
+            {
+                QosSustainabilitySubscriptionData qosData;
+
+                if((qosData = repository.unsubscribeNF_QosSustainability(subscriber)) != null)
+                {
+                    unsubscribeFromNWDAF(qosData.getPlmnID(), qosData.getSnssais(), eventID);
+                    repository.deleteEntry_QosSustainabilitySubscriptionTable(qosData.getPlmnID(), qosData.getSnssais());
+
+                    EventCounter[eventID].incrementUnSubscriptionsSent();
+                }
+            }
+
+
+            else if (subscriber.getEventID() == EventID.UE_MOBILITY.ordinal()) {
+                unsubscribeNF_forUEMobility(subscriber);
+            }
+
+
+
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+
+            EventCounter[subscriber.getEventID()].incrementUnSubscriptionsResponse();
+            return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
         }
 
+        catch(JSONException e)
+        {
+            ErrorCounters.incrementJsonException();
+            e.printStackTrace();
+        }
 
-        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+        catch(IOException e)
+        {
+            ErrorCounters.incrementIOException();
+            e.printStackTrace();
+        }
 
-        EventCounters[subscriber.getEventID()].incrementUnSubscriptionsResponse();
-        return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
+        catch(NullPointerException e)
+        {
+            ErrorCounters.incrementNullPointerException();
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
 
@@ -452,24 +539,26 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
 
-    public void notificationHandler(String response, EventID eventID) throws Exception {
+    public void notificationHandler(String response, EventID eventID)  {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        if(eventID == EventID.LOAD_LEVEL_INFORMATION)
+        try
         {
-            // here subID == correlationID
+            if(eventID == EventID.LOAD_LEVEL_INFORMATION)
+            {
+                // here subID == correlationID
 
-            JSONObject json = new JSONObject(response);
+                JSONObject json = new JSONObject(response);
 
-            // String correlationID = json.getString("correlationID");
-            int currentLoadLevel = json.getInt("currentLoadLevel");
-            String correlationID = json.getString("correlationID");
+                // String correlationID = json.getString("correlationID");
+                int currentLoadLevel = json.getInt("currentLoadLevel");
+                String correlationID = json.getString("correlationID");
 
-            //out.println("received from SIMULATOR - " + "currentLoadLevel - " + currentLoadLevel + correlationID);
+                //out.println("received from SIMULATOR - " + "currentLoadLevel - " + currentLoadLevel + correlationID);
 
-            String snssais = repository.getSnssaisByCorrelationID(correlationID, eventID);
+                String snssais = repository.getSnssaisByCorrelationID(correlationID, eventID);
 
         /*
          if(repository.isGetAnalytics(snssais)) {
@@ -477,60 +566,80 @@ public class Nnwdaf_Service extends BusinessLogic {
             repository.setGetAnalytics(snssais, false);
         } */
 
-            if (repository.getRefCount(snssais, eventID) == 0) {
-                repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais);
+                if (repository.getRefCount_SliceLoadLevel(snssais) == 0) {
+                    repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais);
+                }
+
+
+                repository.updateCurrentLoadLevel(currentLoadLevel, snssais);
+                EventCounter[eventID.ordinal()].incrementSubscriptionNotificationsReceived();
+
+                nwdaf_notification_manager();
+
+                //repository.getSnssaisViaSubID(correlationID);
             }
 
 
-            repository.updateCurrentLoadLevel(currentLoadLevel, snssais);
-            EventCounters[eventID.ordinal()].incrementSubscriptionNotificationsReceived();
+            else if(eventID == EventID.QOS_SUSTAINABILITY)
+            {
+                JSONObject json = new JSONObject(response);
 
-            nwdaf_notification_manager();
+                Integer ranUeThroughput = null;
+                Integer qosFlowRetain = null;
 
-            //repository.getSnssaisViaSubID(correlationID);
+                if(json.has("ranUeThroughput"))
+                { ranUeThroughput = json.getInt("ranUeThroughput"); }
+
+                else
+                { qosFlowRetain = json.getInt("qosFlowRetain"); }
+
+                String correlationID = json.getString("correlationID");
+                QosSustainabilitySubscriptionData qosData = repository.getPlmnID_Snssais_ByCorrelationID(correlationID);
+
+
+                if(repository.getRefCount_QosSustainability(qosData.getPlmnID(), qosData.getSnssais()) == 0)
+                { repository.deleteEntry_QosSustainabilitySubscriptionTable(qosData.getPlmnID(), qosData.getSnssais()); }
+
+
+                if(ranUeThroughput != null)
+                {
+                    repository.updateRanUeThroughput(ranUeThroughput, qosData.getPlmnID(), qosData.getSnssais());
+                    EventCounter[eventID.ordinal()].incrementSubscriptionNotificationsReceived();
+
+                    qosNotificationManager(QosType.RAN_UE_THROUGHPUT);
+                }
+
+                else if(qosFlowRetain != null)
+                {
+                    repository.updateQosFlowRetain(qosFlowRetain, qosData.getPlmnID(), qosData.getSnssais());
+                    EventCounter[eventID.ordinal()].incrementSubscriptionNotificationsReceived();
+
+                    qosNotificationManager(QosType.QOS_FLOW_RETAIN);
+                }
+            }
+
+
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         }
 
-
-        else if(eventID == EventID.QOS_SUSTAINABILITY)
+        catch(NullPointerException e)
         {
-            JSONObject json = new JSONObject(response);
-
-            Integer ranUeThroughput = null;
-            Integer qosFlowRetain = null;
-
-            if(json.has("ranUeThroughput"))
-            { ranUeThroughput = json.getInt("ranUeThroughput"); }
-
-            else
-            { qosFlowRetain = json.getInt("qosFlowRetain"); }
-
-            String correlationID = json.getString("correlationID");
-            String snssais = repository.getSnssaisByCorrelationID(correlationID, eventID);
-
-            if(repository.getRefCount(snssais, eventID) == 0)
-            { repository.deleteEntry_QosSustainabilitySubscriptionTable(snssais); }
-
-
-            if(ranUeThroughput != null)
-            {
-                repository.updateRanUeThroughput(ranUeThroughput, snssais);
-                EventCounters[eventID.ordinal()].incrementSubscriptionNotificationsReceived();
-
-                qosNotificationManager(QosType.RAN_UE_THROUGHPUT);
-            }
-
-            else if(qosFlowRetain != null)
-            {
-                repository.updateQosFlowRetain(qosFlowRetain, snssais);
-                EventCounters[eventID.ordinal()].incrementSubscriptionNotificationsReceived();
-
-                qosNotificationManager(QosType.QOS_FLOW_RETAIN);
-            }
+            ErrorCounters.incrementNullPointerException();
+            e.printStackTrace();
         }
 
+        catch (JSONException e)
+        {
+            ErrorCounters.incrementJsonException();
+            e.printStackTrace();
+        }
 
+        catch(IOException e)
+        {
+            ErrorCounters.incrementIOException();
+            e.printStackTrace();
+        }
 
-        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
 
 
@@ -542,6 +651,11 @@ public class Nnwdaf_Service extends BusinessLogic {
         return FrameWorkFunction.getStats(eventID);
     }
 
+
+    public Object nwdaf_error_counters() {
+
+        return FrameWorkFunction.getErrorStats();
+    }
 
 
     public String nwdaf_reset_counter() {
@@ -648,67 +762,84 @@ public class Nnwdaf_Service extends BusinessLogic {
         HttpHeaders responseHeaders = send_response_header_to_NF(UUID.fromString(nnwdafEventsSubscription.getSubscriptionID()));
 
 
-        EventCounters[EventID.UE_MOBILITY.ordinal()].incrementSubscriptionsResponse();
+        EventCounter[EventID.UE_MOBILITY.ordinal()].incrementSubscriptionsResponse();
         return new ResponseEntity<String>("Created", responseHeaders, HttpStatus.CREATED);
 
     }
 
 
-    public void notificationHandlerForUEMobility(String response) throws JSONException, IOException {
+    public void notificationHandlerForUEMobility(String response)  {
 
-        EventCounters[EventID.UE_MOBILITY.ordinal()].incrementSubscriptionNotificationsReceived();
 
-        // System.out.println("In-Notification-Handler-for-UE-Mobility");
-        //JSONArray jsonArray = new JSONArray(response);
-        JSONArray jsonArray = new JSONArray(response);
-        String correlationID = jsonArray.get(0).toString();
-        String cellID;
-        String TacValue;
-        Integer MCC_value;
-        Integer MNC_value;
-        JSONObject plmnObject = new JSONObject();
+        try
+        {
+            EventCounter[EventID.UE_MOBILITY.ordinal()].incrementSubscriptionNotificationsReceived();
 
-        List<String> tai_cellIDs = new ArrayList<String>();
+            // System.out.println("In-Notification-Handler-for-UE-Mobility");
+            //JSONArray jsonArray = new JSONArray(response);
+            JSONArray jsonArray = new JSONArray(response);
+            String correlationID = jsonArray.get(0).toString();
+            String cellID;
+            String TacValue;
+            Integer MCC_value;
+            Integer MNC_value;
+            JSONObject plmnObject = new JSONObject();
 
-        // At 0 position I am sending CorrelationID;
-        for (int i = 1; i < jsonArray.length(); i++) {
-            JSONObject jsonObject = jsonArray.getJSONObject(i);
-            // String correlationID = jsonObject.getString("correlationID");
-            Integer timeDurationValue = jsonObject.getInt("timeDuration");
+            List<String> tai_cellIDs = new ArrayList<String>();
 
-            // System.out.println("TimeDurationValue " + timeDurationValue);
+            // At 0 position I am sending CorrelationID;
+            for (int i = 1; i < jsonArray.length(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                // String correlationID = jsonObject.getString("correlationID");
+                Integer timeDurationValue = jsonObject.getInt("timeDuration");
 
-            JSONObject taiValue = jsonObject.getJSONObject("Tai");
-            JSONObject ecqiValue = jsonObject.getJSONObject("Ecqi");
+                // System.out.println("TimeDurationValue " + timeDurationValue);
 
-            cellID = ecqiValue.getString("cellID");
-            TacValue = taiValue.getString("Tac");
-            plmnObject = taiValue.getJSONObject("plmn");
-            MCC_value = plmnObject.getInt("MCC");
-            MNC_value = plmnObject.getInt("MNC");
-            String TaiValue = MCC_value + "," + MNC_value + ":" + TacValue;
+                JSONObject taiValue = jsonObject.getJSONObject("Tai");
+                JSONObject ecqiValue = jsonObject.getJSONObject("Ecqi");
 
-            // update all the location of supi received in JsonArray;
-            add_value_to_userLocationTable(TaiValue, cellID, timeDurationValue);
+                cellID = ecqiValue.getString("cellID");
+                TacValue = taiValue.getString("Tac");
+                plmnObject = taiValue.getJSONObject("plmn");
+                MCC_value = plmnObject.getInt("MCC");
+                MNC_value = plmnObject.getInt("MNC");
+                String TaiValue = MCC_value + "," + MNC_value + ":" + TacValue;
 
-            tai_cellIDs.add(TaiValue + " " + cellID);
+                // update all the location of supi received in JsonArray;
+                add_value_to_userLocationTable(TaiValue, cellID, timeDurationValue);
+
+                tai_cellIDs.add(TaiValue + " " + cellID);
+            }
+
+            String supi = repository.getSupiValueByCorrelationID(correlationID);
+
+
+            // now time to update UE-MobilityTable;
+            // First Fetch all ID
+            updateLocationIdTable(supi, tai_cellIDs);
+
+            if (repository.getRefCount_UEmobilitySubscriptionTable(supi) == 0) {
+                repository.deleteEntry_UEMobilitySubscriptionTable(supi);
+            }
+
+            // repository.getRefCount_UEmobilitySubscriptionTable()
+            nwdaf_notification_manager_ForUEMobility(supi);
         }
 
-        String supi = repository.getSupiValueByCorrelationID(correlationID);
-
-
-        // now time to update UE-MobilityTable;
-        // First Fetch all ID
-        updateUEMobilityTable(supi, tai_cellIDs);
-
-        if (repository.getRefCount_UEmobilitySubscriptionTable(supi) == 0) {
-            repository.deleteEntry_UEMobilitySubscriptionTable(supi);
+        catch(JSONException e)
+        {
+            ErrorCounters.incrementJsonException();
+            e.printStackTrace();
         }
 
-       // repository.getRefCount_UEmobilitySubscriptionTable()
-        nwdaf_notification_manager_ForUEMobility(supi);
+        catch(IOException e)
+        {
+            ErrorCounters.incrementIOException();
+            e.printStackTrace();
+        }
 
     }
+
 
     /****UEmobility******/
 
@@ -726,7 +857,6 @@ public class Nnwdaf_Service extends BusinessLogic {
             Object supiDataList = check_For_dataUEmobility(nnwdafEventsSubscriptionUE, true);
 
 
-
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
             return supiDataList;
 
@@ -734,13 +864,11 @@ public class Nnwdaf_Service extends BusinessLogic {
 
             return "eventID: eventID for UEmobility must be 5";
         }
-
-
     }
 
 
 
-    private void unsubscribeNF_forUEMobility(SubscriptionTable subscriber) throws Exception {
+    private void unsubscribeNF_forUEMobility(SubscriptionTable subscriber) throws IOException, JSONException {
 
         String supi;
 
@@ -753,13 +881,13 @@ public class Nnwdaf_Service extends BusinessLogic {
 
             repository.deleteEntry_UEMobilitySubscriptionTable(supi);
 
-            EventCounters[eventID].incrementUnSubscriptionsSent();
+            EventCounter[eventID].incrementUnSubscriptionsSent();
         }
     }
 
 
 
-    protected void unsubscribeFromNWDAF_forUEMobility(String supi, Integer eventID) throws Exception {
+    protected void unsubscribeFromNWDAF_forUEMobility(String supi, Integer eventID) throws IOException, JSONException {
 
         // here subscriptionID = unsubCorrealtionID
 

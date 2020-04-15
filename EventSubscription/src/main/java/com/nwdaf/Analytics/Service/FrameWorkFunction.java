@@ -3,13 +3,15 @@ package com.nwdaf.Analytics.Service;
 
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
+import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import static com.nwdaf.Analytics.Controller.Nnwdaf_Controller.EventCounters;
+
+import static com.nwdaf.Analytics.Controller.Nnwdaf_Controller.EventCounter;
 
 
 public class FrameWorkFunction {
@@ -26,43 +28,32 @@ public class FrameWorkFunction {
         { return getAllStats(); }
 
         HashMap<Object, Object> stats = new HashMap<>();
-
         HashMap<Object, Object> eventInfo = new HashMap<>();
-        HashMap<Object, Object> counterStats = new HashMap<>();
 
         eventInfo.put("ID", eventID);
         eventInfo.put("Event", EventID.values()[eventID].toString());
 
-        counterStats.put("Subscriptions_Received", EventCounters[eventID].getSubscriptions_received());
-        counterStats.put("Subscriptions_Response", EventCounters[eventID].getSubscriptions_response());
-
-        counterStats.put("Un-Subscriptions_Received", EventCounters[eventID].getUnSubscriptions_received());
-        counterStats.put("Un-Subscriptions_Response", EventCounters[eventID].getUnSubscriptions_response());
-
-        counterStats.put("SubscriptionUpdates_Received", EventCounters[eventID].getSubscriptionUpdates_received());
-        counterStats.put("SubscriptionUpdates_Response", EventCounters[eventID].getSubscriptionUpdates_response());
-
-        counterStats.put("SubscriptionNotifications_Sent", EventCounters[eventID].getSubscriptionNotifications_sent());
-
-        counterStats.put("Subscriptions_Sent", EventCounters[eventID].getSubscriptions_sent());
-        counterStats.put("Un-Subscriptions_Sent", EventCounters[eventID].getUnSubscriptions_sent());
-        counterStats.put("SubscriptionNotifications_Received", EventCounters[eventID].getSubscriptionNotifications_received());
-
-        counterStats.put("Analytics_Request", EventCounters[eventID].getAnalyticsRequest());
-        counterStats.put("Analytics_Response", EventCounters[eventID].getAnalyticsResponse());
-
         stats.put("EventInfo", eventInfo);
-        stats.put("Counters", counterStats);
+        stats.put("Counters", EventCounter[eventID].getCountersData());
 
         return stats;
     }
 
 
 
+    public static Object getErrorStats()
+    {
+        HashMap<Object, Object> errorStats = new HashMap<>();
+        errorStats.put("Error_Counters", ErrorCounters.getCountersData());
+
+        return errorStats;
+    }
+
+
 
     public static List<Object> getAllStats()
     {
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<>();
 
         HashMap<Object, Object> cumulativeData = new HashMap<>();
 
@@ -74,31 +65,12 @@ public class FrameWorkFunction {
             HashMap<Object, Object> stats = new HashMap<>();
 
             HashMap<Object, Object> eventInfo = new HashMap<>();
-            HashMap<Object, Object> counterStats = new HashMap<>();
 
             eventInfo.put("ID", eventID);
             eventInfo.put("Event", EventID.values()[eventID].toString());
 
-            counterStats.put("Subscriptions_Received", EventCounters[eventID].getSubscriptions_received());
-            counterStats.put("Subscriptions_Response", EventCounters[eventID].getSubscriptions_response());
-
-            counterStats.put("Un-Subscriptions_Received", EventCounters[eventID].getUnSubscriptions_received());
-            counterStats.put("Un-Subscriptions_Response", EventCounters[eventID].getUnSubscriptions_response());
-
-            counterStats.put("SubscriptionUpdates_Received", EventCounters[eventID].getSubscriptionUpdates_received());
-            counterStats.put("SubscriptionUpdates_Response", EventCounters[eventID].getSubscriptionUpdates_response());
-
-            counterStats.put("SubscriptionNotifications_Sent", EventCounters[eventID].getSubscriptionNotifications_sent());
-
-            counterStats.put("Subscriptions_Sent", EventCounters[eventID].getSubscriptions_sent());
-            counterStats.put("Un-Subscriptions_Sent", EventCounters[eventID].getUnSubscriptions_sent());
-            counterStats.put("SubscriptionNotifications_Received", EventCounters[eventID].getSubscriptionNotifications_received());
-
-            counterStats.put("Analytics_Request", EventCounters[eventID].getAnalyticsRequest());
-            counterStats.put("Analytics_Response", EventCounters[eventID].getAnalyticsResponse());
-
             stats.put("EventInfo", eventInfo);
-            stats.put("Counters", counterStats);
+            stats.put("Counters", EventCounter[eventID].getCountersData());
 
             list.add(stats);
         }
@@ -111,9 +83,8 @@ public class FrameWorkFunction {
     public static HashMap<Object, Object> getCumulativeData()
     {
         Counters cumulative = new Counters();
-        HashMap<Object, Object> cumulativeStats = new HashMap<>();
 
-        for(Counters eventCounter: EventCounters)
+        for(Counters eventCounter: EventCounter)
         {
             cumulative.setSubscriptions_received(cumulative.getSubscriptions_received().add(eventCounter.getSubscriptions_received()));
             cumulative.setSubscriptions_response(cumulative.getSubscriptions_response().add(eventCounter.getSubscriptions_response()));
@@ -134,26 +105,10 @@ public class FrameWorkFunction {
             cumulative.setAnalyticsResponse(cumulative.getAnalyticsResponse().add(eventCounter.getAnalyticsResponse()));
         }
 
-        cumulativeStats.put("Subscriptions_Received", cumulative.getSubscriptions_received());
-        cumulativeStats.put("Subscriptions_Response", cumulative.getSubscriptions_response());
-
-        cumulativeStats.put("Un-Subscriptions_Received", cumulative.getUnSubscriptions_received());
-        cumulativeStats.put("Un-Subscriptions_Response", cumulative.getUnSubscriptions_response());
-
-        cumulativeStats.put("SubscriptionUpdates_Received", cumulative.getSubscriptionUpdates_received());
-        cumulativeStats.put("SubscriptionUpdates_Response", cumulative.getSubscriptionUpdates_response());
-
-        cumulativeStats.put("SubscriptionNotifications_Sent", cumulative.getSubscriptionNotifications_sent());
-
-        cumulativeStats.put("Subscriptions_Sent", cumulative.getSubscriptions_sent());
-        cumulativeStats.put("Un-Subscriptions_Sent", cumulative.getUnSubscriptions_sent());
-        cumulativeStats.put("SubscriptionNotifications_Received", cumulative.getSubscriptionNotifications_received());
-
-        cumulativeStats.put("Analytics_Request", cumulative.getAnalyticsRequest());
-        cumulativeStats.put("Analytics_Response", cumulative.getAnalyticsResponse());
-
-        return cumulativeStats;
+        return cumulative.getCountersData();
     }
+
+
 
 
 
@@ -161,8 +116,10 @@ public class FrameWorkFunction {
     // Reset Counters
     public static void restCounters() {
 
-        for(Counters eventCounters: EventCounters)
+        for(Counters eventCounters: EventCounter)
         { eventCounters.reset(); }
+
+        ErrorCounters.reset();
     }
 
 
@@ -184,65 +141,3 @@ public class FrameWorkFunction {
 
 
 
-/*
-
-    //Returns Counter Statistics
-    public static HashMap<String, Object> getStats(Integer eventID)
-    {
-        if(eventID == null)
-        { return cumulativeStats(); }
-
-
-        counterStats.put("Event_ID", EventID.values()[eventID].toString());
-
-        counterStats.put("Event_Subscriptions", EventCounters[eventID].getSubscriptions());
-        counterStats.put("Event_UnSubscriptions", EventCounters[eventID].getUnSubscriptions());
-        counterStats.put("Event_SubscriptionUpdates", EventCounters[eventID].getSubscriptionUpdates());
-        counterStats.put("Event_SubscriptionNotifications", EventCounters[eventID].getSubscriptionNotifications());
-
-        counterStats.put("Collector_Subscriptions", EventCounters[eventID].getCollectorSubscriptions());
-        counterStats.put("Collector_UnSubscriptions", EventCounters[eventID].getCollectorUnSubscriptions());
-        counterStats.put("Collector_SubscriptionNotifications", EventCounters[eventID].getCollectorSubscriptionNotifications());
-
-        counterStats.put("Analytics_Subscriptions", EventCounters[eventID].getAnalyticsSubscriptions());
-        counterStats.put("Analytics_Notifications", EventCounters[eventID].getAnalyticsNotifications());
-
-        return counterStats;
-    }
-
-
-    public static HashMap<String, Object> cumulativeStats()
-    {
-        Counters cumulativeCounters = new Counters();
-
-        for(Counters eventCounters: EventCounters)
-        {
-            cumulativeCounters.setSubscriptions(cumulativeCounters.getSubscriptions().add(eventCounters.getSubscriptions()));
-            cumulativeCounters.setUnSubscriptions(cumulativeCounters.getUnSubscriptions().add(eventCounters.getUnSubscriptions()));
-            cumulativeCounters.setSubscriptionUpdates(cumulativeCounters.getSubscriptionUpdates().add(eventCounters.getSubscriptionUpdates()));
-            cumulativeCounters.setSubscriptionNotifications(cumulativeCounters.getSubscriptionNotifications().add(eventCounters.getSubscriptionNotifications()));
-
-            cumulativeCounters.setCollectorSubscriptions(cumulativeCounters.getCollectorSubscriptions().add(eventCounters.getCollectorSubscriptions()));
-            cumulativeCounters.setCollectorUnSubscriptions(cumulativeCounters.getCollectorUnSubscriptions().add(eventCounters.getCollectorUnSubscriptions()));
-            cumulativeCounters.setCollectorSubscriptionNotifications(cumulativeCounters.getCollectorSubscriptionNotifications().add(eventCounters.getCollectorSubscriptionNotifications()));
-
-            cumulativeCounters.setAnalyticsSubscriptions(cumulativeCounters.getAnalyticsSubscriptions().add(eventCounters.getAnalyticsSubscriptions()));
-            cumulativeCounters.setAnalyticsNotifications(cumulativeCounters.getAnalyticsNotifications().add(eventCounters.getAnalyticsNotifications()));
-        }
-
-
-        counterStats.put("Event_Subscriptions", cumulativeCounters.getSubscriptions());
-        counterStats.put("Event_UnSubscriptions", cumulativeCounters.getUnSubscriptions());
-        counterStats.put("Event_SubscriptionUpdates", cumulativeCounters.getSubscriptionUpdates());
-        counterStats.put("Event_SubscriptionNotifications", cumulativeCounters.getSubscriptionNotifications());
-
-        counterStats.put("Collector_Subscriptions", cumulativeCounters.getCollectorSubscriptions());
-        counterStats.put("Collector_UnSubscriptions", cumulativeCounters.getCollectorUnSubscriptions());
-        counterStats.put("Collector_SubscriptionNotifications", cumulativeCounters.getCollectorSubscriptionNotifications());
-
-        counterStats.put("Analytics_Subscriptions", cumulativeCounters.getAnalyticsSubscriptions());
-        counterStats.put("Analytics_Notifications", cumulativeCounters.getAnalyticsNotifications());
-
-        return counterStats;
-    }
- */

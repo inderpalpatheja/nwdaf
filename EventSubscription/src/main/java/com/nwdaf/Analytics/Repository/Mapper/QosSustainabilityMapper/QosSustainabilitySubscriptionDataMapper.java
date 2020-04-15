@@ -15,6 +15,11 @@ public class QosSustainabilitySubscriptionDataMapper implements RowMapper {
 
         qosSustainabilitySubscriptionData.setID(resultSet.getInt("ID"));
         qosSustainabilitySubscriptionData.setSubscriptionID(resultSet.getString("subscriptionID"));
+
+        qosSustainabilitySubscriptionData.set_5Qi(resultSet.getInt("5Qi"));
+        qosSustainabilitySubscriptionData.setPlmnID(resultSet.getString("plmnID"));
+        qosSustainabilitySubscriptionData.setTac(resultSet.getString("tac"));
+
         qosSustainabilitySubscriptionData.setSnssais(resultSet.getString("snssais"));
         qosSustainabilitySubscriptionData.setRanUeThroughputThreshold(resultSet.getInt("ranUeThroughputThreshold"));
         qosSustainabilitySubscriptionData.setQosFlowRetainThreshold(resultSet.getInt("qosFlowRetainThreshold"));

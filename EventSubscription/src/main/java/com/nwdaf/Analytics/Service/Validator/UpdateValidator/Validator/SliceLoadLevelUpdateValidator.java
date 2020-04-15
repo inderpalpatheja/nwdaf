@@ -1,6 +1,7 @@
 package com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator;
 
 import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Service.Validator.ErrorMessage;
@@ -47,7 +48,12 @@ public class SliceLoadLevelUpdateValidator {
             { subscription.setNotifMethod(notifMethod); }
 
             else
-            { rawData.setNotifMethod(ErrorMessage.INVALID_NOTIFICATION_METHOD); }
+            {
+                rawData.setNotifMethod(ErrorMessage.INVALID_NOTIFICATION_METHOD);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidNotifMethod();
+            }
         }
 
         return subscription.getNotifMethod() != null;
@@ -65,7 +71,12 @@ public class SliceLoadLevelUpdateValidator {
             Integer repetitionPeriod = (Integer)rawData.getRepetitionPeriod();
 
             if(repetitionPeriod < 0)
-            { rawData.setRepetitionPeriod(ErrorMessage.LESS_THAN_ZERO); }
+            {
+                rawData.setRepetitionPeriod(ErrorMessage.LESS_THAN_ZERO);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidRepetitonPeriod();
+            }
 
             else
             { subscription.setRepetitionPeriod(repetitionPeriod); }
@@ -86,7 +97,12 @@ public class SliceLoadLevelUpdateValidator {
             Integer loadLevelThreshold = (Integer)rawData.getLoadLevelThreshold();
 
             if(loadLevelThreshold < 0)
-            { rawData.setLoadLevelThreshold(ErrorMessage.LESS_THAN_ZERO); }
+            {
+                rawData.setLoadLevelThreshold(ErrorMessage.LESS_THAN_ZERO);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidLoadLevelThreshold();
+            }
 
             else
             { subscription.setLoadLevelThreshold(loadLevelThreshold); }

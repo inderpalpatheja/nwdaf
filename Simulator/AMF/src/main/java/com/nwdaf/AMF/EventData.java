@@ -1,6 +1,7 @@
 package com.nwdaf.AMF;
 
 import com.nwdaf.AMF.model.EventID;
+import com.nwdaf.AMF.model.NotificationMethod;
 import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,7 +21,7 @@ public class EventData {
 
         switch(eventID)
         {
-            case LOAD_LEVEL_INFORMATION: return getSliceLoadLevelData();
+            case LOAD_LEVEL_INFORMATION: return getSliceLoadLevelData(0);
 
             case QOS_SUSTAINABILITY: return getQosSustainabilityData();
 
@@ -33,16 +34,20 @@ public class EventData {
 
 
 
-    public static JSONObject getSliceLoadLevelData() throws JSONException
+    public static JSONObject getSliceLoadLevelData(Integer notifMethod) throws JSONException
     {
         JSONObject json = new JSONObject();
 
         json.put("eventID", EventID.LOAD_LEVEL_INFORMATION.ordinal());
         json.put("notificationURI", notificationURI);
         json.put("snssais", snssais[random.nextInt(snssais.length)]);
-        json.put("notifMethod", 1);
-        json.put("repetitionPeriod", 0);
-        json.put("loadLevelThreshold", 20 + random.nextInt(60));
+        json.put("notifMethod", notifMethod);
+
+        if(notifMethod == NotificationMethod.PERIODIC.ordinal())
+        { json.put("repetitionPeriod", 20 + random.nextInt(20)); }
+
+        else
+        { json.put("loadLevelThreshold", 20 + random.nextInt(60)); }
 
         return json;
     }

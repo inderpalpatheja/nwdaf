@@ -1,6 +1,7 @@
 package com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator;
 
 import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.EventError;
@@ -19,7 +20,12 @@ public class EventValidator {
     public static boolean checkForEventID(AnalyticsRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getEventID() == null || rawData.getEventID().isEmpty())
-        { rawData.setEventID(ErrorMessage.IS_NULL); }
+        {
+            rawData.setEventID(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullEventID();
+        }
 
         else
         {
@@ -27,7 +33,12 @@ public class EventValidator {
             { subscription.setEventID(Integer.valueOf(rawData.getEventID())); }
 
             else
-            { rawData.setEventID(ErrorMessage.INVALID_EVENT_ID); }
+            {
+                rawData.setEventID(ErrorMessage.INVALID_EVENT_ID);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidEventID();
+            }
         }
 
         return subscription.getEventID() != null;

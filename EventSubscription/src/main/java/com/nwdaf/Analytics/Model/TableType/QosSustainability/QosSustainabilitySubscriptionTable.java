@@ -11,6 +11,9 @@ public class QosSustainabilitySubscriptionTable {
     private Integer ID;
 
     @Getter @Setter
+    private String plmnID;
+
+    @Getter @Setter
     private String snssais;
 
     private UUID subscriptionID;

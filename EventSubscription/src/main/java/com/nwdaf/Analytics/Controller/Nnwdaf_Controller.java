@@ -10,7 +10,6 @@ import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
 import io.swagger.annotations.ApiOperation;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,12 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.net.*;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.*;
-
-
 
 
 @RestController
@@ -38,7 +32,7 @@ public class Nnwdaf_Controller {
     final String EVENT_SUB = "/nnwdaf-eventssubscription/v1";
     final String ANALYTICS ="/nnwdaf-analyticsinfo/v1/analytics";
 
-    public static Counters EventCounters[] = new Counters[EventID.values().length];
+    public static Counters EventCounter[] = new Counters[EventID.values().length];
 
 
     @Autowired
@@ -47,8 +41,8 @@ public class Nnwdaf_Controller {
         logger.debug("Entered Nnwdaf_controller()");
         //logger.info("Thread started");
 
-        for(int i = 0; i < EventCounters.length; i++)
-        { EventCounters[i] = new Counters(); }
+        for(int i = 0; i < EventCounter.length; i++)
+        { EventCounter[i] = new Counters(); }
 
         this.nwdaf_service = nwdaf_service;
 
@@ -76,11 +70,12 @@ public class Nnwdaf_Controller {
             response = Object.class)
     public Object nwdaf_analytics(@RequestParam(value = "snssais", required = false) String snssais,
                                   @RequestParam(value = "anySlice", required = false) String anySlice,
+                                  @RequestParam(value = "plmnID", required = false) String plmnID,
                                   @RequestParam("eventID") String eventID,
                                   @RequestParam(value = "supi", required = false) String supi) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(eventID, snssais, anySlice, supi));
+        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(eventID, snssais, anySlice, supi, plmnID));
     }
 
 
@@ -97,7 +92,7 @@ public class Nnwdaf_Controller {
      */
     @PostMapping(EVENT_SUB + "/subscriptions")
     @ApiOperation(value = OperationInfo.SUBSCRIBE_INFO, notes = OperationInfo.SUBSCRIBE_NOTES, response = Object.class)
-    public Object nwdaf_subscription(@RequestBody SubscriptionRawData subscriptionRawData) throws SQLIntegrityConstraintViolationException, URISyntaxException, IOException, JSONException {
+    public Object nwdaf_subscription(@RequestBody SubscriptionRawData subscriptionRawData) throws URISyntaxException, IOException, JSONException {
 
 
         return nwdaf_service.nwdaf_subscription(subscriptionRawData);
@@ -227,6 +222,13 @@ public class Nnwdaf_Controller {
     }
 
 
+    @GetMapping("/error_counters")
+    public Object nwdaf_error_counters() {
+
+        return nwdaf_service.nwdaf_error_counters();
+    }
+
+
 
 
     /**
@@ -251,8 +253,30 @@ public class Nnwdaf_Controller {
     }
 
 
+/*
+    @PostMapping("test/restTemplate")
+    public ResponseEntity<?> testCode(@RequestBody String user) throws JSONException
+    {
+        JSONObject json = new JSONObject(user);
 
+        String name = json.getString("name");
+        Integer age = json.getInt("age");
+        String password = json.getString("password");
 
+        System.out.println("Name: " + name);
+        System.out.println("Age: " + age);
+        System.out.println("Password: " + password);
+
+        SubscriptionTable subscription = new SubscriptionTable();
+
+        subscription.setSubscriptionID(UUID.randomUUID().toString());
+        subscription.setEventID(0);
+        subscription.setNotificationURI("http://www.gitlife.com");
+        subscription.setNotifMethod(0);
+        subscription.setRepetitionPeriod(22);
+
+        return new ResponseEntity<SubscriptionTable>(subscription, HttpStatus.OK);
+    } */
 
 }
 

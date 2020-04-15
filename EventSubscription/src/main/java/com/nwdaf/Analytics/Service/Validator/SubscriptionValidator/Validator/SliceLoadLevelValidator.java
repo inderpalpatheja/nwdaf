@@ -1,6 +1,7 @@
 package com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator;
 
 import com.nwdaf.Analytics.Model.CustomData.NotificationMethod;
+import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Validator.ErrorMessage;
@@ -64,7 +65,12 @@ public class SliceLoadLevelValidator {
             { subscription.setNotifMethod(notifMethod); }
 
             else
-            { rawData.setNotifMethod(ErrorMessage.INVALID_NOTIFICATION_METHOD); }
+            {
+                rawData.setNotifMethod(ErrorMessage.INVALID_NOTIFICATION_METHOD);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidNotifMethod();
+            }
         }
 
         return subscription.getNotifMethod() != null;
@@ -75,7 +81,13 @@ public class SliceLoadLevelValidator {
     public static boolean checkForRepetitionPeriod(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getRepetitionPeriod() == null)
-        { rawData.setRepetitionPeriod(ErrorMessage.IS_NULL); }
+        {
+            rawData.setRepetitionPeriod(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullRepetitionPeriod();
+        }
+
 
         else if(!(rawData.getRepetitionPeriod() instanceof Integer))
         { rawData.setRepetitionPeriod(ErrorMessage.NOT_INTEGER); }
@@ -85,7 +97,12 @@ public class SliceLoadLevelValidator {
             Integer repetitionPeriod = (Integer)rawData.getRepetitionPeriod();
 
             if(repetitionPeriod < 0)
-            { rawData.setRepetitionPeriod(ErrorMessage.LESS_THAN_ZERO); }
+            {
+                rawData.setRepetitionPeriod(ErrorMessage.LESS_THAN_ZERO);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidRepetitonPeriod();
+            }
 
             else
             { subscription.setRepetitionPeriod(repetitionPeriod); }
@@ -99,7 +116,12 @@ public class SliceLoadLevelValidator {
     public static boolean checkForLoadLevelThreshold(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getLoadLevelThreshold() == null)
-        { rawData.setLoadLevelThreshold(ErrorMessage.IS_NULL); }
+        {
+            rawData.setLoadLevelThreshold(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullLoadLevelThreshold();
+        }
 
         else if(!(rawData.getLoadLevelThreshold() instanceof Integer))
         { rawData.setLoadLevelThreshold(ErrorMessage.NOT_INTEGER); }
@@ -109,7 +131,12 @@ public class SliceLoadLevelValidator {
             Integer loadLevelThreshold = (Integer)rawData.getLoadLevelThreshold();
 
             if(loadLevelThreshold < 0)
-            { rawData.setLoadLevelThreshold(ErrorMessage.LESS_THAN_ZERO); }
+            {
+                rawData.setLoadLevelThreshold(ErrorMessage.LESS_THAN_ZERO);
+
+                // Increment Counter
+                ErrorCounters.incrementInvalidLoadLevelThreshold();
+            }
 
             else
             { subscription.setLoadLevelThreshold(loadLevelThreshold); }
@@ -122,7 +149,12 @@ public class SliceLoadLevelValidator {
     public static boolean checkForSnssais(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getSnssais() == null)
-        { rawData.setSnssais(ErrorMessage.IS_NULL); }
+        {
+            rawData.setSnssais(ErrorMessage.IS_NULL);
+
+            // Increment Counter
+            ErrorCounters.incrementNullSnssais();
+        }
 
         else if(!(rawData.getSnssais() instanceof String))
         { rawData.setSnssais(ErrorMessage.NOT_STRING); }
