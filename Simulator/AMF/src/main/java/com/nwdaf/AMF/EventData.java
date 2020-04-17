@@ -21,7 +21,7 @@ public class EventData {
 
         switch(eventID)
         {
-            case LOAD_LEVEL_INFORMATION: return getSliceLoadLevelData(0);
+            case LOAD_LEVEL_INFORMATION: return getSliceLoadLevelData(1);
 
             case QOS_SUSTAINABILITY: return getQosSustainabilityData();
 

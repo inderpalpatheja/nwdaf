@@ -54,12 +54,14 @@ public class Nnwdaf_Repository {
     // To keep track of available snssais values in nwdafSliceLoadLevelSubscriptionTable
     HashSet<String> snssais_in_sliceLoadLevelSubscriptionTable = new HashSet<>();
 
-
     // To keep track of (plmnID + snssais) values in nwdafQosSustainabilitySubscriptionTable
     HashSet<String> plmnID_snssais_in_qosSustainabilitySubscriptionTable =  new HashSet<>();
 
     // To keep track of (plmnID + snssais) values in nwdafQosSustainabilityInformation
     HashSet<String> plmnID_snssais_in_qosSustainabilityInformation = new HashSet<>();
+
+
+    HashSet<String> tai_cellID_in_userLocationTable = new HashSet<>();
 
 
 
@@ -185,7 +187,7 @@ public class Nnwdaf_Repository {
     public Boolean addCorrealationIDAndUnSubCorrelationIDIntoNwdafIDTable(SliceLoadLevelSubscriptionTable slice, boolean getAnalytics) {
 
 
-        if (snssais_in_sliceLoadLevelSubscriptionTable.contains(slice.getSnssais())) {
+        if (snsExistsSliceLoadLevelSubscriptionTable(slice.getSnssais())) {
             jdbcTemplate.update("UPDATE nwdafSliceLoadLevelSubscriptionTable SET refCount = refCount + 1 WHERE snssais = ?", slice.getSnssais());
             return true;
         }
@@ -1013,6 +1015,7 @@ public class Nnwdaf_Repository {
         String query = "INSERT INTO nwdafUserLocation(Tai,cellID,timeDuration) VALUES(?,?,?)";
         //String query1= "CREATE UNIQUE INDEX Tai ON UserLocation (plmnID,Tac,cellId);";
 
+        tai_cellID_in_userLocationTable.add(taiValue + "&" + cellID);
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
@@ -1031,34 +1034,8 @@ public class Nnwdaf_Repository {
 
 
     public boolean taiCellIdExists(String tai, String cellID)
-    {
-        String tai_query = "SELECT IFNULL ((SELECT Tai FROM nwdafUserLocation WHERE Tai = '" + tai + "'), null) AS Tai;";
+    { return tai_cellID_in_userLocationTable.contains(tai + "&" + cellID); }
 
-
-        String taiExists = jdbcTemplate.queryForObject(tai_query, new RowMapper<String>() {
-
-            @Override
-            public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                return resultSet.getString("Tai");
-            }
-        });
-
-        if(taiExists != null)
-        {
-            String cellID_query = "SELECT IFNULL ((SELECT cellID FROM nwdafUserLocation WHERE cellID = '" + cellID + "'), null) AS cellID;";
-
-            String cellIDExists = jdbcTemplate.queryForObject(cellID_query, new RowMapper<String>() {
-                @Override
-                public String mapRow(ResultSet resultSet, int i) throws SQLException {
-                    return resultSet.getString("cellID");
-                }
-            });
-
-            return (cellIDExists != null);
-        }
-
-        return false;
-    }
 
 
 

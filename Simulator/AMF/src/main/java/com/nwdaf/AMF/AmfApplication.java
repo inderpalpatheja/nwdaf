@@ -52,7 +52,7 @@ public class AmfApplication extends Functionality {
 
 
                     //Thread.sleep(3 * 1000);
-                    Thread.sleep(20 * 1000);
+                    //Thread.sleep(20 * 1000);
 
                     if(eventID == 10)
                     { break; }
@@ -85,7 +85,7 @@ public class AmfApplication extends Functionality {
 
 
 
-                    Thread.sleep(3 * 1000);
+                    //Thread.sleep(3 * 1000);
 
                     if(eventID == 10)
                     { break; }
@@ -113,7 +113,7 @@ public class AmfApplication extends Functionality {
                     }
 
 
-                    Thread.sleep(3 * 1000);
+                    //Thread.sleep(3 * 1000);
 
                     if(eventID == 10)
                     { break; }
@@ -121,6 +121,7 @@ public class AmfApplication extends Functionality {
 
             }
 
+            Thread.sleep(3 * 1000);
 
         } while(eventID == 10);
 
@@ -146,7 +147,7 @@ public class AmfApplication extends Functionality {
         AmfApplication amfApplication = new AmfApplication();
 
 
-        //amfApplication.test(subListInt, eventIDInt, amfController);
+        amfApplication.test(subListInt, eventIDInt, amfController);
 
     }
 }
