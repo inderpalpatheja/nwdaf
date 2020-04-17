@@ -858,14 +858,14 @@ public class BusinessLogic extends ResourceValues {
 
             if (dataSet != null && !dataSet.isEmpty()) {
                 for (NotificationData notifyData : dataSet) {
-                    if (!subID_SET.contains(notifyData.getSubscriptionID())) {
+                  /*  if (!subID_SET.contains(notifyData.getSubscriptionID())) {
                         subID_SET.add(notifyData.getSubscriptionID());
 
                         //SubscriptionTable subscriptionData = repository.findById_subscriptionID(notifyData.getSubscriptionID());
                         send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.LOAD_LEVEL_INFORMATION, slice.getSnssais(), slice.getCurrentLoadLevel(), notifyData.getSubscriptionID());
-                    }
+                    } */
 
-                    //send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.LOAD_LEVEL_INFORMATION, slice.getSnssais(), slice.getCurrentLoadLevel(), notifyData.getSubscriptionID());
+                    send_notificaiton_to_NF(repository.getNotificationURI(notifyData.getSubscriptionID()), EventID.LOAD_LEVEL_INFORMATION, slice.getSnssais(), slice.getCurrentLoadLevel(), notifyData.getSubscriptionID());
                 }
             }
         }

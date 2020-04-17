@@ -1,5 +1,6 @@
 package com.nwdaf.Analytics;
 
+import lombok.extern.log4j.Log4j2;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.LogManager;
 import org.slf4j.Logger;
@@ -15,7 +16,7 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.Collections;
+
 
 
 @SpringBootApplication
@@ -25,9 +26,10 @@ public class EvenSubscriptionApplication {
     private static final Logger logger = LoggerFactory.getLogger(EvenSubscriptionApplication.class);
 
     public static void main(String[] args) {
+
         SpringApplication.run(EvenSubscriptionApplication.class, args);
 
         BasicConfigurator.configure();
-        logger.debug("In EventSubscriptionApplication Class");
+       // logger.debug("In EventSubscriptionApplication Class");
     }
 }
