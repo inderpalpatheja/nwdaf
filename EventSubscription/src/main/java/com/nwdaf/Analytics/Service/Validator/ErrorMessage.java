@@ -11,7 +11,7 @@ public class ErrorMessage {
     public static final String INVALID_NOTIFICATION_METHOD = "needs to be either 0(PERIODIC) or 1(THRESHOLD)";
     public static final String LESS_THAN_ZERO = "cannot be less than 0";
     public static final String NOT_BOOLEAN = "needs to be a Boolean value (0 or 1)";
-    public static final String INVALID_ANY_SLICE = "needs to be either 1(True) or 0(False)";
+    public static final String INVALID_BOOLEAN = "needs to be either 1(True) or 0(False)";
 
 
     public static final String REPETITION_PERIOID_REQUIRED = " | repetitionPeriod is required when notifMethod = 0(PERIODIC)";

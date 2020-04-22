@@ -34,4 +34,10 @@ public class ResourceValues {
     @Value("${spring.OAM.UnSubscribe.url}")
     String DELETE_OAM_URL;
 
+    @Value("${spring.NF.Subscribe.url}")
+    String POST_NF_URL;
+
+    @Value("${spring.NF.UnSubscribe.url}")
+    String DELETE_NF_URL;
+
 }

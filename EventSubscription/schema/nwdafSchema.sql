@@ -111,12 +111,44 @@ CREATE TABLE `NWDAF`.`nwdafQosSustainabilitySubscriptionTable` (
 `correlationID` VARCHAR(128) NOT NULL,
 `refCount` INT NOT NULL,
 PRIMARY KEY (`ID`));
+
+
+
+
+
+
+CREATE TABLE `NWDAF`.`nwdafServiceExperienceSubscriptionData` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`subscriptionID` VARCHAR(128) NOT NULL,
+`supi` VARCHAR(128) NOT NULL,
+`snssais` VARCHAR(128) NOT NULL,
+PRIMARY KEY (`ID`),
+FOREIGN KEY (`subscriptionID`)
+REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionID`)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION);
   
   
   
   
-  
-  
-  
+CREATE TABLE `NWDAF`.`nwdafServiceExperienceInformation` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`supi` VARCHAR(128) NOT NULL,
+`snssais` VARCHAR(128) NOT NULL,
+`mos` FLOAT NOT NULL,
+`upperRange` FLOAT NOT NULL,
+`lowerRange` FLOAT NOT NULL,
+PRIMARY KEY (`ID`));
+
+
+
+CREATE TABLE `NWDAF`.`nwdafServiceExperienceSubscriptionTable` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`supi` VARCHAR(128) NOT NULL,
+`snssais` VARCHAR(128) NOT NULL,
+`subscriptionID` VARCHAR(128) NOT NULL,
+`correlationID` VARCHAR(128) NOT NULL,
+`refCount` INT NOT NULL,
+PRIMARY KEY (`ID`));
   
   

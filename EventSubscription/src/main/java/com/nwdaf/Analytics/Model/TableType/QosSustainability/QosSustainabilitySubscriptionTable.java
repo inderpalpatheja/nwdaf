@@ -1,10 +1,13 @@
 package com.nwdaf.Analytics.Model.TableType.QosSustainability;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.UUID;
 
+
+@NoArgsConstructor
 public class QosSustainabilitySubscriptionTable {
 
     @Getter @Setter
@@ -39,5 +42,13 @@ public class QosSustainabilitySubscriptionTable {
     public void setCorrelationID(String correlationID) {
         this.correlationID = UUID.fromString(correlationID);
     }
+
+
+    public QosSustainabilitySubscriptionTable(String subscriptionID, String correlationID)
+    {
+        this.subscriptionID = UUID.fromString(subscriptionID);
+        this.correlationID = UUID.fromString(correlationID);
+    }
+
 
 }

@@ -1,9 +1,5 @@
 package com.nwdaf.AMF;
-/*
- * @created 26/02/2020 - 11:29 AM
- * @project EventSubscription
- * @author  sheetalkumar
- */
+
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
