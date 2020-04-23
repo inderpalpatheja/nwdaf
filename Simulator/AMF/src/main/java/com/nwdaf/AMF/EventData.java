@@ -27,6 +27,8 @@ public class EventData {
 
             case UE_MOBILITY: return getUeMobilityData();
 
+            case SERVICE_EXPERIENCE: return getServiceExperienceData();
+
         }
 
         return null;
@@ -61,8 +63,10 @@ public class EventData {
         json.put("notificationURI", notificationURI);
         json.put("snssais", snssais[random.nextInt(snssais.length)]);
         json.put("5Qi", random.nextInt(256));
-        json.put("mcc", String.valueOf(100 + random.nextInt(900)));
-        json.put("mnc", String.valueOf(10 + random.nextInt(990)));
+        //json.put("mcc", String.valueOf(100 + random.nextInt(900)));
+        //json.put("mnc", String.valueOf(10 + random.nextInt(990)));
+        json.put("mcc", String.valueOf(100 + random.nextInt(10)));
+        json.put("mnc", String.valueOf(10));
         json.put("tac", RandomStringUtils.randomAlphanumeric(6).toUpperCase());
 
         int thresholdType = random.nextInt(2);
@@ -100,5 +104,19 @@ public class EventData {
         return json;
     }
 
+
+
+    public static JSONObject getServiceExperienceData() throws JSONException
+    {
+
+        JSONObject json = new JSONObject();
+
+        json.put("eventID", EventID.SERVICE_EXPERIENCE.ordinal());
+        json.put("notificationURI", notificationURI);
+        json.put("supi", RandomStringUtils.randomNumeric(7));
+        json.put("snssais", snssais[random.nextInt(snssais.length)]);
+
+        return json;
+    }
 
 }

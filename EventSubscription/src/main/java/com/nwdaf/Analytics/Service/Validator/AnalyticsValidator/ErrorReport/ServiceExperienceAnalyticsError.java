@@ -8,18 +8,19 @@ import org.springframework.http.HttpStatus;
 
 
 @Getter @Setter
-public class AnalyticsError {
+public class ServiceExperienceAnalyticsError {
 
     final String code = String.valueOf(HttpStatus.valueOf(HttpStatus.NOT_ACCEPTABLE.value()));;
-    String message;
+    final String message = "Analytics " + EventID.UE_MOBILITY.toString()  + " error";
+
+    String supi;
     String snssais;
-    String anySlice;
+    String anyUE;
 
-
-    public AnalyticsError(AnalyticsRawData rawData, EventID eventID)
+    public ServiceExperienceAnalyticsError(AnalyticsRawData rawData)
     {
-        this.message = "Analytics " + eventID.toString() + " error";
+        this.supi = rawData.getSupi();
         this.snssais = rawData.getSnssais();
-        this.anySlice = rawData.getAnySlice();
+        this.anyUE = rawData.getAnyUE();
     }
 }

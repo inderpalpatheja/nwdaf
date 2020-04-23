@@ -14,4 +14,5 @@ public class AnalyticsRawData {
     String anySlice;
     String supi;
     String plmnID;
+    String anyUE;
 }

@@ -29,11 +29,12 @@ public class AMFController extends Functionality {
     final String qosFlowRetain = "qosflowretain";
 
 
-    Random rand = new Random();
+    Random random = new Random();
 
-    public static List<String> correlationIDList_LOAD_LEVEL_INFORMATION = new ArrayList<String>();
-    public static List<String> correlationIDList_UE_MOBILITY = new ArrayList<String>();
-    public static List<String> correlationIDList_QOS_SUSTAINABILITY = new ArrayList<String>();
+    public static List<String> correlationIDList_LOAD_LEVEL_INFORMATION = new ArrayList<>();
+    public static List<String> correlationIDList_UE_MOBILITY = new ArrayList<>();
+    public static List<String> correlationIDList_QOS_SUSTAINABILITY = new ArrayList<>();
+    public static List<String> correlationIDList_SERVICE_EXPERIENCE = new ArrayList<>();
 
 
     public static List<String> getCorrelationIDList_LOAD_LEVEL_INFORMATION() {
@@ -47,6 +48,11 @@ public class AMFController extends Functionality {
     public static List<String> getCorrelationIDList_QOS_SUSTAINABILITY() {
         return correlationIDList_QOS_SUSTAINABILITY;
     }
+
+    public static List<String> getCorrelationIDList_SERVICE_EXPERIENCE() {
+        return correlationIDList_SERVICE_EXPERIENCE;
+    }
+
 
 
     @PostMapping("/sendDataToUEMobility/{correlationID}")
@@ -92,7 +98,7 @@ public class AMFController extends Functionality {
     public ResponseEntity<String> unsubScribeFromNWDAFForSliceLoadLevel(@RequestBody String response) throws JSONException, IOException {
 
         JSONObject jsonObject = new JSONObject(response);
-        String unSubCorrelationID = jsonObject.getString("mSubcorrelationID");
+        String unSubCorrelationID = jsonObject.getString("unSubCorrelationID");
         String correlationID = jsonObject.getString("correlationID");
 
         correlationIDList_LOAD_LEVEL_INFORMATION.remove(correlationID);
@@ -109,7 +115,7 @@ public class AMFController extends Functionality {
     public ResponseEntity<String> unsubScribeFromNWDAFForUEMobility(@RequestBody String response) throws JSONException, IOException {
 
         JSONObject jsonObject = new JSONObject(response);
-        String unSubCorrelationID = jsonObject.getString("mSubcorrelationID");
+        String unSubCorrelationID = jsonObject.getString("unSubCorrelationID");
         String correlationID = jsonObject.getString("correlationID");
 
         correlationIDList_UE_MOBILITY.remove(correlationID);
@@ -127,7 +133,7 @@ public class AMFController extends Functionality {
     public ResponseEntity<String> unsubscribeForQosSustainability(@RequestBody String response) throws JSONException, IOException {
 
         JSONObject jsonObject = new JSONObject(response);
-        String unSubCorrelationID = jsonObject.getString("mSubcorrelationID");
+        String unSubCorrelationID = jsonObject.getString("unSubCorrelationID");
         String correlationID = jsonObject.getString("correlationID");
 
         correlationIDList_QOS_SUSTAINABILITY.remove(correlationID);
@@ -172,7 +178,7 @@ public class AMFController extends Functionality {
         // Adding unSubCorrelationId into database;
         UUID unSubCorrelationId = UUID.randomUUID();
 
-        out.println("in-load-level----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
+        out.println("in-QOS_SUSTAINABILITY----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
         correlationIDList_QOS_SUSTAINABILITY.add(obj.getCorrelationId());
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
@@ -238,7 +244,7 @@ public class AMFController extends Functionality {
 
         JSONObject json = new JSONObject();
 
-        json.put("currentLoadLevel", 1 + rand.nextInt(85));
+        json.put("currentLoadLevel", 1 + random.nextInt(85));
         json.put("correlationID", correlationID);
 
         // out.println("check " + correlationID);
@@ -333,9 +339,9 @@ public class AMFController extends Functionality {
         loadType = loadType.toLowerCase();
 
         if (loadType.equals(ranUeThroughput)) {
-            json.put("ranUeThroughput", 1 + rand.nextInt(85));
+            json.put("ranUeThroughput", 1 + random.nextInt(85));
         } else if (loadType.equals(qosFlowRetain)) {
-            json.put("qosFlowRetain", 1 + rand.nextInt(85));
+            json.put("qosFlowRetain", 1 + random.nextInt(85));
         } else {
             return new ResponseEntity<String>("Invalid load value", HttpStatus.NOT_ACCEPTABLE);
         }
@@ -434,9 +440,9 @@ public class AMFController extends Functionality {
         plmnObject.put("MNC", String.valueOf(threeDigitRandomValueForOneLocaiton));
         plmnObject.put("MCC", String.valueOf(twoDigitRandomValueForOneLocation));
 
-        JSONObject EcqiObject = new JSONObject();
-        EcqiObject.put("plmn", plmnObject);
-        EcqiObject.put("cellID", "cellID-String-value");
+        JSONObject EcgiObject = new JSONObject();
+        EcgiObject.put("plmn", plmnObject);
+        EcgiObject.put("cellID", "cellID-String-value");
 
 
         JSONObject taiObject = new JSONObject();
@@ -448,15 +454,15 @@ public class AMFController extends Functionality {
         // userLocation.put("correlationID", correlationID);
         userLocation.put("timeDuration", randomTime1);
         userLocation.put("Tai", taiObject);
-        userLocation.put("Ecqi", EcqiObject);
+        userLocation.put("Ecgi", EcgiObject);
 
         JSONObject plmnObject1 = new JSONObject();
         plmnObject1.put("MNC", String.valueOf(threeDigitRandomValueForTwoLocaiton));
         plmnObject1.put("MCC", String.valueOf(twoDigitRandomValueForTwoLocation));
 
-        JSONObject EcqiObject1 = new JSONObject();
-        EcqiObject1.put("plmn", plmnObject1);
-        EcqiObject1.put("cellID", "cellID-String-value-1");
+        JSONObject EcgiObject1 = new JSONObject();
+        EcgiObject1.put("plmn", plmnObject1);
+        EcgiObject1.put("cellID", "cellID-String-value-1");
 
 
         JSONObject taiObject1 = new JSONObject();
@@ -467,7 +473,7 @@ public class AMFController extends Functionality {
         JSONObject userLocation1 = new JSONObject();
         userLocation1.put("timeDuration", randomTime2);
         userLocation1.put("Tai", taiObject1);
-        userLocation1.put("Ecqi", EcqiObject1);
+        userLocation1.put("Ecgi", EcgiObject1);
 
         JSONArray USER_LOCATION_ARRAY = new JSONArray();
         USER_LOCATION_ARRAY.put(correlationID);
@@ -545,9 +551,9 @@ public class AMFController extends Functionality {
         plmnObject1.put("MCC", String.valueOf(twoDigitRandomValueForTwoLocation));
 
 
-        JSONObject EcqiObject1 = new JSONObject();
-        EcqiObject1.put("plmn", plmnObject1);
-        EcqiObject1.put("cellID", "cellID-String-value-1");
+        JSONObject EcgiObject1 = new JSONObject();
+        EcgiObject1.put("plmn", plmnObject1);
+        EcgiObject1.put("cellID", "cellID-String-value-1");
 
 
         JSONObject taiObject1 = new JSONObject();
@@ -562,7 +568,7 @@ public class AMFController extends Functionality {
         JSONObject locationInfoObject = new JSONObject();
         locationInfoObject.put("timeDuration", 29);
         locationInfoObject.put("Tai", taiObject1);
-        locationInfoObject.put("Ecqi", EcqiObject1);
+        locationInfoObject.put("Ecgi", EcgiObject1);
 
         locationInfoArray.put(locationInfoObject);
 
@@ -604,6 +610,141 @@ public class AMFController extends Functionality {
         /*JSON NOTIFICATION ACCORDING 3GPP ENDS*/
     }
 
+
+
+    // SERVICE_EXPERIENCE subscription
+    @RequestMapping(method = RequestMethod.POST, value = "/Nnf_EventExposure_Subscribe")
+    public ResponseEntity<String> subscribe_ServiceExperience(@RequestBody String response) throws JSONException, IOException {
+
+        //  list.add();
+
+        JSONObject json = new JSONObject(response);
+
+        String correlationID = json.getString("correlationID");
+        String notificationTargetAddress = json.getString("notificationTargetAddress");
+
+        // Adding unSubCorrelationId into database;
+        UUID unSubCorrelationId = UUID.randomUUID();
+
+        out.println("In SERVICE_EXPERIENCE----->> + " + notificationTargetAddress + "::" + correlationID);
+
+        correlationIDList_SERVICE_EXPERIENCE.add(correlationID);
+
+        return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
+    }
+
+
+    // SERVICE_EXPERIENCE un-subscription
+    @RequestMapping(method = RequestMethod.DELETE, value = "/Nnf_EventExposure_UnSubscribe")
+    public ResponseEntity<String> unSubscribe_ServiceExperience(@RequestBody String response) throws JSONException, IOException {
+
+        JSONObject jsonObject = new JSONObject(response);
+        String unSubCorrelationID = jsonObject.getString("unSubCorrelationID");
+        String correlationID = jsonObject.getString("correlationID");
+
+        correlationIDList_SERVICE_EXPERIENCE.remove(correlationID);
+
+        return new ResponseEntity<String>("un-subscribed SERVICE_EXPERIENCE", HttpStatus.OK);
+    }
+
+
+
+    @PostMapping("/sendServiceExperienceData/{correlationID}")
+    public ResponseEntity<String> sendServiceExperienceData(String notiTargetAddress, @PathVariable("correlationID") String correlationID) throws IOException, JSONException {
+
+        //  out.println("send Data check1");
+
+        notiTargetAddress = "http://localhost:8081/Nnf_EventExposure_Notify";
+        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
+
+        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
+        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
+
+        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
+
+        String updated_URL = notiTargetAddress + "/" + correlationID;
+        //  out.println("updated URl - " + updated_URL);
+        URL url = new URL(updated_URL);
+
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+
+
+        /***************************************************
+
+        JSONObject json = new JSONObject();
+
+        List<Float> svcExpData = new ArrayList<>();
+        int dataSet = 10 + random.nextInt(6);
+
+        for(int i = 0; i < dataSet; i++)
+        { svcExpData.add(10 * random.nextFloat()); }
+
+        json.put("correlationID", correlationID);
+        json.put("svcExpData", svcExpData.toString());
+
+        ***************************************************/
+
+        JSONObject json = new JSONObject();
+
+        json.put("mos", String.valueOf(10 * random.nextFloat()));
+        json.put("upperRange", String.valueOf(10 * random.nextFloat()));
+        json.put("lowerRange", String.valueOf(10 * random.nextFloat()));
+
+        json.put("correlationID", correlationID);
+
+
+        // For POST only - START
+        con.setDoOutput(true);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = json.toString().getBytes("utf-8");
+
+            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
+
+            os.write(input, 0, input.length);
+            os.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // For POST only - END
+
+        int responseCode = con.getResponseCode();
+        //String responseMessage = con.getResponseMessage();
+        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
+        //System.out.println("POST Response Message :: " + responseMessage);
+
+        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // print result
+            // System.out.println("\n\n");
+            //  System.out.println(response);
+        } else {
+            // System.out.println("\n\n");
+            // System.out.println("POST request not worked");
+        }
+        //  return "Data send to " + updated_URL;
+
+        if (con != null) {
+            con.disconnect();
+        }
+
+        return new ResponseEntity<String>("Send", HttpStatus.OK);
+    }
 
 }
 

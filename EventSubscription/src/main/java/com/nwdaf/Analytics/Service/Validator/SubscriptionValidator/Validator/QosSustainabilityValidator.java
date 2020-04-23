@@ -5,8 +5,9 @@ import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Validator.ErrorMessage;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.QosSustainabilityError;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.GenericSubscriptionValidator;
 
-public class QosSustainabilityValidator {
+public class QosSustainabilityValidator extends GenericSubscriptionValidator {
 
     public static Object check(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
@@ -39,26 +40,6 @@ public class QosSustainabilityValidator {
         return new QosSustainabilityError(rawData);
     }
 
-
-
-    public static boolean checkForSnssais(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
-    {
-        if(rawData.getSnssais() == null)
-        {
-            rawData.setSnssais(ErrorMessage.IS_NULL);
-
-            // Increment Counter
-            ErrorCounters.incrementNullSnssais();
-        }
-
-        else if(!(rawData.getSnssais() instanceof String))
-        { rawData.setSnssais(ErrorMessage.NOT_STRING); }
-
-        else
-        { subscription.setSnssais(rawData.getSnssais().toString()); }
-
-        return subscription.getSnssais() != null;
-    }
 
 
 

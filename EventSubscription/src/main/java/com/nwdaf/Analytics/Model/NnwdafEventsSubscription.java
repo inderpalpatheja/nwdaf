@@ -68,4 +68,10 @@ public class NnwdafEventsSubscription {
     @Getter @Setter
     String supi;
 
+
+    /*****************SERVICE_EXPERIENCE parameters****************************/
+
+    @Getter @Setter
+    Boolean anyUE;
+
 }

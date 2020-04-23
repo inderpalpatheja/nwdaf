@@ -6,8 +6,9 @@ import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Validator.ErrorMessage;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.SliceLoadLevelError;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.GenericSubscriptionValidator;
 
-public class SliceLoadLevelValidator {
+public class SliceLoadLevelValidator extends GenericSubscriptionValidator {
 
 
     public static Object check(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
@@ -145,50 +146,5 @@ public class SliceLoadLevelValidator {
         return subscription.getLoadLevelThreshold() != null;
     }
 
-
-    public static boolean checkForSnssais(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
-    {
-        if(rawData.getSnssais() == null)
-        {
-            rawData.setSnssais(ErrorMessage.IS_NULL);
-
-            // Increment Counter
-            ErrorCounters.incrementNullSnssais();
-        }
-
-        else if(!(rawData.getSnssais() instanceof String))
-        { rawData.setSnssais(ErrorMessage.NOT_STRING); }
-
-        else
-        { subscription.setSnssais(rawData.getSnssais().toString()); }
-
-        return subscription.getSnssais() != null;
-    }
-
-
-    public static boolean checkForAnySlice(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
-    {
-        if(rawData.getAnySlice() == null)
-        { subscription.setAnySlice(Boolean.FALSE); }
-
-        else if(!(rawData.getAnySlice() instanceof Integer))
-        { rawData.setAnySlice(ErrorMessage.NOT_BOOLEAN); }
-
-        else
-        {
-            Integer anySlice = (Integer)rawData.getAnySlice();
-
-            if(anySlice == 0)
-            { subscription.setAnySlice(Boolean.FALSE); }
-
-            else if(anySlice == 1)
-            { subscription.setAnySlice(Boolean.TRUE); }
-
-            else
-            { rawData.setAnySlice(ErrorMessage.INVALID_ANY_SLICE); }
-        }
-
-        return subscription.getAnySlice() != null;
-    }
 
 }

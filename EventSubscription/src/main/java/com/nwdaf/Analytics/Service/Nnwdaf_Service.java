@@ -4,34 +4,30 @@ import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Model.APIBuildInformation;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
+import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.SvcExperience;
 import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.Model.NotificationFormat.ServiceExperienceNotification;
 import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.NnwdafEventsSubscriptionUEmobility;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionModel;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
 import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.AnalyticsError;
 import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.EventError;
+import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.ServiceExperienceAnalyticsError;
 import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.UeMobilityAnalyticsError;
-import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator.EventValidator;
-import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator.QosSustainabilityAnalyticsValidator;
-import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator.SliceLoadLevelAnalyticsValidator;
-import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator.UeMobilityAnalyticsValidator;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.EssentialsError;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.QosSustainabilityError;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.SliceLoadLevelError;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.UeMobilityError;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.EssentialsValidator;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.QosSustainabilityValidator;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.SliceLoadLevelValidator;
-import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.UeMobilityValidator;
+import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator.*;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.*;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.*;
 import com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator.QosSustainabilityUpdateValidator;
 import com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator.SliceLoadLevelUpdateValidator;
-import org.apache.maven.wagon.ConnectionException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -136,19 +132,25 @@ public class Nnwdaf_Service extends BusinessLogic {
             if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
             {
                 if((validate = SliceLoadLevelAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof AnalyticsError)
-                { return new ResponseEntity<AnalyticsError>((AnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+                { return new ResponseEntity<>(validate, HttpStatus.NOT_ACCEPTABLE); }
             }
 
             else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
             {
                 if((validate = QosSustainabilityAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof AnalyticsError)
-                { return new ResponseEntity<AnalyticsError>((AnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+                { return new ResponseEntity<>(validate, HttpStatus.NOT_ACCEPTABLE); }
             }
 
             else if(eventID == EventID.UE_MOBILITY.ordinal())
             {
                 if((validate = UeMobilityAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof UeMobilityAnalyticsError)
-                { return new ResponseEntity<UeMobilityAnalyticsError>((UeMobilityAnalyticsError)validate, HttpStatus.NOT_ACCEPTABLE); }
+                { return new ResponseEntity<>(validate, HttpStatus.NOT_ACCEPTABLE); }
+            }
+
+            else if(eventID == EventID.SERVICE_EXPERIENCE.ordinal())
+            {
+                if((validate = ServiceExperienceAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof ServiceExperienceAnalyticsError)
+                { return new ResponseEntity<>(validate, HttpStatus.NOT_ACCEPTABLE); }
             }
 
 
@@ -158,8 +160,15 @@ public class Nnwdaf_Service extends BusinessLogic {
             if(eventID == EventID.UE_MOBILITY.ordinal())
             { return nwdaf_analyticsUEmobility(nnwdafEventsSubscription); }
 
+            else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
+            { return checkForData_QosSustainability(nnwdafEventsSubscription, true); }
 
-            Object snssaisDataList = check_For_data(nnwdafEventsSubscription, true);
+
+            else if(eventID == EventID.SERVICE_EXPERIENCE.ordinal())
+            { return checkForData_ServiceExperience(nnwdafEventsSubscription, true); }
+
+
+            Object snssaisDataList = checkForData_LoadLevelInformation(nnwdafEventsSubscription, true);
 
 
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
@@ -218,20 +227,27 @@ public class Nnwdaf_Service extends BusinessLogic {
             if(eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal())
             {
                 if((validator = SliceLoadLevelValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof SliceLoadLevelError)
-                { return new ResponseEntity<SliceLoadLevelError>((SliceLoadLevelError)validator, HttpStatus.NOT_ACCEPTABLE); }
+                { return new ResponseEntity<>(validator, HttpStatus.NOT_ACCEPTABLE); }
             }
 
             else if(eventID == EventID.QOS_SUSTAINABILITY.ordinal())
             {
                 if((validator = QosSustainabilityValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof QosSustainabilityError)
-                { return new ResponseEntity<QosSustainabilityError>((QosSustainabilityError)validator, HttpStatus.NOT_ACCEPTABLE); }
+                { return new ResponseEntity<>(validator, HttpStatus.NOT_ACCEPTABLE); }
             }
 
 
             else if(eventID == EventID.UE_MOBILITY.ordinal())
             {
                 if((validator = UeMobilityValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof UeMobilityError)
-                { return new ResponseEntity<UeMobilityError>((UeMobilityError)validator, HttpStatus.NOT_ACCEPTABLE); }
+                { return new ResponseEntity<>(validator, HttpStatus.NOT_ACCEPTABLE); }
+            }
+
+
+            else if(eventID == EventID.SERVICE_EXPERIENCE.ordinal())
+            {
+                if((validator = ServiceExperienceValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof ServiceExperienceError)
+                { return new ResponseEntity<>(validator, HttpStatus.NOT_ACCEPTABLE); }
             }
 
 
@@ -258,21 +274,10 @@ public class Nnwdaf_Service extends BusinessLogic {
                 add_values_into_subscriptionData(subscriptionID, nnwdafEventsSubscription.getSnssais(),
                         nnwdafEventsSubscription.getLoadLevelThreshold());
 
-
-
                 // Storing data into loadlevelInformation Table
                 repository.add_data_into_load_level_table(nnwdafEventsSubscription.getSnssais());
 
-
-                // JSON payload send by NF to NWDAF
-        /* logger.info("\n" + "SubID : " + nnwdafEventsSubscription.getSubscriptionID() + " NotificationURI : " + nnwdafEventsSubscription.getEventID() +
-                " snssais : " + nnwdafEventsSubscription.getSnssais() + " anySlice : " + nnwdafEventsSubscription.getAnySlice() +
-                " notifMethod : " + nnwdafEventsSubscription.getNotifMethod() + " repetition Method : " + nnwdafEventsSubscription.getRepetitionPeriod() +
-                " LoadLevelThreshold : " + nnwdafEventsSubscription.getLoadLevelThreshold()); */
-                //getAnalytics = false;
-                // function to check snssais data
-
-                Object obj = check_For_data(nnwdafEventsSubscription, false);
+                Object obj = checkForData_LoadLevelInformation(nnwdafEventsSubscription, false);
 
                 if (obj instanceof ResponseEntity) {
                     return obj;
@@ -293,7 +298,7 @@ public class Nnwdaf_Service extends BusinessLogic {
                 repository.addDataQosSustainabilitySubscriptionData(nnwdafEventsSubscription);
                 repository.setNwdafQosSustainabilityInformation(nnwdafEventsSubscription.getPlmnID(), nnwdafEventsSubscription.getSnssais());
 
-                Object obj = check_For_data(nnwdafEventsSubscription, false);
+                Object obj = checkForData_QosSustainability(nnwdafEventsSubscription, false);
 
                 if (obj instanceof ResponseEntity) {
                     return obj;
@@ -305,6 +310,17 @@ public class Nnwdaf_Service extends BusinessLogic {
             {
                 repository.subscribeNF(nnwdafEventsSubscription, EventID.UE_MOBILITY);
                 return perform_UEMobility(nnwdafEventsSubscription);
+            }
+
+
+            else if(eventID == EventID.SERVICE_EXPERIENCE.ordinal())
+            {
+                repository.subscribeNF(nnwdafEventsSubscription, EventID.SERVICE_EXPERIENCE);
+
+                repository.addServiceExperienceSubscriptionData(nnwdafEventsSubscription);
+                repository.addServiceExperienceInformation(nnwdafEventsSubscription);
+
+                checkForData_ServiceExperience(nnwdafEventsSubscription, false);
             }
 
 
@@ -461,10 +477,11 @@ public class Nnwdaf_Service extends BusinessLogic {
 
                 if((snssais = repository.unsubscribeNF_SliceLoadLevel(subscriber)) != null)
                 {
-                    unsubscribeFromNWDAF(snssais, eventID);
+                    unsubscribeFromNWDAF(snssais);
                     repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais);
 
                     EventCounter[eventID].incrementUnSubscriptionsSent();
+                    EventCounter[eventID].incrementUnSubscriptionsResponse();
                 }
             }
 
@@ -475,10 +492,13 @@ public class Nnwdaf_Service extends BusinessLogic {
 
                 if((qosData = repository.unsubscribeNF_QosSustainability(subscriber)) != null)
                 {
-                    unsubscribeFromNWDAF(qosData.getPlmnID(), qosData.getSnssais(), eventID);
+                    QosSustainabilitySubscriptionTable qosRightSideData = repository.getCorrelation_UnSubCorrelation_QosSustainability(qosData.getPlmnID(), qosData.getSnssais());
+
+                    unSubscribeRightSide(DELETE_OAM_URL, qosRightSideData.getCorrelationID(), qosRightSideData.getSubscriptionID(), EventID.QOS_SUSTAINABILITY);
                     repository.deleteEntry_QosSustainabilitySubscriptionTable(qosData.getPlmnID(), qosData.getSnssais());
 
                     EventCounter[eventID].incrementUnSubscriptionsSent();
+                    EventCounter[eventID].incrementUnSubscriptionsResponse();
                 }
             }
 
@@ -488,10 +508,25 @@ public class Nnwdaf_Service extends BusinessLogic {
             }
 
 
+            else if(eventID == EventID.SERVICE_EXPERIENCE.ordinal())
+            {
+                ServiceExperienceSubscriptionData svcExp;
+
+                if((svcExp = repository.unsubscribeNF_ServiceExperience(subscriptionID)) != null)
+                {
+                    ServiceExperienceSubscriptionTable svcExpRightSideData = repository.getCorrelation_UnSubCorrelation_ServiceExperience(svcExp.getSupi(), svcExp.getSnssais());
+
+                    unSubscribeRightSide(DELETE_NF_URL, svcExpRightSideData.getCorrelationID(), svcExpRightSideData.getSubscriptionID(), EventID.SERVICE_EXPERIENCE);
+                    repository.deleteEntry_ServiceExperienceSubscriptionTable(svcExp.getSupi(), svcExp.getSnssais());
+
+                    EventCounter[eventID].incrementUnSubscriptionsSent();
+                    EventCounter[eventID].incrementUnSubscriptionsResponse();
+                }
+            }
+
+
 
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
-
-            EventCounter[subscriber.getEventID()].incrementUnSubscriptionsResponse();
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
         }
 
@@ -539,84 +574,33 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
 
-    public void notificationHandler(String response, EventID eventID)  {
+    public void notificationHandler_LoadLevelInformation(String response)  {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         try
         {
-            if(eventID == EventID.LOAD_LEVEL_INFORMATION)
-            {
-                // here subID == correlationID
+            // here subID == correlationID
 
-                JSONObject json = new JSONObject(response);
+            JSONObject json = new JSONObject(response);
 
-                // String correlationID = json.getString("correlationID");
-                int currentLoadLevel = json.getInt("currentLoadLevel");
-                String correlationID = json.getString("correlationID");
-
-                //out.println("received from SIMULATOR - " + "currentLoadLevel - " + currentLoadLevel + correlationID);
-
-                String snssais = repository.getSnssaisByCorrelationID(correlationID, eventID);
-
-        /*
-         if(repository.isGetAnalytics(snssais)) {
-            repository.decrementRefCount(snssais);
-            repository.setGetAnalytics(snssais, false);
-        } */
-
-                if (repository.getRefCount_SliceLoadLevel(snssais) == 0) {
-                    repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais);
-                }
+            int currentLoadLevel = json.getInt("currentLoadLevel");
+            String correlationID = json.getString("correlationID");
 
 
-                repository.updateCurrentLoadLevel(currentLoadLevel, snssais);
-                EventCounter[eventID.ordinal()].incrementSubscriptionNotificationsReceived();
+            String snssais = repository.getSnssais_SliceLoadLevelSubscriptionTable(correlationID);
 
-                nwdaf_notification_manager();
 
-                //repository.getSnssaisViaSubID(correlationID);
+            if (repository.getRefCount_SliceLoadLevel(snssais) == 0) {
+                repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais);
             }
 
 
-            else if(eventID == EventID.QOS_SUSTAINABILITY)
-            {
-                JSONObject json = new JSONObject(response);
+            repository.updateCurrentLoadLevel(currentLoadLevel, snssais);
+            EventCounter[EventID.LOAD_LEVEL_INFORMATION.ordinal()].incrementSubscriptionNotificationsReceived();
 
-                Integer ranUeThroughput = null;
-                Integer qosFlowRetain = null;
-
-                if(json.has("ranUeThroughput"))
-                { ranUeThroughput = json.getInt("ranUeThroughput"); }
-
-                else
-                { qosFlowRetain = json.getInt("qosFlowRetain"); }
-
-                String correlationID = json.getString("correlationID");
-                QosSustainabilitySubscriptionData qosData = repository.getPlmnID_Snssais_ByCorrelationID(correlationID);
-
-
-                if(repository.getRefCount_QosSustainability(qosData.getPlmnID(), qosData.getSnssais()) == 0)
-                { repository.deleteEntry_QosSustainabilitySubscriptionTable(qosData.getPlmnID(), qosData.getSnssais()); }
-
-
-                if(ranUeThroughput != null)
-                {
-                    repository.updateRanUeThroughput(ranUeThroughput, qosData.getPlmnID(), qosData.getSnssais());
-                    EventCounter[eventID.ordinal()].incrementSubscriptionNotificationsReceived();
-
-                    qosNotificationManager(QosType.RAN_UE_THROUGHPUT);
-                }
-
-                else if(qosFlowRetain != null)
-                {
-                    repository.updateQosFlowRetain(qosFlowRetain, qosData.getPlmnID(), qosData.getSnssais());
-                    EventCounter[eventID.ordinal()].incrementSubscriptionNotificationsReceived();
-
-                    qosNotificationManager(QosType.QOS_FLOW_RETAIN);
-                }
-            }
+            sliceLoadLevelNotificationManager();
 
 
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
@@ -796,9 +780,9 @@ public class Nnwdaf_Service extends BusinessLogic {
                 // System.out.println("TimeDurationValue " + timeDurationValue);
 
                 JSONObject taiValue = jsonObject.getJSONObject("Tai");
-                JSONObject ecqiValue = jsonObject.getJSONObject("Ecqi");
+                JSONObject ecgiValue = jsonObject.getJSONObject("Ecgi");
 
-                cellID = ecqiValue.getString("cellID");
+                cellID = ecgiValue.getString("cellID");
                 TacValue = taiValue.getString("Tac");
                 plmnObject = taiValue.getJSONObject("plmn");
                 MCC_value = plmnObject.getInt("MCC");
@@ -897,17 +881,15 @@ public class Nnwdaf_Service extends BusinessLogic {
         //  out.println(DELETE_NRF_URL);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-        String mCorrelationID = "";
-        String correlationID = "";
 
-
-        mCorrelationID = repository.getUnSubCorrelationID_UEMobility(supi);
-        correlationID = repository.getCorrelationID_UEMobility(mCorrelationID);
+        String unSubCorrelationID = repository.getUnSubCorrelationID_UEMobility(supi);
+        String correlationID = repository.getCorrelationID_UEMobility(unSubCorrelationID);
 
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("mSubcorrelationID", mCorrelationID);
+        jsonObject.put("unSubCorrelationID", unSubCorrelationID);
         jsonObject.put("correlationID", correlationID);
+
 
         con.setRequestMethod("DELETE");
         con.setRequestProperty("User-Agent", USER_AGENT);
@@ -947,6 +929,170 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
 
-    /************************************************************************************************************************/
+    /*************************************SERVICE_EXPERIENCE***********************************************************/
+
+
+
+    public void notificationHandler_ServiceExperience(String response)
+    {
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+        try
+        {
+            JSONObject notificationData = new JSONObject(response);
+
+            Float mos = Float.valueOf(notificationData.getString("mos"));
+            Float upperRange = Float.valueOf(notificationData.getString("upperRange"));
+            Float lowerRange = Float.valueOf(notificationData.getString("lowerRange"));
+
+            String correlationID = notificationData.getString("correlationID");
+            ServiceExperienceSubscriptionTable svcExp_supi_snssais = repository.getSupi_snssais_ServiceExperienceSubscriptionTable(correlationID);
+
+            SvcExperience svcExperience = new SvcExperience(mos, upperRange, lowerRange);
+
+            repository.updateServiceExperienceInformation(svcExperience, svcExp_supi_snssais.getSupi(), svcExp_supi_snssais.getSnssais());
+
+            String subscriptionID = repository.getSubscriptionID_ServiceExperienceSubscriptionData(svcExp_supi_snssais.getSupi(), svcExp_supi_snssais.getSnssais());
+            String notificationURI = repository.getNotificationURI(subscriptionID);
+
+            ServiceExperienceNotification svcExpNotifyData = new ServiceExperienceNotification();
+
+            svcExpNotifyData.setSubscriptionID(subscriptionID);
+            svcExpNotifyData.setNotificationURI(notificationURI);
+            svcExpNotifyData.setSvcExpInfo(svcExperience);
+            svcExpNotifyData.setSupi(svcExp_supi_snssais.getSupi());
+            svcExpNotifyData.setSnssais(svcExp_supi_snssais.getSnssais());
+
+            sendServiceExperienceNotification(svcExpNotifyData);
+        }
+
+        catch(JSONException e)
+        {
+            ErrorCounters.incrementJsonException();
+            e.printStackTrace();
+        }
+
+        catch(IOException e)
+        {
+            ErrorCounters.incrementIOException();
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+    /*************************************QOS_SUSTAINABILITY***********************************************************/
+
+
+    public void notificationHandler_QosSustainability(String response)
+    {
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+        try
+        {
+            JSONObject json = new JSONObject(response);
+
+            Integer ranUeThroughput = null;
+            Integer qosFlowRetain = null;
+
+            if(json.has("ranUeThroughput"))
+            { ranUeThroughput = json.getInt("ranUeThroughput"); }
+
+            else
+            { qosFlowRetain = json.getInt("qosFlowRetain"); }
+
+            String correlationID = json.getString("correlationID");
+            QosSustainabilitySubscriptionData qosData = repository.getPlmnID_Snssais_ByCorrelationID(correlationID);
+
+
+            if(repository.getRefCount_QosSustainability(qosData.getPlmnID(), qosData.getSnssais()) == 0)
+            { repository.deleteEntry_QosSustainabilitySubscriptionTable(qosData.getPlmnID(), qosData.getSnssais()); }
+
+
+            if(ranUeThroughput != null)
+            {
+                repository.updateRanUeThroughput(ranUeThroughput, qosData.getPlmnID(), qosData.getSnssais());
+                EventCounter[EventID.QOS_SUSTAINABILITY.ordinal()].incrementSubscriptionNotificationsReceived();
+
+                qosNotificationManager(QosType.RAN_UE_THROUGHPUT);
+            }
+
+            else if(qosFlowRetain != null)
+            {
+                repository.updateQosFlowRetain(qosFlowRetain, qosData.getPlmnID(), qosData.getSnssais());
+                EventCounter[EventID.QOS_SUSTAINABILITY.ordinal()].incrementSubscriptionNotificationsReceived();
+
+                qosNotificationManager(QosType.QOS_FLOW_RETAIN);
+            }
+
+
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+        }
+
+        catch(NullPointerException e)
+        {
+            ErrorCounters.incrementNullPointerException();
+            e.printStackTrace();
+        }
+
+        catch (JSONException e)
+        {
+            ErrorCounters.incrementJsonException();
+            e.printStackTrace();
+        }
+    }
+
 
 }
+
+
+
+
+/*
+
+            JSONObject notificationData = new JSONObject(response);
+
+            String svcExpData = notificationData.getString("svcExpData");
+            svcExpData = svcExpData.substring(1, svcExpData.length() - 1);
+
+            String values[] = svcExpData.split(", ");
+
+            List<Float> svcExpValues = new ArrayList<>();
+            Float sum = 0f;
+
+            for(String svcVal: values)
+            {
+                Float value = Float.valueOf(svcVal);
+                svcExpValues.add(value);
+                sum += value;
+            }
+
+            Float upperRange = Collections.max(svcExpValues);
+            Float lowerRange = Collections.min(svcExpValues);
+            Float mos = sum / svcExpValues.size();
+
+            String correlationID = notificationData.getString("correlationID");
+            ServiceExperienceSubscriptionTable svcExp_supi_snssais = repository.getSupi_snssais_ServiceExperienceSubscriptionTable(correlationID);
+
+            SvcExperience svcExperience = new SvcExperience(mos, upperRange, lowerRange);
+
+            repository.updateServiceExperienceInformation(svcExperience, svcExp_supi_snssais.getSupi(), svcExp_supi_snssais.getSnssais());
+
+            String subscriptionID = repository.getSubscriptionID_ServiceExperienceSubscriptionData(svcExp_supi_snssais.getSupi(), svcExp_supi_snssais.getSnssais());
+            String notificationURI = repository.getNotificationURI(subscriptionID);
+
+
+            ServiceExperienceNotification svcExpNotifyData = new ServiceExperienceNotification();
+
+            svcExpNotifyData.setSubscriptionID(subscriptionID);
+            svcExpNotifyData.setNotificationURI(notificationURI);
+            svcExpNotifyData.setSvcExpInfo(svcExperience);
+            svcExpNotifyData.setSupi(svcExp_supi_snssais.getSupi());
+            svcExpNotifyData.setSnssais(svcExp_supi_snssais.getSnssais());
+
+
+            sendServiceExperienceNotification(svcExpNotifyData);
+ */

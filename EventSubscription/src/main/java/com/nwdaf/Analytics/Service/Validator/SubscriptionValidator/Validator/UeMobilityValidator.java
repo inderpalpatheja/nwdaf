@@ -6,8 +6,10 @@ import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Validator.ErrorMessage;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.UeMobilityError;
+import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.GenericSubscriptionValidator;
 
-public class UeMobilityValidator {
+
+public class UeMobilityValidator extends GenericSubscriptionValidator {
 
     public static Object check(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
     {
@@ -131,27 +133,6 @@ public class UeMobilityValidator {
 
         return subscription.getLoadLevelThreshold() != null;
     }
-
-
-    public static boolean checkForSupi(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
-    {
-        if(rawData.getSupi() == null)
-        {
-            rawData.setSupi(ErrorMessage.IS_NULL);
-
-            // Increment Counter
-            ErrorCounters.incrementNullSupi();
-        }
-
-        else if(!(rawData.getSupi() instanceof String))
-        { rawData.setSupi(ErrorMessage.NOT_STRING); }
-
-        else
-        { subscription.setSupi(rawData.getSupi().toString()); }
-
-        return subscription.getSupi() != null;
-    }
-
 
 
 }

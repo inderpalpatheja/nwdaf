@@ -118,8 +118,33 @@ public class AmfApplication extends Functionality {
                     if(eventID == 10)
                     { break; }
                 }
-
             }
+
+
+
+            if (eventID == EventID.SERVICE_EXPERIENCE.ordinal() || eventID == 10) {
+
+                while(true)
+                {
+                    for (int i = 0; i < subList; i++)
+                    {
+                        System.out.println("Subscribing for EventID: " + EventID.SERVICE_EXPERIENCE.toString());
+                        String subscriptionID = subscribe(EventID.SERVICE_EXPERIENCE);
+                    }
+
+
+                    for (int j = 0; j < amfController.getCorrelationIDList_SERVICE_EXPERIENCE().size(); j++) {
+                        amfController.sendServiceExperienceData("http://localhost:8081/Nnf_EventExposure_Notify", amfController.getCorrelationIDList_SERVICE_EXPERIENCE().get(j));
+                    }
+
+
+                    //Thread.sleep(3 * 1000);
+
+                    if(eventID == 10)
+                    { break; }
+                }
+            }
+
 
             Thread.sleep(3 * 1000);
 
