@@ -4,7 +4,6 @@ import com.nwdaf.AMF.model.EventID;
 import org.json.JSONObject;
 
 import static java.lang.System.out;
-import static java.lang.System.setOut;
 
 import java.io.OutputStream;
 import java.io.BufferedReader;
@@ -18,8 +17,8 @@ public class Functionality {
 
     BufferedReader reader;
 
-    final String NWDAF = "http://localhost:8081/nnwdaf-eventssubscription/v1";
-    final String UNSUB = "http://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions/";
+    final String NWDAF = "https://localhost:8081/nnwdaf-eventssubscription/v1";
+    final String UNSUB = "https://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions/";
 
 
     public String subscribe(EventID eventID) throws Exception {

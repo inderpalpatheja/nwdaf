@@ -28,6 +28,8 @@ public class AMFController extends Functionality {
     final String ranUeThroughput = "ranuethroughput";
     final String qosFlowRetain = "qosflowretain";
 
+    final String HTTP = "https";
+
 
     Random random = new Random();
 
@@ -58,7 +60,7 @@ public class AMFController extends Functionality {
     @PostMapping("/sendDataToUEMobility/{correlationID}")
     public void sendUEData(@PathVariable String correlationID) throws IOException, JSONException {
 
-        sendDataForUEMobility("http://localhost:8081/Namf_Event_Exposure_Notify",
+        sendDataForUEMobility(HTTP + "://localhost:8081/Namf_Event_Exposure_Notify",
                 correlationID);
     }
 
@@ -216,7 +218,7 @@ public class AMFController extends Functionality {
 
         //  out.println("send Data check1");
 
-        notiTargetAddress = "http://localhost:8081/Nnrf_NFManagement_NFStatusNotify";
+        notiTargetAddress = HTTP + "://localhost:8081/Nnrf_NFManagement_NFStatusNotify";
         //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
 
         // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
@@ -308,7 +310,7 @@ public class AMFController extends Functionality {
 
         //  out.println("send Data check1");
 
-        notiTargetAddress = "http://localhost:8081/Noam_NFManagement_NFStatusNotify";
+        notiTargetAddress = HTTP + "://localhost:8081/Noam_NFManagement_NFStatusNotify";
         //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
 
         // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
@@ -403,7 +405,7 @@ public class AMFController extends Functionality {
 
         //  out.println("In send Data for UE-Mobility");
 
-        notiTargetAddress = "http://localhost:8081/Namf_Event_Exposure_Notify";
+        notiTargetAddress = HTTP + "://localhost:8081/Namf_Event_Exposure_Notify";
 
 
         // initialize a Random object somewhere; you should only need one
@@ -654,7 +656,7 @@ public class AMFController extends Functionality {
 
         //  out.println("send Data check1");
 
-        notiTargetAddress = "http://localhost:8081/Nnf_EventExposure_Notify";
+        notiTargetAddress = HTTP + "://localhost:8081/Nnf_EventExposure_Notify";
         //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
 
         // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify

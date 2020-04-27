@@ -11,7 +11,7 @@ import java.util.Random;
 
 public class EventData {
 
-    final static String notificationURI = "http://localhost:8082/notify";
+    final static String notificationURI = "https://localhost:8082/notify";
     final static String[] snssais = {"AMF", "SMF", "PCF"};
     static Random random = new Random();
 
