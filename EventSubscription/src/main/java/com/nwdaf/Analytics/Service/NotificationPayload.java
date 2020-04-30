@@ -1,8 +1,11 @@
 package com.nwdaf.Analytics.Service;
 
 import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
+import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfType;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.NotificationFormat.LoadLevelInformationNotification;
+import com.nwdaf.Analytics.Model.NotificationFormat.NetworkPerformanceNotification;
 import com.nwdaf.Analytics.Model.NotificationFormat.QosSustainabilityNotification;
 import com.nwdaf.Analytics.Model.NotificationFormat.ServiceExperienceNotification;
 import org.json.JSONArray;
@@ -129,4 +132,52 @@ public class NotificationPayload {
         return json;
     }
 
+
+
+    public static JSONObject getNetworkPerformancePayload(NetworkPerformanceNotification nwPerfNotifyData, NetworkPerfThreshold threshold) throws JSONException
+    {
+        JSONObject json = new JSONObject();
+        JSONArray eventNotifications = new JSONArray();
+        JSONObject networkPerfEvent = new JSONObject();
+
+        JSONObject networkPerfEntry = new JSONObject();
+
+        /*
+        JSONObject tais = new JSONObject();
+        JSONArray taiArray = new JSONArray();
+        JSONObject tai_info = new JSONObject();
+
+        JSONObject areaInfo = new JSONObject();
+        areaInfo.put("mcc", nwPerfNotifyData.getMcc());
+        areaInfo.put("mnc", nwPerfNotifyData.getMnc());
+
+        tai_info.put("plmnId", areaInfo);
+        tai_info.put("tac", nwPerfNotifyData.getTac());
+
+        taiArray.put(tai_info);
+        tais.put("tais", taiArray);
+
+        networkPerfEntry.put("networkArea", tais);  */
+
+        networkPerfEntry.put("nwPerfType", NetworkPerfType.values()[nwPerfNotifyData.getNwPerfType()].toString());
+
+        if(threshold == NetworkPerfThreshold.RELATIVE_RATIO)
+        { networkPerfEntry.put("relativeRatio", nwPerfNotifyData.getRelativeRatio()); }
+
+        else if(threshold == NetworkPerfThreshold.ABSOLUTE_NUM)
+        { networkPerfEntry.put("absoluteNum", nwPerfNotifyData.getAbsoluteSum()); }
+
+        JSONArray networkPerfArray = new JSONArray();
+        networkPerfArray.put(networkPerfEntry);
+
+        networkPerfEvent.put("event", EventID.NETWORK_PERFORMANCE.toString());
+        networkPerfEvent.put("nwPerfs", networkPerfArray);
+
+        eventNotifications.put(networkPerfEvent);
+
+        json.put("subscriptionId", nwPerfNotifyData.getSubscriptionID());
+        json.put("eventNotifications", eventNotifications);
+
+        return json;
+    }
 }

@@ -4,55 +4,30 @@ package com.nwdaf.Analytics.Model;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter @Setter
 public class NnwdafEventsSubscription {
 
-    @Getter @Setter
+
     String subscriptionID;
-
-    @Getter @Setter
     Integer eventID;
-
-    @Getter @Setter
     String notificationURI;
-
-    @Getter @Setter
     String snssais;
-
-    @Getter @Setter
     Integer notifMethod;
-
-    @Getter @Setter
     Integer repetitionPeriod;
-
-    @Getter @Setter
     Integer loadLevelThreshold;
-
-    @Getter @Setter
     Boolean anySlice;
 
 
     /*****************QOS_SUSTAINABILITY parameters*********************/
 
 
-    @Getter @Setter
+
     Integer _5Qi;
-
-    @Getter @Setter
     String mcc;
-
-    @Getter @Setter
     String mnc;
-
-    @Getter @Setter
     String tac;
-
-    @Getter
     String plmnID;
-
-    @Getter @Setter
     Integer ranUeThroughputThreshold;
-
-    @Getter @Setter
     Integer qosFlowRetainThreshold;
 
 
@@ -65,13 +40,21 @@ public class NnwdafEventsSubscription {
     /*****************UE_MOBILITY parameters****************************/
 
 
-    @Getter @Setter
+
     String supi;
 
 
     /*****************SERVICE_EXPERIENCE parameters****************************/
 
-    @Getter @Setter
+
     Boolean anyUE;
+
+
+    /*****************SERVICE_EXPERIENCE parameters****************************/
+
+
+    Integer nwPerfType;
+    Integer relativeRatioThreshold;
+    Integer absoluteNumThreshold;
 
 }

@@ -50,33 +50,6 @@ public class SliceLoadLevelValidator extends GenericSubscriptionValidator {
     }
 
 
-    public static boolean checkForNotifMethod(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)
-    {
-        if(rawData.getNotifMethod() == null)
-        { subscription.setNotifMethod(NotificationMethod.THRESHOLD.ordinal()); }
-
-        else if(!(rawData.getNotifMethod() instanceof Integer))
-        { rawData.setNotifMethod(ErrorMessage.NOT_INTEGER); }
-
-        else
-        {
-            Integer notifMethod = (Integer)rawData.getNotifMethod();
-
-            if(notifMethod == 0 || notifMethod == 1)
-            { subscription.setNotifMethod(notifMethod); }
-
-            else
-            {
-                rawData.setNotifMethod(ErrorMessage.INVALID_NOTIFICATION_METHOD);
-
-                // Increment Counter
-                ErrorCounters.incrementInvalidNotifMethod();
-            }
-        }
-
-        return subscription.getNotifMethod() != null;
-    }
-
 
 
     public static boolean checkForRepetitionPeriod(SubscriptionRawData rawData, NnwdafEventsSubscription subscription)

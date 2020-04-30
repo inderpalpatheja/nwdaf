@@ -1,6 +1,7 @@
 package com.nwdaf.AMF;
 
 import com.nwdaf.AMF.model.EventID;
+import com.nwdaf.AMF.model.NetworkPerfType;
 import com.nwdaf.AMF.model.NotificationMethod;
 import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONException;
@@ -29,6 +30,7 @@ public class EventData {
 
             case SERVICE_EXPERIENCE: return getServiceExperienceData();
 
+            case NETWORK_PERFORMANCE: return getNetworkPerformanceData();
         }
 
         return null;
@@ -99,7 +101,7 @@ public class EventData {
         json.put("notificationURI", notificationURI);
         json.put("notifMethod", 0);
         json.put("repetitionPeriod", 10 + random.nextInt(10));
-        json.put("supi", RandomStringUtils.randomNumeric(7));
+        json.put("supi", RandomStringUtils.randomNumeric(15));
 
         return json;
     }
@@ -113,8 +115,31 @@ public class EventData {
 
         json.put("eventID", EventID.SERVICE_EXPERIENCE.ordinal());
         json.put("notificationURI", notificationURI);
-        json.put("supi", RandomStringUtils.randomNumeric(7));
+        json.put("supi", RandomStringUtils.randomNumeric(15));
         json.put("snssais", snssais[random.nextInt(snssais.length)]);
+
+        return json;
+    }
+
+
+    public static JSONObject getNetworkPerformanceData() throws JSONException
+    {
+        JSONObject json = new JSONObject();
+
+        json.put("eventID", EventID.NETWORK_PERFORMANCE.ordinal());
+        json.put("notificationURI", notificationURI);
+        json.put("supi", RandomStringUtils.randomNumeric(15));
+
+        Integer nwPerfType = random.nextInt(NetworkPerfType.values().length);
+
+        json.put("nwPerfType", nwPerfType);
+        json.put("notifMethod", NotificationMethod.THRESHOLD.ordinal());
+
+        if(nwPerfType == NetworkPerfType.GNB_ACTIVE_RATIO.ordinal() || nwPerfType == NetworkPerfType.SESS_SUCC_RATIO.ordinal() || nwPerfType == NetworkPerfType.HO_SUCC_RATIO.ordinal())
+        { json.put("relativeRatioThreshold", 20 + random.nextInt(30)); }
+
+        else
+        { json.put("absoluteNumThreshold", 20 + random.nextInt(30)); }
 
         return json;
     }

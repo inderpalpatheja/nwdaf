@@ -3,15 +3,20 @@ package com.nwdaf.Analytics.Service;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Model.APIBuildInformation;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
+import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfType;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.SvcExperience;
 import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.Model.NotificationFormat.NetworkPerformanceNotification;
 import com.nwdaf.Analytics.Model.NotificationFormat.ServiceExperienceNotification;
 import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSubscriptionData;
@@ -19,15 +24,13 @@ import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSu
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.NnwdafEventsSubscriptionUEmobility;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionModel;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
-import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.AnalyticsError;
-import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.EventError;
-import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.ServiceExperienceAnalyticsError;
-import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.UeMobilityAnalyticsError;
+import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.*;
 import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator.*;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.*;
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.*;
 import com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator.QosSustainabilityUpdateValidator;
 import com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator.SliceLoadLevelUpdateValidator;
+import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -153,6 +156,12 @@ public class Nnwdaf_Service extends BusinessLogic {
                 { return new ResponseEntity<>(validate, HttpStatus.NOT_ACCEPTABLE); }
             }
 
+            else if(eventID == EventID.NETWORK_PERFORMANCE.ordinal())
+            {
+                if((validate = NetworkPerformanceAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof NetworkPerfAnalyticsError)
+                { return new ResponseEntity<>(validate, HttpStatus.NOT_ACCEPTABLE); }
+            }
+
 
             nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
 
@@ -166,6 +175,11 @@ public class Nnwdaf_Service extends BusinessLogic {
 
             else if(eventID == EventID.SERVICE_EXPERIENCE.ordinal())
             { return checkForData_ServiceExperience(nnwdafEventsSubscription, true); }
+
+
+            else if(eventID == EventID.NETWORK_PERFORMANCE.ordinal())
+            { return checkForData_NetworkPerformance(nnwdafEventsSubscription, true); }
+
 
 
             Object snssaisDataList = checkForData_LoadLevelInformation(nnwdafEventsSubscription, true);
@@ -250,6 +264,12 @@ public class Nnwdaf_Service extends BusinessLogic {
                 { return new ResponseEntity<>(validator, HttpStatus.NOT_ACCEPTABLE); }
             }
 
+            else if(eventID == EventID.NETWORK_PERFORMANCE.ordinal())
+            {
+                if((validator = NetworkPerformanceValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof NetworkPerformanceError)
+                { return new ResponseEntity<>(validator, HttpStatus.NOT_ACCEPTABLE); }
+            }
+
 
             nnwdafEventsSubscription = (NnwdafEventsSubscription)validator;
 
@@ -320,7 +340,33 @@ public class Nnwdaf_Service extends BusinessLogic {
                 repository.addServiceExperienceSubscriptionData(nnwdafEventsSubscription);
                 repository.addServiceExperienceInformation(nnwdafEventsSubscription);
 
-                checkForData_ServiceExperience(nnwdafEventsSubscription, false);
+                Object obj = checkForData_ServiceExperience(nnwdafEventsSubscription, false);
+
+                if (obj instanceof ResponseEntity) {
+                    return obj;
+                }
+            }
+
+
+            else if(eventID == EventID.NETWORK_PERFORMANCE.ordinal())
+            {
+                nnwdafEventsSubscription.setRepetitionPeriod(0);
+
+                repository.subscribeNF(nnwdafEventsSubscription, EventID.NETWORK_PERFORMANCE);
+
+                if(nnwdafEventsSubscription.getAbsoluteNumThreshold() != null)
+                { repository.addNetworkPerformanceSubscriptionData(nnwdafEventsSubscription, NetworkPerfThreshold.ABSOLUTE_NUM); }
+
+                else
+                { repository.addNetworkPerformanceSubscriptionData(nnwdafEventsSubscription, NetworkPerfThreshold.RELATIVE_RATIO); }
+
+                repository.addNetworkPerformanceInformation(nnwdafEventsSubscription);
+
+                Object obj = checkForData_NetworkPerformance(nnwdafEventsSubscription, false);
+
+                if (obj instanceof ResponseEntity) {
+                    return obj;
+                }
             }
 
 
@@ -477,10 +523,11 @@ public class Nnwdaf_Service extends BusinessLogic {
 
                 if((snssais = repository.unsubscribeNF_SliceLoadLevel(subscriber)) != null)
                 {
+                    EventCounter[eventID].incrementUnSubscriptionsSent();
                     unsubscribeFromNWDAF(snssais);
+
                     repository.deleteEntry_SliceLoadLevelSubscriptionTable(snssais);
 
-                    EventCounter[eventID].incrementUnSubscriptionsSent();
                     EventCounter[eventID].incrementUnSubscriptionsResponse();
                 }
             }
@@ -497,7 +544,6 @@ public class Nnwdaf_Service extends BusinessLogic {
                     unSubscribeRightSide(DELETE_OAM_URL, qosRightSideData.getCorrelationID(), qosRightSideData.getSubscriptionID(), EventID.QOS_SUSTAINABILITY);
                     repository.deleteEntry_QosSustainabilitySubscriptionTable(qosData.getPlmnID(), qosData.getSnssais());
 
-                    EventCounter[eventID].incrementUnSubscriptionsSent();
                     EventCounter[eventID].incrementUnSubscriptionsResponse();
                 }
             }
@@ -519,9 +565,25 @@ public class Nnwdaf_Service extends BusinessLogic {
                     unSubscribeRightSide(DELETE_NF_URL, svcExpRightSideData.getCorrelationID(), svcExpRightSideData.getSubscriptionID(), EventID.SERVICE_EXPERIENCE);
                     repository.deleteEntry_ServiceExperienceSubscriptionTable(svcExp.getSupi(), svcExp.getSnssais());
 
-                    EventCounter[eventID].incrementUnSubscriptionsSent();
                     EventCounter[eventID].incrementUnSubscriptionsResponse();
                 }
+            }
+
+
+            else if(eventID == EventID.NETWORK_PERFORMANCE.ordinal())
+            {
+                NetworkPerformanceSubscriptionData nwPerfSubData;
+
+                if((nwPerfSubData = repository.unsubscribeNF_NetworkPerformance(subscriptionID)) != null)
+                {
+                    NetworkPerformanceSubscriptionTable nwPerfSubTable = repository.getCorrelation_UnSubCorrelation_NetworkPerformance(nwPerfSubData.getSupi(), nwPerfSubData.getNwPerfType());
+
+                    unSubscribeRightSide(DELETE_OAM_URL, nwPerfSubTable.getCorrelationID(), nwPerfSubTable.getSubscriptionID(), EventID.NETWORK_PERFORMANCE);
+                    repository.deleteEntry_NetworkPerformanceSubscriptionTable(nwPerfSubData.getSupi(), nwPerfSubData.getNwPerfType());
+
+                    EventCounter[eventID].incrementUnSubscriptionsResponse();
+                }
+
             }
 
 
@@ -990,6 +1052,8 @@ public class Nnwdaf_Service extends BusinessLogic {
     {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+        EventCounter[EventID.QOS_SUSTAINABILITY.ordinal()].incrementSubscriptionNotificationsReceived();
+
 
         try
         {
@@ -1015,7 +1079,6 @@ public class Nnwdaf_Service extends BusinessLogic {
             if(ranUeThroughput != null)
             {
                 repository.updateRanUeThroughput(ranUeThroughput, qosData.getPlmnID(), qosData.getSnssais());
-                EventCounter[EventID.QOS_SUSTAINABILITY.ordinal()].incrementSubscriptionNotificationsReceived();
 
                 qosNotificationManager(QosType.RAN_UE_THROUGHPUT);
             }
@@ -1023,7 +1086,6 @@ public class Nnwdaf_Service extends BusinessLogic {
             else if(qosFlowRetain != null)
             {
                 repository.updateQosFlowRetain(qosFlowRetain, qosData.getPlmnID(), qosData.getSnssais());
-                EventCounter[EventID.QOS_SUSTAINABILITY.ordinal()].incrementSubscriptionNotificationsReceived();
 
                 qosNotificationManager(QosType.QOS_FLOW_RETAIN);
             }
@@ -1044,6 +1106,123 @@ public class Nnwdaf_Service extends BusinessLogic {
             e.printStackTrace();
         }
     }
+
+
+
+
+    /*************************************NETWORK_PERFORMANCE***********************************************************/
+
+
+    public void notificationHandler_NetworkPerformance(String response)
+    {
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+        EventCounter[EventID.NETWORK_PERFORMANCE.ordinal()].incrementSubscriptionNotificationsReceived();
+
+        try
+        {
+            JSONObject notificationData = new JSONObject(response);
+
+           /* Integer relativeRatio = null;
+            Integer absoluteNum = null;
+
+            if(notificationData.has("relativeRatio"))
+            { relativeRatio = notificationData.getInt("relativeRatio"); }
+
+            else if(notificationData.has("absoluteNum"))
+            { absoluteNum = notificationData.getInt("absoluteNum"); } */
+
+            Integer reportingThreshold = notificationData.getInt("reportingThreshold");
+
+            String correlationID = notificationData.getString("correlationID");
+            NetworkPerformanceSubscriptionData nwPerfSubData = repository.getSupi_nwPerfType_byCorrelationID(correlationID);
+
+            NetworkPerfType nwPerfType = NetworkPerfType.values()[nwPerfSubData.getNwPerfType()];
+            NetworkPerfThreshold networkPerfThreshold = NetworkPerfThreshold.ABSOLUTE_NUM;
+
+
+            if(nwPerfType == NetworkPerfType.GNB_ACTIVE_RATIO || nwPerfType == NetworkPerfType.SESS_SUCC_RATIO || nwPerfType == NetworkPerfType.HO_SUCC_RATIO)
+            { networkPerfThreshold = NetworkPerfThreshold.RELATIVE_RATIO; }
+
+
+            if(networkPerfThreshold == NetworkPerfThreshold.RELATIVE_RATIO)
+            {
+                repository.updateRelativeRatio_NetworkPerf(reportingThreshold, nwPerfSubData.getSupi(), nwPerfSubData.getNwPerfType());
+                NetworkPerformanceSubscriptionData crossedThresholdData = repository.getCrossedNwPerfType_subscriptionID_NetworkPerf(nwPerfSubData.getSupi(), nwPerfSubData.getNwPerfType(), reportingThreshold, NetworkPerfThreshold.RELATIVE_RATIO);
+
+                if(crossedThresholdData != null)
+                {
+                    NetworkPerformanceNotification nwPerfNotifyData = new NetworkPerformanceNotification();
+
+                    nwPerfNotifyData.setSubscriptionID(crossedThresholdData.getSubscriptionID());
+                    nwPerfNotifyData.setNotificationURI(repository.getNotificationURI(crossedThresholdData.getSubscriptionID()));
+                    nwPerfNotifyData.setNwPerfType(crossedThresholdData.getNwPerfType());
+                    nwPerfNotifyData.setRelativeRatio(reportingThreshold);
+                    //nwPerfNotifyData.setMcc(nwPerfSubData.getSupi().substring(0, 3));
+                    //nwPerfNotifyData.setMnc(nwPerfSubData.getSupi().substring(3, 5));
+                    //nwPerfNotifyData.setTac(RandomStringUtils.randomAlphanumeric(6));
+
+                    sendNetworkExperienceNotification(nwPerfNotifyData, NetworkPerfThreshold.RELATIVE_RATIO);
+                }
+            }
+
+            else
+            {
+                repository.updateAbsoluteNum_NetworkPerf(reportingThreshold, nwPerfSubData.getSupi(), nwPerfSubData.getNwPerfType());
+                NetworkPerformanceSubscriptionData crossedThresholdData = repository.getCrossedNwPerfType_subscriptionID_NetworkPerf(nwPerfSubData.getSupi(), nwPerfSubData.getNwPerfType(), reportingThreshold, NetworkPerfThreshold.ABSOLUTE_NUM);
+
+                if(crossedThresholdData != null)
+                {
+                    NetworkPerformanceNotification nwPerfNotifyData = new NetworkPerformanceNotification();
+
+                    nwPerfNotifyData.setSubscriptionID(crossedThresholdData.getSubscriptionID());
+                    nwPerfNotifyData.setNotificationURI(repository.getNotificationURI(crossedThresholdData.getSubscriptionID()));
+                    nwPerfNotifyData.setNwPerfType(crossedThresholdData.getNwPerfType());
+                    nwPerfNotifyData.setAbsoluteSum(reportingThreshold);
+                    //nwPerfNotifyData.setMcc(nwPerfSubData.getSupi().substring(0, 3));
+                    //nwPerfNotifyData.setMnc(nwPerfSubData.getSupi().substring(3, 5));
+                    //nwPerfNotifyData.setTac(RandomStringUtils.randomAlphanumeric(6));
+
+                    sendNetworkExperienceNotification(nwPerfNotifyData, NetworkPerfThreshold.ABSOLUTE_NUM);
+                }
+            }
+
+            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+
+        }
+
+        catch (JSONException e) {
+
+            ErrorCounters.incrementJsonException();
+            e.printStackTrace();
+        }
+
+        catch (IOException e) {
+
+            ErrorCounters.incrementIOException();
+            e.printStackTrace();
+        }
+
+    }
+
+
+
+    public void notificationHandlerOAM(String response) throws JSONException {
+
+        JSONObject json = new JSONObject(response);
+
+        EventID eventID = EventID.values()[json.getInt("eventID")];
+
+        switch(eventID)
+        {
+            case QOS_SUSTAINABILITY: notificationHandler_QosSustainability(response);
+                                     break;
+
+            case NETWORK_PERFORMANCE: notificationHandler_NetworkPerformance(response);
+                                      break;
+        }
+    }
+
 
 
 }

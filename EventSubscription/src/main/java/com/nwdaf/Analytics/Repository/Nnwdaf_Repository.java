@@ -2,9 +2,12 @@ package com.nwdaf.Analytics.Repository;
 
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnection;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnectionForUEMobility;
+import com.nwdaf.Analytics.Model.AnalyticsInformation.NetworkPerformanceInfo;
 import com.nwdaf.Analytics.Model.AnalyticsInformation.QosSustainabilityInfo;
 import com.nwdaf.Analytics.Model.AnalyticsInformation.ServiceExperienceInfo;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfTable;
+import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
 import com.nwdaf.Analytics.Model.CustomData.QosSustainabilityData.QosSustainability;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.ServiceExperience;
@@ -16,6 +19,8 @@ import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelIn
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilityInformation;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionTable;
@@ -24,6 +29,7 @@ import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSu
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.UEmobilitySubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UserLocation;
+import com.nwdaf.Analytics.Repository.Mapper.AnalyticsMapper.NetworkPerformanceInfoMapper;
 import com.nwdaf.Analytics.Repository.Mapper.AnalyticsMapper.QosSustainabilityInfoMapper;
 import com.nwdaf.Analytics.Repository.Mapper.AnalyticsMapper.ServiceExperienceInfoMapper;
 import com.nwdaf.Analytics.Repository.Mapper.AnalyticsRowMapper;
@@ -62,7 +68,7 @@ public class Nnwdaf_Repository {
 
         String query = "";
 
-        if(eventID == EventID.LOAD_LEVEL_INFORMATION || eventID == EventID.UE_MOBILITY)
+        if(eventID == EventID.LOAD_LEVEL_INFORMATION || eventID == EventID.UE_MOBILITY || eventID == EventID.NETWORK_PERFORMANCE)
         { query = "INSERT INTO nwdafSubscriptionTable VALUES(?, ?, ?, ?, ?)"; }
 
         else if(eventID == EventID.QOS_SUSTAINABILITY || eventID == EventID.SERVICE_EXPERIENCE)
@@ -78,7 +84,7 @@ public class Nnwdaf_Repository {
                 preparedStatement.setInt(2, nnwdafEventsSubscription.getEventID());
                 preparedStatement.setString(3, nnwdafEventsSubscription.getNotificationURI());
 
-                if(eventID == EventID.LOAD_LEVEL_INFORMATION || eventID == EventID.UE_MOBILITY)
+                if(eventID == EventID.LOAD_LEVEL_INFORMATION || eventID == EventID.UE_MOBILITY || eventID == EventID.NETWORK_PERFORMANCE)
                 {
                     preparedStatement.setInt(4, nnwdafEventsSubscription.getNotifMethod());
                     preparedStatement.setInt(5, nnwdafEventsSubscription.getRepetitionPeriod());
@@ -141,6 +147,16 @@ public class Nnwdaf_Repository {
         return decrementRefCount_ServiceExperience(svcExp);
     }
 
+
+    public NetworkPerformanceSubscriptionData unsubscribeNF_NetworkPerformance(String subscriptionID)
+    {
+        NetworkPerformanceSubscriptionData nwPerfSubData = getSupi_nwPerfType_NetworkPerformance(subscriptionID);
+
+        jdbcTemplate.update("DELETE FROM nwdafNetworkPerformanceSubscriptionData WHERE subscriptionID = ?;", subscriptionID);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionID = ?;", subscriptionID);
+
+        return decrementRefCount_NetworkPerformance(nwPerfSubData);
+    }
 
 
 
@@ -381,6 +397,16 @@ public class Nnwdaf_Repository {
         return null;
     }
 
+    public NetworkPerformanceSubscriptionData decrementRefCount_NetworkPerformance(NetworkPerformanceSubscriptionData nwPerfSubData)
+    {
+        jdbcTemplate.update("UPDATE nwdafNetworkPerformanceSubscriptionTable SET refCount = refCount - 1 WHERE supi = ? AND nwPerfType = ?;", new Object[] { nwPerfSubData.getSupi(), nwPerfSubData.getNwPerfType() });
+
+        if(getRefCount_NetworkPerformance(nwPerfSubData.getSupi(), nwPerfSubData.getNwPerfType()) == 0)
+        { return nwPerfSubData; }
+
+        return null;
+    }
+
 
 
 
@@ -497,6 +523,19 @@ public class Nnwdaf_Repository {
         { return 0; }
     }
 
+
+    public Integer getRefCount_NetworkPerformance(String supi, Integer nwPerfType)
+    {
+        String query = "SELECT refCount FROM nwdafNetworkPerformanceSubscriptionTable WHERE supi = ? AND nwPerfType = ?;";
+
+        try
+        {
+            return jdbcTemplate.queryForObject(query, new Object[]{supi, nwPerfType}, (resultSet, i) -> resultSet.getInt("refCount"));
+        }
+
+        catch(EmptyResultDataAccessException ex)
+        { return 0; }
+    }
 
 
 
@@ -1609,9 +1648,21 @@ public class Nnwdaf_Repository {
     }
 
 
+    public NetworkPerformanceSubscriptionData getSupi_nwPerfType_NetworkPerformance(String subscriptionID)
+    {
+        String query = "SELECT supi, nwPerfType FROM nwdafNetworkPerformanceSubscriptionData WHERE subscriptionID = ?";
+
+        return jdbcTemplate.queryForObject(query, new Object[]{subscriptionID}, (resultSet, i) -> new NetworkPerformanceSubscriptionData(resultSet.getString("supi"), resultSet.getInt("nwPerfType")));
+    }
+
+
+
     public Integer deleteEntry_ServiceExperienceSubscriptionTable(String supi, String snssais)
     { return jdbcTemplate.update("DELETE FROM nwdafServiceExperienceSubscriptionTable WHERE supi = ? AND snssais = ?;", new Object[] {supi, snssais}); }
 
+
+    public Integer deleteEntry_NetworkPerformanceSubscriptionTable(String supi, Integer nwPerfType)
+    { return jdbcTemplate.update("DELETE FROM nwdafNetworkPerformanceSubscriptionTable WHERE supi = ? AND nwPerfType = ?;", new Object[] {supi, nwPerfType}); }
 
 
     public List<ServiceExperienceInfo> getServiceExperienceInfo(String supi, String snssais, Boolean anyUE)
@@ -1670,5 +1721,194 @@ public class Nnwdaf_Repository {
             return svcExpRightSideData;
         });
     }
+
+
+
+    /************************************NETWORK_PERFORMANCE***********************************************/
+
+
+    public Boolean addNetworkPerformanceSubscriptionData(NnwdafEventsSubscription subscription, NetworkPerfThreshold nwPerfThreshold)
+    {
+        String query = "";
+
+        if(nwPerfThreshold == NetworkPerfThreshold.ABSOLUTE_NUM)
+        { query = "INSERT INTO nwdafNetworkPerformanceSubscriptionData (subscriptionID, supi, nwPerfType, absoluteNumThreshold) VALUES (?, ?, ?, ?);"; }
+
+        else if(nwPerfThreshold == NetworkPerfThreshold.RELATIVE_RATIO)
+        { query = "INSERT INTO nwdafNetworkPerformanceSubscriptionData (subscriptionID, supi, nwPerfType, relativeRatioThreshold) VALUES (?, ?, ?, ?);"; }
+
+        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+
+            @Override
+            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+
+                preparedStatement.setString(1, subscription.getSubscriptionID());
+                preparedStatement.setString(2, subscription.getSupi());
+                preparedStatement.setInt(3, subscription.getNwPerfType());
+
+                if(nwPerfThreshold == NetworkPerfThreshold.ABSOLUTE_NUM)
+                { preparedStatement.setInt(4, subscription.getAbsoluteNumThreshold()); }
+
+                else if(nwPerfThreshold == NetworkPerfThreshold.RELATIVE_RATIO)
+                { preparedStatement.setInt(4, subscription.getRelativeRatioThreshold()); }
+
+                return preparedStatement.execute();
+            }
+        });
+    }
+
+
+
+    public Boolean addNetworkPerformanceInformation(NnwdafEventsSubscription subscription)
+    {
+
+        if(supi_nwPerfTypeExists(subscription.getSupi(), subscription.getNwPerfType(), NetworkPerfTable.INFORMATION_TABLE))
+        { return Boolean.FALSE; }
+
+        String query = "INSERT INTO nwdafNetworkPerformanceInformation (supi, nwPerfType, relativeRatio, absoluteNum) VALUES(?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setString(1, subscription.getSupi());
+            preparedStatement.setInt(2, subscription.getNwPerfType());
+            preparedStatement.setInt(3, 0);
+            preparedStatement.setInt(4, 0);
+
+            return preparedStatement.execute();
+        });
+    }
+
+
+
+    public Boolean addNetworkPerformanceSubscriptionTable(NetworkPerformanceSubscriptionTable nwPerfSubTable, boolean getAnalytics)
+    {
+        String query = "INSERT INTO nwdafNetworkPerformanceSubscriptionTable (supi, nwPerfType, subscriptionID, correlationID, refCount) VALUES (?, ?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setString(1, nwPerfSubTable.getSupi());
+            preparedStatement.setInt(2, nwPerfSubTable.getNwPerfType());
+            preparedStatement.setString(3, nwPerfSubTable.getSubscriptionID());
+            preparedStatement.setString(4, nwPerfSubTable.getCorrelationID());
+
+            if(getAnalytics)
+            { preparedStatement.setInt(5, 0); }
+
+            else
+            { preparedStatement.setInt(5, 1); }
+
+            return preparedStatement.execute();
+        });
+    }
+
+
+
+
+
+    public boolean supi_nwPerfTypeExists(String supi, Integer nwPerfType, NetworkPerfTable nwPerfTable)
+    {
+        String query = "";
+
+        if(nwPerfTable == NetworkPerfTable.SUBSCRIPTION_TABLE)
+        { query = "SELECT EXISTS(SELECT 1 FROM nwdafNetworkPerformanceSubscriptionTable WHERE supi = ? AND nwPerfType = ?) AS supi_nwPerfType;"; }
+
+        else if(nwPerfTable == NetworkPerfTable.INFORMATION_TABLE)
+        { query = "SELECT EXISTS(SELECT 1 FROM nwdafNetworkPerformanceInformation WHERE supi = ? AND nwPerfType = ?) AS supi_nwPerfType;"; }
+
+        Integer exists = jdbcTemplate.queryForObject(query, new Object[]{supi, nwPerfType}, (resultSet, i) -> resultSet.getInt("supi_nwPerfType"));
+
+        return exists == 1;
+    }
+
+
+    public NetworkPerformanceSubscriptionData getSupi_nwPerfType_byCorrelationID(String correlationID)
+    {
+        String query = "SELECT supi, nwPerfType FROM nwdafNetworkPerformanceSubscriptionTable WHERE correlationID = ?";
+
+        return jdbcTemplate.queryForObject(query, new Object[]{correlationID}, (resultSet, i) -> new NetworkPerformanceSubscriptionData(resultSet.getString("supi"), resultSet.getInt("nwPerfType")));
+    }
+
+
+    public Integer updateRelativeRatio_NetworkPerf(Integer relativeRatio, String supi, Integer nwPerfType)
+    { return jdbcTemplate.update("UPDATE nwdafNetworkPerformanceInformation SET relativeRatio = ? WHERE supi = ? AND nwPerfType = ?;", new Object[] {relativeRatio, supi, nwPerfType}); }
+
+    public Integer updateAbsoluteNum_NetworkPerf(Integer absoluteNum, String supi, Integer nwPerfType)
+    { return jdbcTemplate.update("UPDATE nwdafNetworkPerformanceInformation SET absoluteNum = ? WHERE supi = ? AND nwPerfType = ?;", new Object[] {absoluteNum, supi, nwPerfType}); }
+
+
+
+    public NetworkPerformanceSubscriptionData getCrossedNwPerfType_subscriptionID_NetworkPerf(String supi, Integer nwPerfType, Integer threshold, NetworkPerfThreshold nwPerfThreshold)
+    {
+        String query = "";
+
+        if(nwPerfThreshold == NetworkPerfThreshold.RELATIVE_RATIO)
+        { query = "SELECT nwPerfType, subscriptionID FROM nwdafNetworkPerformanceSubscriptionData WHERE supi = ? AND nwPerfType = ? AND relativeRatioThreshold < ?;"; }
+
+        else if(nwPerfThreshold == NetworkPerfThreshold.ABSOLUTE_NUM)
+        { query = "SELECT nwPerfType, subscriptionID FROM nwdafNetworkPerformanceSubscriptionData WHERE supi = ? AND nwPerfType = ? AND absoluteNumThreshold < ?;"; }
+
+        try
+        {
+            return jdbcTemplate.queryForObject(query, new Object[]{supi, nwPerfType, threshold}, (resultSet, i) -> {
+
+                NetworkPerformanceSubscriptionData nwPerfSubData = new NetworkPerformanceSubscriptionData();
+
+                nwPerfSubData.setSubscriptionID(resultSet.getString("subscriptionID"));
+                nwPerfSubData.setNwPerfType(resultSet.getInt("nwPerfType"));
+
+                return nwPerfSubData;
+            });
+        }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
+
+
+    public NetworkPerformanceSubscriptionTable getCorrelation_UnSubCorrelation_NetworkPerformance(String supi, Integer nwPerfType)
+    {
+        String query = "SELECT subscriptionID, correlationID FROM nwdafNetworkPerformanceSubscriptionTable WHERE supi = ? AND nwPerfType = ?;";
+
+        return jdbcTemplate.queryForObject(query, new Object[]{supi, nwPerfType}, (resultSet, i) -> {
+
+            NetworkPerformanceSubscriptionTable nwPerfSubTable = new NetworkPerformanceSubscriptionTable();
+
+            nwPerfSubTable.setSubscriptionID(resultSet.getString("subscriptionID"));
+            nwPerfSubTable.setCorrelationID(resultSet.getString("correlationID"));
+
+            return nwPerfSubTable;
+        });
+    }
+
+
+    public List<Object> getNetworkPerformanceInfo(String supi, Integer nwPerfType, Boolean anyUE)
+    {
+        if(anyUE)
+        { return getAllNetworkPerformanceInfo(); }
+
+        String query = "SELECT * FROM nwdafNetworkPerformanceInformation WHERE supi = ? AND nwPerfType = ?;";
+
+        try
+        { return jdbcTemplate.query(query, new Object[] {supi, nwPerfType}, new NetworkPerformanceInfoMapper()); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
+
+
+    public List<Object> getAllNetworkPerformanceInfo()
+    {
+        String query = "SELECT * FROM nwdafNetworkPerformanceInformation;";
+
+        try
+        { return jdbcTemplate.query(query, new NetworkPerformanceInfoMapper()); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
+
+
+    public Integer updateRefCount_NetworkPerformance(String supi, Integer nwPerfType)
+    { return jdbcTemplate.update("UPDATE nwdafNetworkPerformanceSubscriptionTable SET refCount = refCount + 1 WHERE supi = ? AND nwPerfType = ?;", new Object[] {supi, nwPerfType}); }
 
 }
