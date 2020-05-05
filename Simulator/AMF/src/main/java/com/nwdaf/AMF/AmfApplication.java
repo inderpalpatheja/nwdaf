@@ -107,7 +107,7 @@ public class AmfApplication extends Functionality {
                     for (int j = 0; j < amfController.getCorrelationIDList_QOS_SUSTAINABILITY().size(); j++) {
 
 
-                        amfController.sendData("http://localhost:8081/Noam_NFManagement_NFStatusNotify", qosLoadType[random.nextInt(qosLoadType.length)],
+                        amfController.sendData("https://localhost:8081/Noam_EventExposure_Notify", qosLoadType[random.nextInt(qosLoadType.length)],
                                 amfController.getCorrelationIDList_QOS_SUSTAINABILITY().get(j));
 
                     }
@@ -134,7 +134,7 @@ public class AmfApplication extends Functionality {
 
 
                     for (int j = 0; j < amfController.getCorrelationIDList_SERVICE_EXPERIENCE().size(); j++) {
-                        amfController.sendServiceExperienceData("http://localhost:8081/Nnf_EventExposure_Notify", amfController.getCorrelationIDList_SERVICE_EXPERIENCE().get(j));
+                        amfController.sendServiceExperienceData("https://localhost:8081/Nnf_EventExposure_Notify", amfController.getCorrelationIDList_SERVICE_EXPERIENCE().get(j));
                     }
 
 
@@ -143,6 +143,29 @@ public class AmfApplication extends Functionality {
                     if(eventID == 10)
                     { break; }
                 }
+            }
+
+
+            if(eventID == EventID.NETWORK_PERFORMANCE.ordinal() || eventID == 10)
+            {
+                while(true)
+                {
+                    for(int i = 0;i < subList; i++)
+                    {
+                        System.out.println("Subscribing for EventID: " + EventID.NETWORK_PERFORMANCE.toString());
+                        String subscriptionID = subscribe(EventID.NETWORK_PERFORMANCE);
+                    }
+
+                    for(int j = 0; j < amfController.getCorrelationIDList_NETWORK_PERFORMANCE().size(); j++)
+                    { amfController.sendNetworkPerformanceData("https://localhost:8081/Noam_EventExposure_Notify", amfController.getCorrelationIDList_NETWORK_PERFORMANCE().get(j)); }
+
+
+                    Thread.sleep(3 * 1000);
+
+                    if(eventID == 10)
+                    { break; }
+                }
+
             }
 
 

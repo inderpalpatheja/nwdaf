@@ -30,7 +30,7 @@ public abstract class GenericAnalyticsValidator {
     public static boolean checkForAnySlice(AnalyticsRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getAnySlice() == null || rawData.getAnySlice().isEmpty())
-        { rawData.setAnySlice(ErrorMessage.IS_NULL); }
+        { subscription.setAnySlice(Boolean.FALSE); }
 
         else
         {
@@ -48,7 +48,7 @@ public abstract class GenericAnalyticsValidator {
     public static boolean checkForAnyUE(AnalyticsRawData rawData, NnwdafEventsSubscription subscription)
     {
         if(rawData.getAnyUE() == null || rawData.getAnyUE().isEmpty())
-        { rawData.setAnyUE(ErrorMessage.IS_NULL); }
+        { subscription.setAnyUE(Boolean.FALSE); }
 
         else
         {

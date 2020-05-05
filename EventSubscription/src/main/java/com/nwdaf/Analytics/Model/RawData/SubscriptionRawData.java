@@ -39,4 +39,12 @@ public class SubscriptionRawData {
 
     Object supi;
 
+
+    /***************************NETWORK_PERFORMANCE**********************************************/
+
+
+    Object nwPerfType;
+    Object relativeRatioThreshold;
+    Object absoluteNumThreshold;
+
 }

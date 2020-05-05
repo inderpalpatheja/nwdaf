@@ -150,5 +150,44 @@ CREATE TABLE `NWDAF`.`nwdafServiceExperienceSubscriptionTable` (
 `correlationID` VARCHAR(128) NOT NULL,
 `refCount` INT NOT NULL,
 PRIMARY KEY (`ID`));
+
+
+
+
+
+CREATE TABLE `NWDAF`.`nwdafNetworkPerformanceSubscriptionData` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`subscriptionID` VARCHAR(128) NOT NULL,
+`supi` VARCHAR(128) NOT NULL,
+`nwPerfType` INT NOT NULL,
+`relativeRatioThreshold` INT NULL,
+`absoluteNumThreshold` INT NULL,
+PRIMARY KEY (`ID`),
+FOREIGN KEY (`subscriptionID`)
+REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionID`)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION);
+
+
+
+CREATE TABLE `NWDAF`.`nwdafNetworkPerformanceInformation` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`supi` VARCHAR(128) NOT NULL,
+`nwPerfType` INT NOT NULL,
+`relativeRatio` INT NOT NULL,
+`absoluteNum` INT NOT NULL,
+PRIMARY KEY (`ID`));
+
+
+CREATE TABLE `NWDAF`.`nwdafNetworkPerformanceSubscriptionTable` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`supi` VARCHAR(128) NOT NULL,
+`nwPerfType` INT NOT NULL,
+`subscriptionID` VARCHAR(128) NOT NULL,
+`correlationID` VARCHAR(128) NOT NULL,
+`refCount` INT NOT NULL,
+PRIMARY KEY (`ID`));
+
+
   
   

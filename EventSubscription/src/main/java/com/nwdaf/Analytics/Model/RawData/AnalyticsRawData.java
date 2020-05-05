@@ -15,4 +15,5 @@ public class AnalyticsRawData {
     String supi;
     String plmnID;
     String anyUE;
+    String nwPerfType;
 }

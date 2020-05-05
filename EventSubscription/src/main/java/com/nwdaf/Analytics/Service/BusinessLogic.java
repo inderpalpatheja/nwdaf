@@ -4,9 +4,12 @@ import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnection;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnectionForUEMobility;
 import com.nwdaf.Analytics.Model.AMFModel.AMFModel;
+import com.nwdaf.Analytics.Model.AnalyticsInformation.NetworkPerformanceInfo;
 import com.nwdaf.Analytics.Model.AnalyticsInformation.QosSustainabilityInfo;
 import com.nwdaf.Analytics.Model.AnalyticsInformation.ServiceExperienceInfo;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfTable;
+import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
 import com.nwdaf.Analytics.Model.CustomData.QosSustainabilityData.QosSustainability;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.ServiceExperience;
@@ -15,12 +18,14 @@ import com.nwdaf.Analytics.Model.Nnrf.Nnrf_Model;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.NotificationData;
 import com.nwdaf.Analytics.Model.NotificationFormat.LoadLevelInformationNotification;
+import com.nwdaf.Analytics.Model.NotificationFormat.NetworkPerformanceNotification;
 import com.nwdaf.Analytics.Model.NotificationFormat.QosSustainabilityNotification;
 import com.nwdaf.Analytics.Model.NotificationFormat.ServiceExperienceNotification;
 import com.nwdaf.Analytics.Model.QosNotificationData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelInformation;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilityInformation;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSubscriptionTable;
@@ -1710,11 +1715,78 @@ public class BusinessLogic extends ResourceValues {
 
 
 
+    /***************************************NETWORK_PERFORMANCE************************************************************************/
+
+
+    public Object checkForData_NetworkPerformance(NnwdafEventsSubscription subscription, boolean getAnalytics) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+        String supi = subscription.getSupi();
+        Integer nwPerfType = subscription.getNwPerfType();
+
+        Boolean anyUE = subscription.getAnyUE();
+
+        if(getAnalytics)
+        {
+            List<Object> nwPerfInfo = repository.getNetworkPerformanceInfo(supi, nwPerfType, anyUE);
+            collectDataForNetworkPerformance(subscription, true);
+
+            repository.addNetworkPerformanceInformation(subscription);
+
+            if(nwPerfInfo == null || nwPerfInfo.isEmpty())
+            { return new ResponseEntity<String>("Data Not Found", HttpStatus.NOT_FOUND); }
+
+            else
+            { return new ResponseEntity(nwPerfInfo, HttpStatus.OK); }
+
+        }
+
+        else
+        { collectDataForNetworkPerformance(subscription, false); }
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+        return null;
+    }
 
 
 
+    public void collectDataForNetworkPerformance(NnwdafEventsSubscription subscription, boolean getAnalytics) throws IOException, JSONException {
 
-    /*********************************************************************************************************************/
+        String supi = subscription.getSupi();
+        Integer nwPerfType = subscription.getNwPerfType();
+
+        if(repository.supi_nwPerfTypeExists(supi, nwPerfType, NetworkPerfTable.SUBSCRIPTION_TABLE))
+        {
+            if(!getAnalytics)
+            { repository.updateRefCount_NetworkPerformance(supi, nwPerfType); }
+        }
+
+        else
+        {
+            String correlationID = FrameWorkFunction.getUniqueID().toString();
+            String unSubcorrelationID = subscribeRightSide(POST_OAM_URL, correlationID, EventID.NETWORK_PERFORMANCE);
+
+            responseHandlerNetworkPerformance(supi, nwPerfType, unSubcorrelationID, correlationID, getAnalytics);
+        }
+    }
+
+
+
+    public void responseHandlerNetworkPerformance(String supi, Integer nwPerfType, String subscriptionID, String correlationID, boolean getAnalytics)
+    {
+        NetworkPerformanceSubscriptionTable nwPerfSubTable = new NetworkPerformanceSubscriptionTable();
+
+        nwPerfSubTable.setSupi(supi);
+        nwPerfSubTable.setNwPerfType(nwPerfType);
+        nwPerfSubTable.setSubscriptionID(subscriptionID);
+        nwPerfSubTable.setCorrelationID(correlationID);
+
+        repository.addNetworkPerformanceSubscriptionTable(nwPerfSubTable, getAnalytics);
+    }
+
+
 
 
 
@@ -1730,7 +1802,8 @@ public class BusinessLogic extends ResourceValues {
     { sendNotificationToNF(svcExpNotifyData.getNotificationURI(), NotificationPayload.getServiceExperiencePayload(svcExpNotifyData), EventID.SERVICE_EXPERIENCE); }
 
 
-
+    public void sendNetworkExperienceNotification(NetworkPerformanceNotification nwPerfNotifyData, NetworkPerfThreshold threshold) throws JSONException, IOException
+    { sendNotificationToNF(nwPerfNotifyData.getNotificationURI(), NotificationPayload.getNetworkPerformancePayload(nwPerfNotifyData, threshold), EventID.NETWORK_PERFORMANCE); }
 
 
 
@@ -1812,6 +1885,7 @@ public class BusinessLogic extends ResourceValues {
 
         json.put("correlationID", correlationID);
         json.put("notificationTargetAddress", subscribeURI);
+        json.put("eventID", eventID.ordinal());
 
         // For POST only - START
         con.setDoOutput(true);
@@ -1863,13 +1937,14 @@ public class BusinessLogic extends ResourceValues {
 
         URL obj = new URL(unSubscribeURI);
 
-        //  out.println(DELETE_NRF_URL);
+
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("unSubCorrelationID", unSubCorrelationID);
         jsonObject.put("correlationID", correlationID);
+        jsonObject.put("eventID", eventID.ordinal());
 
         con.setRequestMethod("DELETE");
         con.setRequestProperty("User-Agent", USER_AGENT);
@@ -1904,6 +1979,7 @@ public class BusinessLogic extends ResourceValues {
             con.disconnect();
         }
 
+        EventCounter[eventID.ordinal()].incrementUnSubscriptionsSent();
     }
 
 

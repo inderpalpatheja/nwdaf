@@ -73,10 +73,11 @@ public class Nnwdaf_Controller {
                                   @RequestParam(value = "plmnID", required = false) String plmnID,
                                   @RequestParam("eventID") String eventID,
                                   @RequestParam(value = "supi", required = false) String supi,
-                                  @RequestParam(value = "anyUe", required = false) String anyUe) throws IOException, JSONException {
+                                  @RequestParam(value = "anyUe", required = false) String anyUe,
+                                  @RequestParam(value = "nwPerfType", required = false) String nwPerfType) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(eventID, snssais, anySlice, supi, plmnID, anyUe));
+        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(eventID, snssais, anySlice, supi, plmnID, anyUe, nwPerfType));
     }
 
 
@@ -143,7 +144,7 @@ public class Nnwdaf_Controller {
 
 
 
-    // Accepting Notification [ from Simulator]
+    // Accepting Notification related to LOAD_LEVEL_INFORMATION [ from Simulator]
     @RequestMapping(method = RequestMethod.POST, value = "/Nnrf_NFManagement_NFStatusNotify/{correlationID}")
     public void acceptingNotification(@RequestBody String response) throws Exception {
 
@@ -152,14 +153,6 @@ public class Nnwdaf_Controller {
     }
 
 
-
-    // Accepting Notification related to QOS_SUSTAINABILITY [ from Simulator]
-    @RequestMapping(method = RequestMethod.POST, value = "/Noam_NFManagement_NFStatusNotify/{correlationID}")
-    public void acceptingNotification_QosSustainability(@RequestBody String response) throws Exception {
-
-        nwdaf_service.notificationHandler_QosSustainability(response);
-
-    }
 
 
     // Accepting Notification UE-Mobility [ from Simulator]
@@ -174,9 +167,17 @@ public class Nnwdaf_Controller {
 
     // Accepting Notification related to SERVICE_EXPERIENCE [ from Simulator]
     @PostMapping("/Nnf_EventExposure_Notify/{correlationID}")
-    public void acceptingNotification_ServiceExperience(@RequestBody String response) throws Exception
+    public void acceptingNotification_ServiceExperience(@RequestBody String response)
     {
         nwdaf_service.notificationHandler_ServiceExperience(response);
+    }
+
+
+    // Accepting Notification related to QOS_SUSTAINABILITY & NETWORK_PERFORMANCE [ from Simulator]
+    @PostMapping("/Noam_EventExposure_Notify/{correlationID}")
+    public void acceptingNotification_NetworkPerformance(@RequestBody String response) throws JSONException {
+
+        nwdaf_service.notificationHandlerOAM(response);
     }
 
 
