@@ -47,4 +47,10 @@ public class SubscriptionRawData {
     Object relativeRatioThreshold;
     Object absoluteNumThreshold;
 
+
+    /***************************USER_DATA_CONGESTION**********************************************/
+
+    Object congType;
+    Object congLevelThreshold;
+
 }

@@ -1,5 +1,6 @@
 package com.nwdaf.AMF;
 
+import com.nwdaf.AMF.model.CongestionType;
 import com.nwdaf.AMF.model.EventID;
 import com.nwdaf.AMF.model.NetworkPerfType;
 import com.nwdaf.AMF.model.NotificationMethod;
@@ -31,6 +32,8 @@ public class EventData {
             case SERVICE_EXPERIENCE: return getServiceExperienceData();
 
             case NETWORK_PERFORMANCE: return getNetworkPerformanceData();
+
+            case USER_DATA_CONGESTION: return getUserDataCongestion();
         }
 
         return null;
@@ -140,6 +143,20 @@ public class EventData {
 
         else
         { json.put("absoluteNumThreshold", 20 + random.nextInt(30)); }
+
+        return json;
+    }
+
+
+    public static JSONObject getUserDataCongestion() throws JSONException
+    {
+        JSONObject json = new JSONObject();
+
+        json.put("eventID", EventID.USER_DATA_CONGESTION.ordinal());
+        json.put("notificationURI", notificationURI);
+        json.put("supi", RandomStringUtils.randomNumeric(15));
+        json.put("congType", random.nextInt(CongestionType.values().length));
+        json.put("congLevelThreshold", 20 + random.nextInt(30));
 
         return json;
     }

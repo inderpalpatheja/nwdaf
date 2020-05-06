@@ -45,7 +45,7 @@ public class AmfApplication extends Functionality {
 
                     for (int j = 0; j < amfController.getCorrelationIDList_LOAD_LEVEL_INFORMATION().size(); j++) {
 
-                        amfController.sendData("http://localhost:8081/Nnrf_NFManagement_NFStatusNotify",
+                        amfController.sendData("https://localhost:8081/Nnrf_NFManagement_NFStatusNotify",
                                 amfController.getCorrelationIDList_LOAD_LEVEL_INFORMATION().get(j));
                         // amfApplication.unsubscribe(subIDList.get(i));
                     }
@@ -78,7 +78,7 @@ public class AmfApplication extends Functionality {
 
                             System.out.println("Sending data for UE :: correlationListSIze " + amfController.getCorrelationIDList_UE_MOBILITY().size());
                             System.out.println("correlationID  - " + amfController.getCorrelationIDList_UE_MOBILITY().get(j));
-                            amfController.sendDataForUEMobility("http://localhost:8081/Namf_EventExposure_Notify",
+                            amfController.sendDataForUEMobility("https://localhost:8081/Namf_EventExposure_Notify",
                                     amfController.getCorrelationIDList_UE_MOBILITY().get(j));
 
                         }
@@ -160,12 +160,33 @@ public class AmfApplication extends Functionality {
                     { amfController.sendNetworkPerformanceData("https://localhost:8081/Noam_EventExposure_Notify", amfController.getCorrelationIDList_NETWORK_PERFORMANCE().get(j)); }
 
 
-                    Thread.sleep(3 * 1000);
+                    //Thread.sleep(3 * 1000);
 
                     if(eventID == 10)
                     { break; }
                 }
 
+            }
+
+
+            if(eventID == EventID.USER_DATA_CONGESTION.ordinal() || eventID == 10)
+            {
+                while(true)
+                {
+                    for(int i = 0; i < subList; i++)
+                    {
+                        System.out.println("Subscribing for EventID: " + EventID.USER_DATA_CONGESTION.toString());
+                        String subscriptionID = subscribe(EventID.USER_DATA_CONGESTION);
+                    }
+
+                    for(int j = 0; j < amfController.getCorrelationIDList_USER_DATA_CONGESTION().size(); j++)
+                    { amfController.sendUserDataCongestionLevel("https://localhost:8081/Noam_EventExposure_Notify", amfController.getCorrelationIDList_USER_DATA_CONGESTION().get(j)); }
+
+                    Thread.sleep(3 * 1000);
+
+                    if(eventID == 10)
+                    { break; }
+                }
             }
 
 
@@ -180,6 +201,7 @@ public class AmfApplication extends Functionality {
 
 
     public static void main(String[] args) throws Exception {
+
         SpringApplication.run(AmfApplication.class, args);
         logger.debug("In AmfApplication class");
 

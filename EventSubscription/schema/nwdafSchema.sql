@@ -189,5 +189,43 @@ CREATE TABLE `NWDAF`.`nwdafNetworkPerformanceSubscriptionTable` (
 PRIMARY KEY (`ID`));
 
 
+
+
+
+
+
+CREATE TABLE `NWDAF`.`nwdafUserDataCongestionSubscriptionData` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`subscriptionID` VARCHAR(128) NOT NULL,
+`supi` VARCHAR(128) NOT NULL,
+`congType` INT NOT NULL,
+`congLevelThreshold` INT NULL,
+PRIMARY KEY (`ID`),
+FOREIGN KEY (`subscriptionID`)
+REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionID`)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION);
+
+
+CREATE TABLE `NWDAF`.`nwdafUserDataCongestionInformation` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`supi` VARCHAR(128) NOT NULL,
+`congType` INT NOT NULL,
+`tai` VARCHAR(128) NOT NULL,
+`congLevel` INT NOT NULL,
+PRIMARY KEY (`ID`));
+
+
+CREATE TABLE `NWDAF`.`nwdafUserDataCongestionSubscriptionTable` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`supi` VARCHAR(128) NOT NULL,
+`congType` INT NOT NULL,
+`tai` VARCHAR(128) NOT NULL,
+`subscriptionID` VARCHAR(128) NOT NULL,
+`correlationID` VARCHAR(128) NOT NULL,
+`refCount` INT NOT NULL,
+PRIMARY KEY (`ID`));
+
+
   
   

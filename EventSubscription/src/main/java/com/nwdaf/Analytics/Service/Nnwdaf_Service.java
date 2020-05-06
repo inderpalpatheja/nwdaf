@@ -2,15 +2,19 @@ package com.nwdaf.Analytics.Service;
 
 import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Model.APIBuildInformation;
+import com.nwdaf.Analytics.Model.CustomData.AmfEventType;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfType;
+import com.nwdaf.Analytics.Model.CustomData.QosSustainabilityData.PlmnID;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.SvcExperience;
+import com.nwdaf.Analytics.Model.CustomData.Tai;
 import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.NotificationFormat.NetworkPerformanceNotification;
 import com.nwdaf.Analytics.Model.NotificationFormat.ServiceExperienceNotification;
+import com.nwdaf.Analytics.Model.NotificationFormat.UserDataCongestionNotification;
 import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
@@ -23,6 +27,8 @@ import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSu
 import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.NnwdafEventsSubscriptionUEmobility;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionModel;
+import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionSubscriptionTable;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
 import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.ErrorReport.*;
 import com.nwdaf.Analytics.Service.Validator.AnalyticsValidator.Validator.*;
@@ -30,7 +36,6 @@ import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.ErrorReport.*
 import com.nwdaf.Analytics.Service.Validator.SubscriptionValidator.Validator.*;
 import com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator.QosSustainabilityUpdateValidator;
 import com.nwdaf.Analytics.Service.Validator.UpdateValidator.Validator.SliceLoadLevelUpdateValidator;
-import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -162,6 +167,12 @@ public class Nnwdaf_Service extends BusinessLogic {
                 { return new ResponseEntity<>(validate, HttpStatus.NOT_ACCEPTABLE); }
             }
 
+            else if(eventID == EventID.USER_DATA_CONGESTION.ordinal())
+            {
+                if((validate = UserDataCongestionAnalyticsValidator.check(rawData, nnwdafEventsSubscription)) instanceof UserDataCongestionAnalyticsError)
+                { return new ResponseEntity<>(validate, HttpStatus.NOT_ACCEPTABLE); }
+            }
+
 
             nnwdafEventsSubscription = (NnwdafEventsSubscription)validate;
 
@@ -180,6 +191,9 @@ public class Nnwdaf_Service extends BusinessLogic {
             else if(eventID == EventID.NETWORK_PERFORMANCE.ordinal())
             { return checkForData_NetworkPerformance(nnwdafEventsSubscription, true); }
 
+
+            else if(eventID == EventID.USER_DATA_CONGESTION.ordinal())
+            { return checkForData_UserDataCongestion(nnwdafEventsSubscription, true); }
 
 
             Object snssaisDataList = checkForData_LoadLevelInformation(nnwdafEventsSubscription, true);
@@ -267,6 +281,13 @@ public class Nnwdaf_Service extends BusinessLogic {
             else if(eventID == EventID.NETWORK_PERFORMANCE.ordinal())
             {
                 if((validator = NetworkPerformanceValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof NetworkPerformanceError)
+                { return new ResponseEntity<>(validator, HttpStatus.NOT_ACCEPTABLE); }
+            }
+
+
+            else if(eventID == EventID.USER_DATA_CONGESTION.ordinal())
+            {
+                if((validator = UserDataCongestionValidator.check(subscriptionRawData, nnwdafEventsSubscription)) instanceof UserDataCongestionError)
                 { return new ResponseEntity<>(validator, HttpStatus.NOT_ACCEPTABLE); }
             }
 
@@ -369,6 +390,21 @@ public class Nnwdaf_Service extends BusinessLogic {
                 }
             }
 
+
+            else if(eventID == EventID.USER_DATA_CONGESTION.ordinal())
+            {
+                repository.subscribeNF(nnwdafEventsSubscription, EventID.USER_DATA_CONGESTION);
+                repository.addUserDataCongestionSubscriptionData(nnwdafEventsSubscription);
+
+                fetchSupiLocationFromAMF(nnwdafEventsSubscription, AmfEventType.LOCATION_REPORT);
+                repository.addUserDataCongestionInformation(nnwdafEventsSubscription);
+
+                Object obj = checkForData_UserDataCongestion(nnwdafEventsSubscription, false);
+
+                if (obj instanceof ResponseEntity) {
+                    return obj;
+                }
+            }
 
 
 
@@ -542,7 +578,7 @@ public class Nnwdaf_Service extends BusinessLogic {
                     QosSustainabilitySubscriptionTable qosRightSideData = repository.getCorrelation_UnSubCorrelation_QosSustainability(qosData.getPlmnID(), qosData.getSnssais());
 
                     unSubscribeRightSide(DELETE_OAM_URL, qosRightSideData.getCorrelationID(), qosRightSideData.getSubscriptionID(), EventID.QOS_SUSTAINABILITY);
-                    repository.deleteEntry_QosSustainabilitySubscriptionTable(qosData.getPlmnID(), qosData.getSnssais());
+                    repository.deleteEntry_QosSustainabilitySubscriptionTable(qosRightSideData.getCorrelationID());
 
                     EventCounter[eventID].incrementUnSubscriptionsResponse();
                 }
@@ -583,7 +619,22 @@ public class Nnwdaf_Service extends BusinessLogic {
 
                     EventCounter[eventID].incrementUnSubscriptionsResponse();
                 }
+            }
 
+
+            else if(eventID == EventID.USER_DATA_CONGESTION.ordinal())
+            {
+                UserDataCongestionSubscriptionData usrDataCongSubData;
+
+                if((usrDataCongSubData = repository.unsubscribeNF_UserDataCongestion(subscriptionID)) != null)
+                {
+                    UserDataCongestionSubscriptionTable usrDataCongSubTable = repository.getCorrelation_UnSubCorrelation_UserDataCongestion(usrDataCongSubData.getSupi(), usrDataCongSubData.getCongType());
+
+                    unSubscribeRightSide(DELETE_OAM_URL, usrDataCongSubTable.getCorrelationID(), usrDataCongSubTable.getSubscriptionID(), EventID.USER_DATA_CONGESTION);
+                    repository.deleteEntry_UserDataCongestionSubscriptionTable(usrDataCongSubTable.getCorrelationID());
+
+                    EventCounter[eventID].incrementUnSubscriptionsResponse();
+                }
             }
 
 
@@ -949,6 +1000,7 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
         JSONObject jsonObject = new JSONObject();
+        jsonObject.put("eventID", EventID.UE_MOBILITY.ordinal());
         jsonObject.put("unSubCorrelationID", unSubCorrelationID);
         jsonObject.put("correlationID", correlationID);
 
@@ -1072,8 +1124,8 @@ public class Nnwdaf_Service extends BusinessLogic {
             QosSustainabilitySubscriptionData qosData = repository.getPlmnID_Snssais_ByCorrelationID(correlationID);
 
 
-            if(repository.getRefCount_QosSustainability(qosData.getPlmnID(), qosData.getSnssais()) == 0)
-            { repository.deleteEntry_QosSustainabilitySubscriptionTable(qosData.getPlmnID(), qosData.getSnssais()); }
+            // DELETE Analytics entry in SubscriptionTable (refCount = 0)
+            repository.deleteAnalyticsEntry_QosSustainability(correlationID);
 
 
             if(ranUeThroughput != null)
@@ -1145,6 +1197,10 @@ public class Nnwdaf_Service extends BusinessLogic {
             { networkPerfThreshold = NetworkPerfThreshold.RELATIVE_RATIO; }
 
 
+            // DELETE Analytics entry in SubscriptionTable (refCount = 0)
+            repository.deleteAnalyticsEntry_NetworkPerformance(correlationID);
+
+
             if(networkPerfThreshold == NetworkPerfThreshold.RELATIVE_RATIO)
             {
                 repository.updateRelativeRatio_NetworkPerf(reportingThreshold, nwPerfSubData.getSupi(), nwPerfSubData.getNwPerfType());
@@ -1178,7 +1234,7 @@ public class Nnwdaf_Service extends BusinessLogic {
                     nwPerfNotifyData.setSubscriptionID(crossedThresholdData.getSubscriptionID());
                     nwPerfNotifyData.setNotificationURI(repository.getNotificationURI(crossedThresholdData.getSubscriptionID()));
                     nwPerfNotifyData.setNwPerfType(crossedThresholdData.getNwPerfType());
-                    nwPerfNotifyData.setAbsoluteSum(reportingThreshold);
+                    nwPerfNotifyData.setAbsoluteNum(reportingThreshold);
                     //nwPerfNotifyData.setMcc(nwPerfSubData.getSupi().substring(0, 3));
                     //nwPerfNotifyData.setMnc(nwPerfSubData.getSupi().substring(3, 5));
                     //nwPerfNotifyData.setTac(RandomStringUtils.randomAlphanumeric(6));
@@ -1207,6 +1263,71 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
 
+
+
+    /*************************************USER_DATA_CONGESTION***********************************************************/
+
+
+
+
+    public void notificationHandler_UserDataCongestion(JSONObject notifyData)
+    {
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+        EventCounter[EventID.USER_DATA_CONGESTION.ordinal()].incrementSubscriptionNotificationsReceived();
+
+
+        try
+        {
+            Integer congLevel = notifyData.getInt("congLevel");
+            String correlationID = notifyData.getString("correlationID");
+
+            UserDataCongestionSubscriptionTable usrDataCongDetails = repository.getUserDataCongestionDetails_byCorrelationID(correlationID);
+            repository.updateCongestionLevel_UserDataCongestion(congLevel, usrDataCongDetails.getSupi(), usrDataCongDetails.getCongType(), usrDataCongDetails.getTai());
+
+            // DELETE Analytics entry in SubscriptionTable (refCount = 0)
+            repository.deleteAnalyticsEntry_UserDataCongestion(correlationID);
+
+            if(repository.congestionLevelThresholdCrossed(usrDataCongDetails.getSupi(), usrDataCongDetails.getCongType(), congLevel))
+            {
+                UserDataCongestionNotification usrDataCongNotifyData = new UserDataCongestionNotification();
+
+                usrDataCongNotifyData.setSubscriptionID(repository.getSubscriptionID_UserDataCongestion(usrDataCongDetails.getSupi(), usrDataCongDetails.getCongType()));
+                usrDataCongNotifyData.setNotificationURI(repository.getNotificationURI(usrDataCongNotifyData.getSubscriptionID()));
+
+                String areaInfo[] = usrDataCongDetails.getTai().split("-");
+
+                usrDataCongNotifyData.setTai(new Tai(new PlmnID(areaInfo[0], areaInfo[1]), areaInfo[2]));
+                usrDataCongNotifyData.setCongType(usrDataCongDetails.getCongType());
+                usrDataCongNotifyData.setCongLevel(congLevel);
+
+                sendUserDataCongestionNotification(usrDataCongNotifyData);
+            }
+        }
+
+        catch (JSONException e) {
+
+            ErrorCounters.incrementJsonException();
+            e.printStackTrace();
+        }
+
+
+        catch (IOException e) {
+
+            ErrorCounters.incrementIOException();
+            e.printStackTrace();
+        }
+
+    }
+
+
+
+
+    /********************************************************************************************************************/
+
+
+
+
     public void notificationHandlerOAM(String response) throws JSONException {
 
         JSONObject json = new JSONObject(response);
@@ -1220,6 +1341,9 @@ public class Nnwdaf_Service extends BusinessLogic {
 
             case NETWORK_PERFORMANCE: notificationHandler_NetworkPerformance(response);
                                       break;
+
+            case USER_DATA_CONGESTION: notificationHandler_UserDataCongestion(json);
+                                       break;
         }
     }
 

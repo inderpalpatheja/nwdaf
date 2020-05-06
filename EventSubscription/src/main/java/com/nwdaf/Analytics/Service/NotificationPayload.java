@@ -4,15 +4,18 @@ import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfType;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
-import com.nwdaf.Analytics.Model.NotificationFormat.LoadLevelInformationNotification;
-import com.nwdaf.Analytics.Model.NotificationFormat.NetworkPerformanceNotification;
-import com.nwdaf.Analytics.Model.NotificationFormat.QosSustainabilityNotification;
-import com.nwdaf.Analytics.Model.NotificationFormat.ServiceExperienceNotification;
+import com.nwdaf.Analytics.Model.CustomData.UserDataCongestion.CongestionType;
+import com.nwdaf.Analytics.Model.NotificationFormat.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class NotificationPayload {
+
+    static SimpleDateFormat sim = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
 
 
     // eventID: LOAD_LEVEL_INFORMATION
@@ -165,7 +168,7 @@ public class NotificationPayload {
         { networkPerfEntry.put("relativeRatio", nwPerfNotifyData.getRelativeRatio()); }
 
         else if(threshold == NetworkPerfThreshold.ABSOLUTE_NUM)
-        { networkPerfEntry.put("absoluteNum", nwPerfNotifyData.getAbsoluteSum()); }
+        { networkPerfEntry.put("absoluteNum", nwPerfNotifyData.getAbsoluteNum()); }
 
         JSONArray networkPerfArray = new JSONArray();
         networkPerfArray.put(networkPerfEntry);
@@ -176,6 +179,68 @@ public class NotificationPayload {
         eventNotifications.put(networkPerfEvent);
 
         json.put("subscriptionId", nwPerfNotifyData.getSubscriptionID());
+        json.put("eventNotifications", eventNotifications);
+
+        return json;
+    }
+
+
+
+
+    // eventID: USER_DATA_CONGESTION
+    public static JSONObject getUserDataCongestionPayload(UserDataCongestionNotification usrDataCongNotifyData) throws JSONException {
+
+        JSONObject json = new JSONObject();
+        JSONArray eventNotifications = new JSONArray();
+
+        JSONObject userDataCongInfos = new JSONObject();
+        JSONObject userDataCongInfosEntry = new JSONObject();
+        JSONArray userDataCongInfosArray = new JSONArray();
+
+
+        JSONObject tais = new JSONObject();
+        JSONArray taisArray = new JSONArray();
+
+        JSONObject taiEntry = new JSONObject();
+
+        JSONObject plmnID = new JSONObject();
+        plmnID.put("mcc", usrDataCongNotifyData.getTai().getPlmnID().getMcc());
+        plmnID.put("mnc", usrDataCongNotifyData.getTai().getPlmnID().getMnc());
+
+        taiEntry.put("plmnId", plmnID);
+        taiEntry.put("tac", usrDataCongNotifyData.getTai().getTac());
+
+        taisArray.put(taiEntry);
+        tais.put("tais", taisArray);
+
+        JSONArray networkArea = new JSONArray();
+        networkArea.put(tais);
+
+
+        JSONObject timeIntev = new JSONObject();
+        timeIntev.put("startTime", sim.format(new Date()));
+        timeIntev.put("stopTime", sim.format(new Date()));
+
+
+        JSONObject congestionInfo = new JSONObject();
+        congestionInfo.put("congType", CongestionType.values()[usrDataCongNotifyData.getCongType()].toString());
+        congestionInfo.put("timeIntev", timeIntev);
+
+        JSONObject nsi = new JSONObject();
+        nsi.put("congLevel", usrDataCongNotifyData.getCongLevel());
+
+        userDataCongInfosEntry.put("networkArea", networkArea);
+        userDataCongInfosEntry.put("congestionInfo", congestionInfo);
+        userDataCongInfosEntry.put("nsi", nsi);
+
+        userDataCongInfosArray.put(userDataCongInfosEntry);
+
+        userDataCongInfos.put("event", EventID.USER_DATA_CONGESTION.toString());
+        userDataCongInfos.put("userDataCongInfos",userDataCongInfosArray);
+
+        eventNotifications.put(userDataCongInfos);
+
+        json.put("subscriptionId", usrDataCongNotifyData.getSubscriptionID());
         json.put("eventNotifications", eventNotifications);
 
         return json;

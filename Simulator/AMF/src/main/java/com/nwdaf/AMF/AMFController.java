@@ -1,13 +1,16 @@
 package com.nwdaf.AMF;
 
 
+import com.nwdaf.AMF.model.AmfEventType;
 import com.nwdaf.AMF.model.EventID;
 import com.nwdaf.AMF.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +42,7 @@ public class AMFController extends Functionality {
     public static List<String> correlationIDList_QOS_SUSTAINABILITY = new ArrayList<>();
     public static List<String> correlationIDList_SERVICE_EXPERIENCE = new ArrayList<>();
     public static List<String> correlationIDList_NETWORK_PERFORMANCE = new ArrayList<>();
+    public static List<String> correlationIDList_USER_DATA_CONGESTION = new ArrayList<>();
 
 
     public static List<String> getCorrelationIDList_LOAD_LEVEL_INFORMATION() {
@@ -59,6 +63,10 @@ public class AMFController extends Functionality {
 
     public static List<String> getCorrelationIDList_NETWORK_PERFORMANCE() {
         return correlationIDList_NETWORK_PERFORMANCE;
+    }
+
+    public static List<String> getCorrelationIDList_USER_DATA_CONGESTION() {
+        return correlationIDList_USER_DATA_CONGESTION;
     }
 
 
@@ -118,7 +126,7 @@ public class AMFController extends Functionality {
 
 
     //UE_MOBILITY
-    @RequestMapping(method = RequestMethod.DELETE, value = "/Namf_Event_Exposure_UnSubscribe")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/Namf_EventExposure_UnSubscribe")
     public ResponseEntity<String> unsubScribeFromNWDAFForUEMobility(@RequestBody String response) throws JSONException, IOException {
 
         JSONObject jsonObject = new JSONObject(response);
@@ -151,7 +159,10 @@ public class AMFController extends Functionality {
                                      break;
 
             case NETWORK_PERFORMANCE: correlationIDList_NETWORK_PERFORMANCE.remove(correlationID);
-                                     break;
+                                      break;
+
+            case USER_DATA_CONGESTION: correlationIDList_USER_DATA_CONGESTION.remove(correlationID);
+                                       break;
         }
 
 
@@ -206,31 +217,83 @@ public class AMFController extends Functionality {
             correlationIDList_NETWORK_PERFORMANCE.add(obj.getCorrelationId());
         }
 
+        else if(eventID == EventID.USER_DATA_CONGESTION)
+        {
+            out.println("in-USER_DATA_CONGESTION----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
+            correlationIDList_USER_DATA_CONGESTION.add(obj.getCorrelationId());
+        }
+
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
     }
 
 
 
-    @RequestMapping(method = RequestMethod.POST, value = "/Namf_Event_Exposure_Subscribe")
-    public ResponseEntity<String> UE_MobilityDataFunction(@RequestBody String response) throws JSONException, IOException {
-
-        //  list.add();
+    @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_Subscribe")
+    public ResponseEntity<?> namfEventExposure_subscribe(@RequestBody String response) throws JSONException, IOException {
 
         JSONObject json = new JSONObject(response);
 
+        EventID eventID = EventID.values()[json.getInt("eventID")];
+
+        switch(eventID)
+        {
+            case UE_MOBILITY: return UE_MobilityDataFunction(json);
+
+            case USER_DATA_CONGESTION: return userDataCongestion_UeLocation(json);
+
+        }
+
+        return null;
+    }
+
+
+    public ResponseEntity<?> userDataCongestion_UeLocation(JSONObject jsonData) throws JSONException, IOException {
+
+        String supi = jsonData.getString("supi");
+        AmfEventType amfEventType = AmfEventType.values()[jsonData.getInt("amfEventType")];
+
+        if(amfEventType == AmfEventType.LOCATION_REPORT)
+        {
+            String mcc = String.valueOf(100 + random.nextInt(10));
+            String mnc = String.valueOf(10);
+            String tac = RandomStringUtils.randomAlphanumeric(6).toUpperCase();
+
+            HttpHeaders responseHeaders = new HttpHeaders();
+
+            responseHeaders.set("mcc", mcc);
+            responseHeaders.set("mnc", mnc);
+            responseHeaders.set("tac", tac);
+
+            return new ResponseEntity(responseHeaders, HttpStatus.FOUND);
+        }
+
+        return null;
+    }
+
+
+
+
+    public ResponseEntity<String> UE_MobilityDataFunction(JSONObject jsonData) throws JSONException, IOException {
+
+        //  list.add();
+
         Namf_EventExposure_Subscribe obj = new Namf_EventExposure_Subscribe();
-        obj.setCorrelationId(json.getString("correlationID"));
-        obj.setNotificationTargetAddress(json.getString("notificationTargetAddress"));
+        obj.setCorrelationId(jsonData.getString("correlationID"));
+        obj.setNotificationTargetAddress(jsonData.getString("notificationTargetAddress"));
 
         // Adding unSubCorrelationId into database;
         UUID unSubCorrelationId = UUID.randomUUID();
 
         out.println("in-UE-Mobility----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
-
         correlationIDList_UE_MOBILITY.add(obj.getCorrelationId());
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
     }
+
+
+
+
+
 
     // @RequestMapping(method = RequestMethod.POST, value = "/Namf_EventExposure_notify/{correlationID}")
 
@@ -852,6 +915,88 @@ public class AMFController extends Functionality {
 
         return new ResponseEntity<String>("Sent NETWORK_PERFORMANCE data", HttpStatus.OK);
     }
+
+
+
+    @PostMapping("sendUserDataCongestionLevel/{correlationID}")
+    public ResponseEntity<String> sendUserDataCongestionLevel(String notiTargetAddress, @PathVariable("correlationID") String correlationID) throws IOException, JSONException {
+        //  out.println("send Data check1");
+
+        notiTargetAddress = HTTP + "://localhost:8081/Noam_EventExposure_Notify";
+        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
+
+        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
+        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
+
+        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
+
+        String updated_URL = notiTargetAddress + "/" + correlationID;
+        //  out.println("updated URl - " + updated_URL);
+        URL url = new URL(updated_URL);
+
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+
+
+        JSONObject json = new JSONObject();
+
+        json.put("congLevel", 20 + random.nextInt(80));
+        json.put("correlationID", correlationID);
+        json.put("eventID", EventID.USER_DATA_CONGESTION.ordinal());
+
+
+        // For POST only - START
+        con.setDoOutput(true);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = json.toString().getBytes("utf-8");
+
+            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
+
+            os.write(input, 0, input.length);
+            os.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // For POST only - END
+
+        int responseCode = con.getResponseCode();
+        //String responseMessage = con.getResponseMessage();
+        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
+        //System.out.println("POST Response Message :: " + responseMessage);
+
+        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // print result
+            // System.out.println("\n\n");
+            //  System.out.println(response);
+        } else {
+            // System.out.println("\n\n");
+            // System.out.println("POST request not worked");
+        }
+        //  return "Data send to " + updated_URL;
+
+        if (con != null) {
+            con.disconnect();
+        }
+
+        return new ResponseEntity<String>("Sent USER_DATA_CONGESTION data", HttpStatus.OK);
+    }
+
 
 }
 
