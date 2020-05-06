@@ -57,4 +57,16 @@ public class NnwdafEventsSubscription {
     Integer relativeRatioThreshold;
     Integer absoluteNumThreshold;
 
+
+
+    /*****************USER_DATA_CONGESTION parameters****************************/
+
+
+    Integer congType;
+    Integer congLevelThreshold;
+    String tai;
+
+    public void setTai(String plmnID, String tac) {
+        this.tai = plmnID + "-" + tac;
+    }
 }

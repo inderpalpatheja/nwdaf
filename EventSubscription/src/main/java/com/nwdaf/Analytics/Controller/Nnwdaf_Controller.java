@@ -74,10 +74,11 @@ public class Nnwdaf_Controller {
                                   @RequestParam("eventID") String eventID,
                                   @RequestParam(value = "supi", required = false) String supi,
                                   @RequestParam(value = "anyUe", required = false) String anyUe,
-                                  @RequestParam(value = "nwPerfType", required = false) String nwPerfType) throws IOException, JSONException {
+                                  @RequestParam(value = "nwPerfType", required = false) String nwPerfType,
+                                  @RequestParam(value = "congType", required = false) String congType) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(eventID, snssais, anySlice, supi, plmnID, anyUe, nwPerfType));
+        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(eventID, snssais, anySlice, supi, plmnID, anyUe, nwPerfType, congType));
     }
 
 

@@ -22,6 +22,7 @@ public class Functionality {
 
 
     public String subscribe(EventID eventID) throws Exception {
+
         String line;
         StringBuffer responseContent = new StringBuffer();
 

@@ -12,6 +12,7 @@ import com.nwdaf.Analytics.Model.CustomData.QosSustainabilityData.QosSustainabil
 import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.ServiceExperience;
 import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.SvcExperience;
+import com.nwdaf.Analytics.Model.CustomData.UserDataCongestion.UserDataCongestion;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.NotificationData;
 import com.nwdaf.Analytics.Model.QosNotificationData;
@@ -29,9 +30,12 @@ import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSu
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.UEmobilitySubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UserLocation;
+import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionSubscriptionTable;
 import com.nwdaf.Analytics.Repository.Mapper.AnalyticsMapper.NetworkPerformanceInfoMapper;
 import com.nwdaf.Analytics.Repository.Mapper.AnalyticsMapper.QosSustainabilityInfoMapper;
 import com.nwdaf.Analytics.Repository.Mapper.AnalyticsMapper.ServiceExperienceInfoMapper;
+import com.nwdaf.Analytics.Repository.Mapper.AnalyticsMapper.UserDataCongestionInfoMapper;
 import com.nwdaf.Analytics.Repository.Mapper.AnalyticsRowMapper;
 import com.nwdaf.Analytics.Repository.Mapper.*;
 import com.nwdaf.Analytics.Repository.Mapper.LoadLevelInformationMapper.SliceLoadLevelInformationMapper;
@@ -71,27 +75,23 @@ public class Nnwdaf_Repository {
         if(eventID == EventID.LOAD_LEVEL_INFORMATION || eventID == EventID.UE_MOBILITY || eventID == EventID.NETWORK_PERFORMANCE)
         { query = "INSERT INTO nwdafSubscriptionTable VALUES(?, ?, ?, ?, ?)"; }
 
-        else if(eventID == EventID.QOS_SUSTAINABILITY || eventID == EventID.SERVICE_EXPERIENCE)
+        else if(eventID == EventID.QOS_SUSTAINABILITY || eventID == EventID.SERVICE_EXPERIENCE || eventID == EventID.USER_DATA_CONGESTION)
         { query = "INSERT INTO nwdafSubscriptionTable (subscriptionID, eventID, notificationURI) VALUES(?, ?, ?)"; }
 
 
-        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
 
-            @Override
-            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
+            preparedStatement.setString(1, nnwdafEventsSubscription.getSubscriptionID());
+            preparedStatement.setInt(2, nnwdafEventsSubscription.getEventID());
+            preparedStatement.setString(3, nnwdafEventsSubscription.getNotificationURI());
 
-                preparedStatement.setString(1, nnwdafEventsSubscription.getSubscriptionID());
-                preparedStatement.setInt(2, nnwdafEventsSubscription.getEventID());
-                preparedStatement.setString(3, nnwdafEventsSubscription.getNotificationURI());
-
-                if(eventID == EventID.LOAD_LEVEL_INFORMATION || eventID == EventID.UE_MOBILITY || eventID == EventID.NETWORK_PERFORMANCE)
-                {
-                    preparedStatement.setInt(4, nnwdafEventsSubscription.getNotifMethod());
-                    preparedStatement.setInt(5, nnwdafEventsSubscription.getRepetitionPeriod());
-                }
-
-                return preparedStatement.execute();
+            if(eventID == EventID.LOAD_LEVEL_INFORMATION || eventID == EventID.UE_MOBILITY || eventID == EventID.NETWORK_PERFORMANCE)
+            {
+                preparedStatement.setInt(4, nnwdafEventsSubscription.getNotifMethod());
+                preparedStatement.setInt(5, nnwdafEventsSubscription.getRepetitionPeriod());
             }
+
+            return preparedStatement.execute();
         });
     }
 
@@ -157,6 +157,18 @@ public class Nnwdaf_Repository {
 
         return decrementRefCount_NetworkPerformance(nwPerfSubData);
     }
+
+
+    public UserDataCongestionSubscriptionData unsubscribeNF_UserDataCongestion(String subscriptionID)
+    {
+        UserDataCongestionSubscriptionData usrDataCongSubData = getSupi_congType_UserDataCongestion(subscriptionID);
+
+        jdbcTemplate.update("DELETE FROM nwdafUserDataCongestionSubscriptionData WHERE subscriptionID = ?;", subscriptionID);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionID = ?;", subscriptionID);
+
+        return decrementRefCount_UserDataCongestion(usrDataCongSubData);
+    }
+
 
 
 
@@ -408,6 +420,17 @@ public class Nnwdaf_Repository {
     }
 
 
+    public UserDataCongestionSubscriptionData decrementRefCount_UserDataCongestion(UserDataCongestionSubscriptionData usrDataCongSubData)
+    {
+        jdbcTemplate.update("UPDATE nwdafUserDataCongestionSubscriptionTable SET refCount = refCount - 1 WHERE supi = ? AND congType = ?;", new Object[] { usrDataCongSubData.getSupi(), usrDataCongSubData.getCongType() });
+
+        if(getRefCount_NetworkPerformance(usrDataCongSubData.getSupi(), usrDataCongSubData.getCongType()) == 0)
+        { return usrDataCongSubData; }
+
+        return null;
+    }
+
+
 
 
     public Integer deleteEntry_SliceLoadLevelSubscriptionTable(String snssais) throws NullPointerException {
@@ -532,6 +555,18 @@ public class Nnwdaf_Repository {
         {
             return jdbcTemplate.queryForObject(query, new Object[]{supi, nwPerfType}, (resultSet, i) -> resultSet.getInt("refCount"));
         }
+
+        catch(EmptyResultDataAccessException ex)
+        { return 0; }
+    }
+
+
+    public Integer getRefCount_UserDataCongestion(String supi, Integer congType)
+    {
+        String query = "SELECT refCount FROM nwdafUserDataCongestionSubscriptionTable WHERE supi = ? AND congType = ?;";
+
+        try
+        { return jdbcTemplate.queryForObject(query, new Object[]{supi, congType}, (resultSet, i) -> resultSet.getInt("refCount")); }
 
         catch(EmptyResultDataAccessException ex)
         { return 0; }
@@ -825,8 +860,8 @@ public class Nnwdaf_Repository {
 
 
 
-    public Integer deleteEntry_QosSustainabilitySubscriptionTable(String plmnID, String snssais) throws NullPointerException {
-        return jdbcTemplate.update("DELETE FROM nwdafQosSustainabilitySubscriptionTable WHERE plmnID = ? AND snssais = ?", new Object[] {plmnID, snssais});
+    public Integer deleteAnalyticsEntry_QosSustainability(String correlationID) throws NullPointerException {
+        return jdbcTemplate.update("DELETE FROM nwdafQosSustainabilitySubscriptionTable WHERE correlationID = ? AND refCount = 0;", correlationID);
     }
 
 
@@ -1656,6 +1691,21 @@ public class Nnwdaf_Repository {
     }
 
 
+    public UserDataCongestionSubscriptionData getSupi_congType_UserDataCongestion(String subscriptionID)
+    {
+        String query = "SELECT supi, congType FROM nwdafUserDataCongestionSubscriptionData WHERE subscriptionID = ?";
+
+        return jdbcTemplate.queryForObject(query, new Object[]{subscriptionID}, (resultSet, i) -> {
+
+            UserDataCongestionSubscriptionData usrDataCongSubData = new UserDataCongestionSubscriptionData();
+
+            usrDataCongSubData.setSupi(resultSet.getString("supi"));
+            usrDataCongSubData.setCongType(resultSet.getInt("congType"));
+
+            return usrDataCongSubData;
+        });
+    }
+
 
     public Integer deleteEntry_ServiceExperienceSubscriptionTable(String supi, String snssais)
     { return jdbcTemplate.update("DELETE FROM nwdafServiceExperienceSubscriptionTable WHERE supi = ? AND snssais = ?;", new Object[] {supi, snssais}); }
@@ -1663,6 +1713,15 @@ public class Nnwdaf_Repository {
 
     public Integer deleteEntry_NetworkPerformanceSubscriptionTable(String supi, Integer nwPerfType)
     { return jdbcTemplate.update("DELETE FROM nwdafNetworkPerformanceSubscriptionTable WHERE supi = ? AND nwPerfType = ?;", new Object[] {supi, nwPerfType}); }
+
+
+    public Integer deleteEntry_UserDataCongestionSubscriptionTable(String correlationID)
+    { return jdbcTemplate.update("DELETE FROM nwdafUserDataCongestionSubscriptionTable WHERE correlationID = ?;", correlationID); }
+
+
+    public Integer deleteEntry_QosSustainabilitySubscriptionTable(String correlationID)
+    { return jdbcTemplate.update("DELETE FROM nwdafQosSustainabilitySubscriptionTable WHERE correlationID = ?;", correlationID); }
+
 
 
     public List<ServiceExperienceInfo> getServiceExperienceInfo(String supi, String snssais, Boolean anyUE)
@@ -1881,6 +1940,25 @@ public class Nnwdaf_Repository {
     }
 
 
+
+    public UserDataCongestionSubscriptionTable getCorrelation_UnSubCorrelation_UserDataCongestion(String supi, Integer congType)
+    {
+        String query = "SELECT subscriptionID, correlationID FROM nwdafUserDataCongestionSubscriptionTable WHERE supi = ? AND congType = ?;";
+
+        return jdbcTemplate.queryForObject(query, new Object[]{supi, congType}, (resultSet, i) -> {
+
+            UserDataCongestionSubscriptionTable usrDataCongSubTable = new UserDataCongestionSubscriptionTable();
+
+            usrDataCongSubTable.setSubscriptionID(resultSet.getString("subscriptionID"));
+            usrDataCongSubTable.setCorrelationID(resultSet.getString("correlationID"));
+
+            return usrDataCongSubTable;
+        });
+    }
+
+
+
+
     public List<Object> getNetworkPerformanceInfo(String supi, Integer nwPerfType, Boolean anyUE)
     {
         if(anyUE)
@@ -1910,5 +1988,158 @@ public class Nnwdaf_Repository {
 
     public Integer updateRefCount_NetworkPerformance(String supi, Integer nwPerfType)
     { return jdbcTemplate.update("UPDATE nwdafNetworkPerformanceSubscriptionTable SET refCount = refCount + 1 WHERE supi = ? AND nwPerfType = ?;", new Object[] {supi, nwPerfType}); }
+
+
+    public Integer deleteAnalyticsEntry_NetworkPerformance(String correlationID)
+    { return jdbcTemplate.update("DELETE FROM nwdafNetworkPerformanceSubscriptionTable WHERE correlationID = ? AND refCount = 0;", correlationID); }
+
+
+
+
+    /************************************USER_DATA_CONGESTION***********************************************/
+
+
+    public Boolean addUserDataCongestionSubscriptionData(NnwdafEventsSubscription subscription)
+    {
+        String query = "INSERT INTO nwdafUserDataCongestionSubscriptionData (subscriptionID, supi, congType, congLevelThreshold) VALUES (?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setString(1, subscription.getSubscriptionID());
+            preparedStatement.setString(2, subscription.getSupi());
+            preparedStatement.setInt(3, subscription.getCongType());
+            preparedStatement.setInt(4, subscription.getCongLevelThreshold());
+
+            return preparedStatement.execute();
+        });
+    }
+
+
+    public Boolean addUserDataCongestionInformation(NnwdafEventsSubscription subscription)
+    {
+        if(userDataCongDetailsExist(subscription.getSupi(), subscription.getCongType(), subscription.getTai(), UserDataCongestion.INFORMATION_TABLE))
+        { return Boolean.FALSE; }
+
+        String query = "INSERT INTO nwdafUserDataCongestionInformation (supi, congType, tai, congLevel) VALUES (?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setString(1, subscription.getSupi());
+            preparedStatement.setInt(2, subscription.getCongType());
+            preparedStatement.setString(3, subscription.getTai());
+            preparedStatement.setInt(4, 0);
+
+            return preparedStatement.execute();
+        });
+    }
+
+
+    public Boolean addUserDataCongestionSubscriptionTable(UserDataCongestionSubscriptionTable usrDataCongSubTable, boolean getAnalytics)
+    {
+        String query = "INSERT INTO nwdafUserDataCongestionSubscriptionTable (supi, congType, tai, subscriptionID, correlationID, refCount) VALUES (?, ?, ?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setString(1, usrDataCongSubTable.getSupi());
+            preparedStatement.setInt(2, usrDataCongSubTable.getCongType());
+            preparedStatement.setString(3, usrDataCongSubTable.getTai());
+            preparedStatement.setString(4, usrDataCongSubTable.getSubscriptionID());
+            preparedStatement.setString(5, usrDataCongSubTable.getCorrelationID());
+
+            if(getAnalytics)
+            { preparedStatement.setInt(6, 0); }
+
+            else
+            { preparedStatement.setInt(6, 1); }
+
+            return preparedStatement.execute();
+        });
+    }
+
+
+    public boolean userDataCongDetailsExist(String supi, Integer congType, String tai, UserDataCongestion usrCongTable)
+    {
+        String query = "";
+
+        if(usrCongTable == UserDataCongestion.SUBSCRIPTION_TABLE)
+        { query = "SELECT EXISTS(SELECT 1 FROM nwdafUserDataCongestionSubscriptionTable WHERE supi = ? AND congType = ? AND tai = ?) AS usrDataCong_details;"; }
+
+        else if(usrCongTable == UserDataCongestion.INFORMATION_TABLE)
+        { query = "SELECT EXISTS(SELECT 1 FROM nwdafUserDataCongestionInformation WHERE supi = ? AND congType = ? AND tai = ?) AS usrDataCong_details;"; }
+
+        Integer exists = jdbcTemplate.queryForObject(query, new Object[]{supi, congType, tai}, (resultSet, i) -> resultSet.getInt("usrDataCong_details"));
+
+        return exists == 1;
+    }
+
+
+    public Integer updateRefCount_UserDataCongestion(String supi, Integer congType, String tai)
+    { return jdbcTemplate.update("UPDATE nwdafUserDataCongestionSubscriptionTable SET refCount = refCount + 1 WHERE supi = ? AND congType = ? AND tai = ?;", new Object[] {supi, congType, tai}); }
+
+
+
+    public UserDataCongestionSubscriptionTable getUserDataCongestionDetails_byCorrelationID(String correlationID)
+    {
+        String query = "SELECT supi, congType, tai FROM nwdafUserDataCongestionSubscriptionTable WHERE correlationID = ?";
+
+        return jdbcTemplate.queryForObject(query, new Object[]{correlationID}, (resultSet, i) -> {
+
+            UserDataCongestionSubscriptionTable usrDataCongDetails = new UserDataCongestionSubscriptionTable();
+
+            usrDataCongDetails.setSupi(resultSet.getString("supi"));
+            usrDataCongDetails.setCongType(resultSet.getInt("congType"));
+            usrDataCongDetails.setTai(resultSet.getString("tai"));
+
+            return usrDataCongDetails;
+        });
+    }
+
+
+    public Integer updateCongestionLevel_UserDataCongestion(Integer congLevel, String supi, Integer congType, String tai)
+    { return jdbcTemplate.update("UPDATE nwdafUserDataCongestionInformation SET congLevel = ? WHERE supi = ? AND congType = ? AND tai = ?;", new Object[] {congLevel, supi, congType, tai}); }
+
+
+    public boolean congestionLevelThresholdCrossed(String supi, Integer congType, Integer congLevel)
+    {
+        String query = "SELECT EXISTS(SELECT 1 FROM nwdafUserDataCongestionSubscriptionData WHERE supi = ? AND congType = ? AND congLevelThreshold < ?) AS crossedThreshold;";
+        Integer exists = jdbcTemplate.queryForObject(query, new Object[]{supi, congType, congLevel}, (resultSet, i) -> resultSet.getInt("crossedThreshold"));
+
+        return exists == 1;
+    }
+
+
+    public String getSubscriptionID_UserDataCongestion(String supi, Integer congType)
+    {
+        String query = "SELECT subscriptionID FROM nwdafUserDataCongestionSubscriptionData WHERE supi = ? AND congType = ?;";
+
+        return jdbcTemplate.queryForObject(query, new Object[]{supi, congType}, (resultSet, i) -> resultSet.getString("subscriptionID"));
+    }
+
+
+    public List<Object> getUserDataCongestionInfo(String supi, String tai, Integer congType)
+    {
+        String query = "SELECT * FROM nwdafUserDataCongestionInformation WHERE supi = ? AND tai = ? AND congType = ?;";
+
+        try
+        { return jdbcTemplate.query(query, new Object[] {supi, tai, congType}, new UserDataCongestionInfoMapper()); }
+
+        catch (EmptyResultDataAccessException ex)
+        { return null; }
+    }
+
+
+    public String getNetworkInfo_UserDataCongestion(String supi, Integer congType)
+    {
+        String query = "SELECT tai FROM nwdafUserDataCongestionInformation WHERE supi = ? AND congType = ?";
+
+        try
+        { return jdbcTemplate.queryForObject(query, new Object[]{supi, congType}, (resultSet, i) -> resultSet.getString("tai")); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
+
+    public Integer deleteAnalyticsEntry_UserDataCongestion(String correlationID)
+    { return jdbcTemplate.update("DELETE FROM nwdafUserDataCongestionSubscriptionTable WHERE correlationID = ? AND refCount = 0;", correlationID); }
 
 }

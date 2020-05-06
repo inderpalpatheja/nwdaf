@@ -4,23 +4,21 @@ import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnection;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnectionForUEMobility;
 import com.nwdaf.Analytics.Model.AMFModel.AMFModel;
-import com.nwdaf.Analytics.Model.AnalyticsInformation.NetworkPerformanceInfo;
 import com.nwdaf.Analytics.Model.AnalyticsInformation.QosSustainabilityInfo;
 import com.nwdaf.Analytics.Model.AnalyticsInformation.ServiceExperienceInfo;
+import com.nwdaf.Analytics.Model.CustomData.AmfEventType;
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfTable;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
 import com.nwdaf.Analytics.Model.CustomData.QosSustainabilityData.QosSustainability;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.ServiceExperience;
+import com.nwdaf.Analytics.Model.CustomData.UserDataCongestion.UserDataCongestion;
 import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.Nnrf.Nnrf_Model;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.NotificationData;
-import com.nwdaf.Analytics.Model.NotificationFormat.LoadLevelInformationNotification;
-import com.nwdaf.Analytics.Model.NotificationFormat.NetworkPerformanceNotification;
-import com.nwdaf.Analytics.Model.NotificationFormat.QosSustainabilityNotification;
-import com.nwdaf.Analytics.Model.NotificationFormat.ServiceExperienceNotification;
+import com.nwdaf.Analytics.Model.NotificationFormat.*;
 import com.nwdaf.Analytics.Model.QosNotificationData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelInformation;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionData;
@@ -35,6 +33,7 @@ import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.UEmobilitySubscr
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionModel;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UserLocation;
+import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionSubscriptionTable;
 import com.nwdaf.Analytics.Repository.Nnwdaf_Repository;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -266,6 +265,7 @@ public class BusinessLogic extends ResourceValues {
 
         JSONObject json = new JSONObject();
 
+        json.put("eventID", EventID.UE_MOBILITY.ordinal());
         json.put("correlationID", amfModel.getCorrelationId());
         json.put("unSubCorrelationId", amfModel.getUnSubCorrelationId());
 
@@ -1399,6 +1399,7 @@ public class BusinessLogic extends ResourceValues {
 
         json.put("correlationID", amfModel.getCorrelationId());
         json.put("unSubCorrelationId", amfModel.getUnSubCorrelationId());
+        json.put("eventID", EventID.UE_MOBILITY.ordinal());
 
 
         // notificationTargetUrl = Namf_EventExposure_Notify
@@ -1788,6 +1789,145 @@ public class BusinessLogic extends ResourceValues {
 
 
 
+    /***************************************USER_DATA_CONGESTION************************************************************************/
+
+
+    public Object checkForData_UserDataCongestion(NnwdafEventsSubscription subscription, boolean getAnalytics) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+        String supi = subscription.getSupi();
+        Integer congType = subscription.getCongType();
+
+
+
+        if(getAnalytics)
+        {
+            String tai = repository.getNetworkInfo_UserDataCongestion(supi, congType);
+
+            if(tai == null)
+            { tai = fetchSupiLocationFromAMF(subscription, AmfEventType.LOCATION_REPORT);  }
+
+            else
+            { subscription.setTai(tai); }
+
+            List<Object> userDataCongInfo = repository.getUserDataCongestionInfo(supi, tai, congType);
+            collectDataForUserDataCongestion(supi, congType, tai, true);
+
+            repository.addUserDataCongestionInformation(subscription);
+
+            if(userDataCongInfo == null || userDataCongInfo.isEmpty())
+            { return new ResponseEntity<String>("Data Not Found", HttpStatus.NOT_FOUND); }
+
+            else
+            { return new ResponseEntity(userDataCongInfo, HttpStatus.OK); }
+        }
+
+        else
+        {
+            String tai = subscription.getTai();
+            collectDataForUserDataCongestion(supi, congType, tai, false);
+        }
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+        return null;
+    }
+
+
+
+
+
+
+    public void collectDataForUserDataCongestion(String supi, Integer congType, String tai, boolean getAnalytics) throws IOException, JSONException {
+
+        if(repository.userDataCongDetailsExist(supi, congType, tai, UserDataCongestion.SUBSCRIPTION_TABLE))
+        {
+            if(!getAnalytics)
+            { repository.updateRefCount_UserDataCongestion(supi, congType, tai); }
+        }
+
+        else
+        {
+            String correlationID = FrameWorkFunction.getUniqueID().toString();
+            String unSubcorrelationID = subscribeRightSide(POST_OAM_URL, correlationID, EventID.USER_DATA_CONGESTION);
+
+            responseHandlerUserDataCongestion(supi, congType, tai, correlationID, unSubcorrelationID, getAnalytics);
+        }
+    }
+
+
+
+    public void responseHandlerUserDataCongestion(String supi, Integer congType, String tai, String correlationID, String subscriptionID, boolean getAnalytics)
+    {
+        UserDataCongestionSubscriptionTable usrDataCongSubTable = new UserDataCongestionSubscriptionTable();
+
+        usrDataCongSubTable.setSupi(supi);
+        usrDataCongSubTable.setCongType(congType);
+        usrDataCongSubTable.setTai(tai);
+        usrDataCongSubTable.setCorrelationID(correlationID);
+        usrDataCongSubTable.setSubscriptionID(subscriptionID);
+
+        repository.addUserDataCongestionSubscriptionTable(usrDataCongSubTable, getAnalytics);
+    }
+
+
+
+    public String fetchSupiLocationFromAMF(NnwdafEventsSubscription subscription, AmfEventType amfEventType) throws JSONException, IOException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+
+        URL obj = new URL(POST_AMF_URL);
+
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+        con.setDoOutput(true);
+
+
+        JSONObject json = new JSONObject();
+
+        json.put("amfEventType", amfEventType.ordinal());
+        json.put("supi", subscription.getSupi());
+        json.put("eventID", subscription.getEventID());
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = json.toString().getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(con.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            //  out.println("Status: " + con.getResponseCode());
+            //  out.println("Message: " + response.toString());
+        }
+
+
+        subscription.setMcc(con.getHeaderField("mcc"));
+        subscription.setMnc(con.getHeaderField("mnc"));
+
+        subscription.setPlmnID(subscription.getMcc(), subscription.getMnc());
+        subscription.setTac(con.getHeaderField("tac"));
+
+        subscription.setTai(subscription.getPlmnID(), subscription.getTac());
+
+        return subscription.getTai();
+    }
+
+
+
+    /**********************************************************************************************************************************/
+
 
 
     public void sendLoadLevelInformationNotification(LoadLevelInformationNotification ldLevelNotifyData) throws JSONException, IOException
@@ -1804,6 +1944,10 @@ public class BusinessLogic extends ResourceValues {
 
     public void sendNetworkExperienceNotification(NetworkPerformanceNotification nwPerfNotifyData, NetworkPerfThreshold threshold) throws JSONException, IOException
     { sendNotificationToNF(nwPerfNotifyData.getNotificationURI(), NotificationPayload.getNetworkPerformancePayload(nwPerfNotifyData, threshold), EventID.NETWORK_PERFORMANCE); }
+
+
+    public void sendUserDataCongestionNotification(UserDataCongestionNotification usrDataCongNotifyData) throws JSONException, IOException
+    { sendNotificationToNF(usrDataCongNotifyData.getNotificationURI(), NotificationPayload.getUserDataCongestionPayload(usrDataCongNotifyData), EventID.USER_DATA_CONGESTION); }
 
 
 

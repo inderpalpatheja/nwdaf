@@ -2,6 +2,7 @@ package com.nwdaf.Analytics.Service.Validator;
 
 import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfType;
+import com.nwdaf.Analytics.Model.CustomData.UserDataCongestion.CongestionType;
 
 public class ErrorMessage {
 
@@ -10,6 +11,7 @@ public class ErrorMessage {
     public static final String NOT_STRING = "needs to be a String";
     public static final String INVALID_EVENT_ID = "needs to be between 0 ≤ eventID ≤ " + (EventID.values().length - 1);
     public static final String INVALID_NETWORK_PERF_TYPE = "needs to be between 0 ≤ nwPerfType ≤ " + (NetworkPerfType.values().length - 1);
+    public static final String INVALID_CONGESTION_TYPE = "needs to be between 0 ≤ congType ≤ " + (CongestionType.values().length - 1);
     public static final String INVALID_RELATIVE_RATIO = "needs to be between 0 ≤ relativeRatioThreshold ≤ 100";
     public static final String INVALID_NOTIFICATION_METHOD = "needs to be either 0(PERIODIC) or 1(THRESHOLD)";
     public static final String LESS_THAN_ZERO = "cannot be less than 0";

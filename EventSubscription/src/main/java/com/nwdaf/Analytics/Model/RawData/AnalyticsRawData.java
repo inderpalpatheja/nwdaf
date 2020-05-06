@@ -16,4 +16,5 @@ public class AnalyticsRawData {
     String plmnID;
     String anyUE;
     String nwPerfType;
+    String congType;
 }
