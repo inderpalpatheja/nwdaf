@@ -14,8 +14,8 @@ public class SliceLoadLevelSubscriptionDataMapper implements RowMapper {
         SliceLoadLevelSubscriptionData subTable = new SliceLoadLevelSubscriptionData();
 
         subTable.setID(resultSet.getInt("ID"));
-        subTable.setSubscriptionID(resultSet.getString("subscriptionID"));
-        subTable.setSnssais(resultSet.getString("snssais"));
+        subTable.setSubscriptionId(resultSet.getString("subscriptionId"));
+        subTable.setSnssai(resultSet.getString("snssai"));
         subTable.setLoadLevelThreshold(resultSet.getInt("loadLevelThreshold"));
 
         return subTable;

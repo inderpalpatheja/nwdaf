@@ -12,10 +12,10 @@ public class ServiceExperienceSubscriptionDataMapper implements RowMapper<Servic
     public ServiceExperienceSubscriptionData mapRow(ResultSet resultSet, int i) throws SQLException {
 
         Integer ID = resultSet.getInt("ID");
-        String subscriptionID = resultSet.getString("subscriptionID");
+        String subscriptionId = resultSet.getString("subscriptionId");
         String supi = resultSet.getString("supi");
-        String snssais = resultSet.getString("snssais");
+        String snssai = resultSet.getString("snssai");
 
-        return new ServiceExperienceSubscriptionData(ID, subscriptionID, supi, snssais);
+        return new ServiceExperienceSubscriptionData(ID, subscriptionId, supi, snssai);
     }
 }

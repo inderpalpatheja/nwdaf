@@ -9,12 +9,13 @@ import lombok.Setter;
 @Getter @Setter
 public class AnalyticsRawData {
 
-    String eventID;
-    String snssais;
-    String anySlice;
+    Integer event;
+    String snssai;
+    Boolean anySlice;
     String supi;
-    String plmnID;
-    String anyUE;
-    String nwPerfType;
-    String congType;
+    String tai;
+    Boolean anyUe;
+    Integer nwPerfType;
+    Integer congType;
+    Integer excepId;
 }

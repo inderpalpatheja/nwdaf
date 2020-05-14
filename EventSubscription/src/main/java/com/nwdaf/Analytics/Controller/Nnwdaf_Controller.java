@@ -1,9 +1,11 @@
 package com.nwdaf.Analytics.Controller;
 
 
-import com.nwdaf.Analytics.Model.CustomData.EventID;
+import com.nwdaf.Analytics.Model.CustomData.TargetUeInformation;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
+import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.Model.NwdafEvent;
 import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
 import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
@@ -32,7 +34,7 @@ public class Nnwdaf_Controller {
     final String EVENT_SUB = "/nnwdaf-eventssubscription/v1";
     final String ANALYTICS ="/nnwdaf-analyticsinfo/v1/analytics";
 
-    public static Counters EventCounter[] = new Counters[EventID.values().length];
+    public static Counters EventCounter[] = new Counters[NwdafEvent.values().length];
 
 
     @Autowired
@@ -54,9 +56,9 @@ public class Nnwdaf_Controller {
 
 
     /**
-     * @param snssais
+     * @param snssai
      * @param anySlice
-     * @param eventID
+     * @param event
      * @return
      * @throws IOException
      * @throws JSONException
@@ -68,17 +70,18 @@ public class Nnwdaf_Controller {
     @ApiOperation(value = "Get Analytics Details By snssais or anySlice Details",
             notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
             response = Object.class)
-    public Object nwdaf_analytics(@RequestParam(value = "snssais", required = false) String snssais,
-                                  @RequestParam(value = "anySlice", required = false) String anySlice,
-                                  @RequestParam(value = "plmnID", required = false) String plmnID,
-                                  @RequestParam("eventID") String eventID,
+    public Object nwdaf_analytics(@RequestParam(value = "snssai", required = false) String snssai,
+                                  @RequestParam(value = "anySlice", required = false) Boolean anySlice,
+                                  @RequestParam(value = "tai", required = false) String tai,
+                                  @RequestParam("event") Integer event,
                                   @RequestParam(value = "supi", required = false) String supi,
-                                  @RequestParam(value = "anyUe", required = false) String anyUe,
-                                  @RequestParam(value = "nwPerfType", required = false) String nwPerfType,
-                                  @RequestParam(value = "congType", required = false) String congType) throws IOException, JSONException {
+                                  @RequestParam(value = "anyUe", required = false) Boolean anyUe,
+                                  @RequestParam(value = "nwPerfType", required = false) Integer nwPerfType,
+                                  @RequestParam(value = "congType", required = false) Integer congType,
+                                  @RequestParam(value = "excepId", required = false) Integer excepId) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(eventID, snssais, anySlice, supi, plmnID, anyUe, nwPerfType, congType));
+        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(event, snssai, anySlice, supi, tai, anyUe, nwPerfType, congType, excepId));
     }
 
 
@@ -95,10 +98,10 @@ public class Nnwdaf_Controller {
      */
     @PostMapping(EVENT_SUB + "/subscriptions")
     @ApiOperation(value = OperationInfo.SUBSCRIBE_INFO, notes = OperationInfo.SUBSCRIBE_NOTES, response = Object.class)
-    public Object nwdaf_subscription(@RequestBody SubscriptionRawData subscriptionRawData) throws URISyntaxException, IOException, JSONException {
+    public Object nwdaf_subscription(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) {
 
 
-        return nwdaf_service.nwdaf_subscription(subscriptionRawData);
+        return nwdaf_service.nwdaf_subscription(nnwdafEventsSubscription);
     }
 
 
@@ -115,7 +118,8 @@ public class Nnwdaf_Controller {
     @ApiOperation(value = OperationInfo.UPDATE_SUBSCRIPTION_INFO, notes = OperationInfo.UPDATE_SUBSCRIPTION_NOTES, response = Object.class)
     public ResponseEntity<?> update_nf_subscription(@PathVariable("subscriptionID") String subscriptionID, @RequestBody SubUpdateRawData updateData) {
 
-        return nwdaf_service.update_nf_subscription(subscriptionID, updateData);
+        //return nwdaf_service.update_nf_subscription(subscriptionID, updateData);
+        return null;
     }
 
 
@@ -175,10 +179,18 @@ public class Nnwdaf_Controller {
 
 
     // Accepting Notification related to QOS_SUSTAINABILITY & NETWORK_PERFORMANCE [ from Simulator]
-    @PostMapping("/Noam_EventExposure_Notify/{correlationID}")
-    public void acceptingNotification_NetworkPerformance(@RequestBody String response) throws JSONException {
+    @PostMapping("/Noam_EventExposure_Notify/{correlationId}")
+    public void acceptingNotification_OAM(@RequestBody String response) throws JSONException {
 
         nwdaf_service.notificationHandlerOAM(response);
+    }
+
+
+    // Accepting Notification related to ABNORMAL_BEHAVIOUR [ from Simulator]
+    @PostMapping("/Nsmf_EventExposure_Notify/{correlationId}")
+    public void acceptingNotification_SMF(@RequestBody String response) throws JSONException, IOException {
+
+        nwdaf_service.notificationHandlerSMF(response);
     }
 
 

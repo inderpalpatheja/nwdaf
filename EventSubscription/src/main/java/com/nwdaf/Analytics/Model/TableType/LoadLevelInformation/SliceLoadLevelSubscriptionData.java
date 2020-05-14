@@ -1,30 +1,20 @@
 package com.nwdaf.Analytics.Model.TableType.LoadLevelInformation;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.UUID;
 
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class SliceLoadLevelSubscriptionData {
 
-    @Getter @Setter
-    private Integer ID;
 
-    private UUID subscriptionID;
-
-    @Getter @Setter
-    private String snssais;
-
-    @Getter @Setter
-    private Integer loadLevelThreshold;
-
-
-    public String getSubscriptionID() {
-        return String.valueOf(subscriptionID);
-    }
-
-    public void setSubscriptionID(String subscriptionID) {
-        this.subscriptionID = UUID.fromString(subscriptionID);
-    }
+    Integer ID;
+    String subscriptionId;
+    String snssai;
+    Integer loadLevelThreshold;
 
 }

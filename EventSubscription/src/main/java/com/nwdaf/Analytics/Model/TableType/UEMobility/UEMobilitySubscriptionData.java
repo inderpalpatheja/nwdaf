@@ -13,6 +13,6 @@ public class UEMobilitySubscriptionData {
 
 
     Integer ID;
-    String subscriptionID;
+    String subscriptionId;
     String supi;
 }

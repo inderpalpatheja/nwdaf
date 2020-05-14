@@ -4,39 +4,26 @@ import com.nwdaf.Analytics.Model.CustomData.QosType;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.UUID;
 
+
+@Getter @Setter
 public class QosNotificationData {
 
-    UUID subscriptionID;
+    String subscriptionId;
+    Integer ranUeThrouThrd;
+    Integer qosFlowRetThrd;
+    String tai;
 
-    @Getter @Setter
-    Integer ranUeThroughputThreshold;
-
-    @Getter @Setter
-    Integer qosFlowRetainThreshold;
-
-    @Getter @Setter
-    String tac;
-
-    public QosNotificationData(String subscriptionID, String tac, Integer threshold, QosType qosType)
+    public QosNotificationData(String subscriptionId, String tai, Integer threshold, QosType qosType)
     {
-        this.setSubscriptionID(subscriptionID);
-        this.setTac(tac);
+        this.setSubscriptionId(subscriptionId);
+        this.setTai(tai);
 
         if(qosType == QosType.RAN_UE_THROUGHPUT)
-        { this.setRanUeThroughputThreshold(threshold); }
+        { this.setRanUeThrouThrd(threshold); }
 
         else if(qosType == QosType.QOS_FLOW_RETAIN)
-        { this.setQosFlowRetainThreshold(threshold); }
-    }
-
-    public String getSubscriptionID() {
-        return String.valueOf(subscriptionID);
-    }
-
-    public void setSubscriptionID(String subscriptionID) {
-        this.subscriptionID = UUID.fromString(subscriptionID);
+        { this.setQosFlowRetThrd(threshold); }
     }
 
 }

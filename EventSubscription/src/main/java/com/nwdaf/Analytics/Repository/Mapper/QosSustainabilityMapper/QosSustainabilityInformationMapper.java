@@ -11,12 +11,9 @@ public class QosSustainabilityInformationMapper implements RowMapper {
 
     int loadVal;
 
-    public QosSustainabilityInformationMapper()
-    { loadVal = 0; }
 
     public QosSustainabilityInformationMapper(QosType qosType)
     { loadVal = (qosType == QosType.RAN_UE_THROUGHPUT) ? 1 : 2; }
-
 
 
     @Override
@@ -24,14 +21,14 @@ public class QosSustainabilityInformationMapper implements RowMapper {
 
         QosSustainabilityInformation qosSustainabilityInformation = new QosSustainabilityInformation();
 
-        qosSustainabilityInformation.setPlmnID(resultSet.getString("plmnID"));
-        qosSustainabilityInformation.setSnssais(resultSet.getString("snssais"));
+        qosSustainabilityInformation.setTai(resultSet.getString("tai"));
+        qosSustainabilityInformation.setSnssai(resultSet.getString("snssai"));
 
         if(loadVal == 1 || loadVal == 0)
-        { qosSustainabilityInformation.setRanUeThroughput(resultSet.getInt("ranUeThroughput")); }
+        { qosSustainabilityInformation.setRanUeThrou(resultSet.getInt("ranUeThrou")); }
 
         if(loadVal == 2 || loadVal == 0)
-        { qosSustainabilityInformation.setQosFlowRetain(resultSet.getInt("qosFlowRetain")); }
+        { qosSustainabilityInformation.setQosFlowRet(resultSet.getInt("qosFlowRet")); }
 
         return qosSustainabilityInformation;
     }

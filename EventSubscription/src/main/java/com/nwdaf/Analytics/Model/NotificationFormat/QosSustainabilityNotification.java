@@ -12,11 +12,10 @@ import lombok.Setter;
 @AllArgsConstructor
 public class QosSustainabilityNotification {
 
-    String subscriptionID;
+    String subscriptionId;
     String notificationURI;
-    String plmnID;
-    String snssais;
-    String tac;
+    String tai;
+    String snssai;
     Integer threshold;
     QosType thresholdType;
 

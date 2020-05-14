@@ -1,9 +1,9 @@
 package com.nwdaf.AMF;
 
 import com.nwdaf.AMF.model.CongestionType;
-import com.nwdaf.AMF.model.EventID;
 import com.nwdaf.AMF.model.NetworkPerfType;
 import com.nwdaf.AMF.model.NotificationMethod;
+import com.nwdaf.AMF.model.NwdafEvent;
 import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,10 +18,10 @@ public class EventData {
     static Random random = new Random();
 
 
-    public static JSONObject getData(EventID eventID) throws JSONException
+    public static JSONObject getData(NwdafEvent event) throws JSONException
     {
 
-        switch(eventID)
+        switch(event)
         {
             case LOAD_LEVEL_INFORMATION: return getSliceLoadLevelData(1);
 
@@ -45,7 +45,7 @@ public class EventData {
     {
         JSONObject json = new JSONObject();
 
-        json.put("eventID", EventID.LOAD_LEVEL_INFORMATION.ordinal());
+        json.put("event", NwdafEvent.LOAD_LEVEL_INFORMATION.ordinal());
         json.put("notificationURI", notificationURI);
         json.put("snssais", snssais[random.nextInt(snssais.length)]);
         json.put("notifMethod", notifMethod);
@@ -64,7 +64,7 @@ public class EventData {
     {
         JSONObject json = new JSONObject();
 
-        json.put("eventID", EventID.QOS_SUSTAINABILITY.ordinal());
+        json.put("event", NwdafEvent.QOS_SUSTAINABILITY.ordinal());
         json.put("notificationURI", notificationURI);
         json.put("snssais", snssais[random.nextInt(snssais.length)]);
         json.put("5Qi", random.nextInt(256));
@@ -100,7 +100,7 @@ public class EventData {
 
         JSONObject json = new JSONObject();
 
-        json.put("eventID", EventID.UE_MOBILITY.ordinal());
+        json.put("event", NwdafEvent.UE_MOBILITY.ordinal());
         json.put("notificationURI", notificationURI);
         json.put("notifMethod", 0);
         json.put("repetitionPeriod", 10 + random.nextInt(10));
@@ -116,7 +116,7 @@ public class EventData {
 
         JSONObject json = new JSONObject();
 
-        json.put("eventID", EventID.SERVICE_EXPERIENCE.ordinal());
+        json.put("event", NwdafEvent.SERVICE_EXPERIENCE.ordinal());
         json.put("notificationURI", notificationURI);
         json.put("supi", RandomStringUtils.randomNumeric(15));
         json.put("snssais", snssais[random.nextInt(snssais.length)]);
@@ -129,7 +129,7 @@ public class EventData {
     {
         JSONObject json = new JSONObject();
 
-        json.put("eventID", EventID.NETWORK_PERFORMANCE.ordinal());
+        json.put("event", NwdafEvent.NETWORK_PERFORMANCE.ordinal());
         json.put("notificationURI", notificationURI);
         json.put("supi", RandomStringUtils.randomNumeric(15));
 
@@ -152,7 +152,7 @@ public class EventData {
     {
         JSONObject json = new JSONObject();
 
-        json.put("eventID", EventID.USER_DATA_CONGESTION.ordinal());
+        json.put("event", NwdafEvent.USER_DATA_CONGESTION.ordinal());
         json.put("notificationURI", notificationURI);
         json.put("supi", RandomStringUtils.randomNumeric(15));
         json.put("congType", random.nextInt(CongestionType.values().length));

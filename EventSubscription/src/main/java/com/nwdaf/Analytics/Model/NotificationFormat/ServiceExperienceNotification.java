@@ -13,9 +13,9 @@ import lombok.Setter;
 public class ServiceExperienceNotification {
 
     String notificationURI;
-    String subscriptionID;
+    String subscriptionId;
     SvcExperience svcExpInfo;
     String supi;
-    String snssais;
+    String snssai;
 
 }

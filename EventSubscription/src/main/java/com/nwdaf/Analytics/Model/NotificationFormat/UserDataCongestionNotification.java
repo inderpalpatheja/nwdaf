@@ -1,6 +1,6 @@
 package com.nwdaf.Analytics.Model.NotificationFormat;
 
-import com.nwdaf.Analytics.Model.CustomData.Tai;
+import com.nwdaf.Analytics.Model.NetworkArea.Tai;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import lombok.Setter;
 public class UserDataCongestionNotification {
 
     String notificationURI;
-    String subscriptionID;
+    String subscriptionId;
     Tai tai;
     Integer congType;
     Integer congLevel;

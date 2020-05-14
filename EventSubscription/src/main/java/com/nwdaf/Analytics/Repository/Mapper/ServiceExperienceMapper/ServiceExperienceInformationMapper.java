@@ -13,11 +13,11 @@ public class ServiceExperienceInformationMapper implements RowMapper<ServiceExpe
 
         Integer ID = resultSet.getInt("ID");
         String supi = resultSet.getString("supi");
-        String snssais = resultSet.getString("snssais");
+        String snssai = resultSet.getString("snssai");
         Float mos = resultSet.getFloat("mos");
         Float upperRange = resultSet.getFloat("upperRange");
         Float lowerRange = resultSet.getFloat("lowerRange");
 
-        return new ServiceExperienceInformation(ID, supi, snssais, mos, upperRange, lowerRange);
+        return new ServiceExperienceInformation(ID, supi, snssai, mos, upperRange, lowerRange);
     }
 }

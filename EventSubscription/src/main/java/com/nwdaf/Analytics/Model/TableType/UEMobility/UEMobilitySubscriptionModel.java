@@ -8,8 +8,8 @@ import lombok.Setter;
 public class UEMobilitySubscriptionModel {
 
 
-    String subscriptionID;
-    Integer eventID;
+    String subscriptionId;
+    Integer event;
     String notificationURI;
     Integer notifMethod;
     Integer repetitionPeriod;
@@ -19,8 +19,8 @@ public class UEMobilitySubscriptionModel {
     @Override
     public String toString() {
         return "UE_MobilitySubscriptionModel{" +
-                "subscriptionID='" + subscriptionID + '\'' +
-                ", eventID=" + eventID +
+                "subscriptionID='" + subscriptionId + '\'' +
+                ", eventID=" + event +
                 ", notificationURI='" + notificationURI + '\'' +
                 ", notifMethod=" + notifMethod +
                 ", repetitionPeriod=" + repetitionPeriod +

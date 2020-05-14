@@ -14,9 +14,9 @@ public class QosSustainabilitySubscriptionTableMapper implements RowMapper {
         QosSustainabilitySubscriptionTable qosSustainabilitySubscriptionTable = new QosSustainabilitySubscriptionTable();
 
         qosSustainabilitySubscriptionTable.setID(resultSet.getInt("ID"));
-        qosSustainabilitySubscriptionTable.setSnssais(resultSet.getString("snssais"));
-        qosSustainabilitySubscriptionTable.setSubscriptionID(resultSet.getString("subscriptionID"));
-        qosSustainabilitySubscriptionTable.setCorrelationID(resultSet.getString("correlationID"));
+        qosSustainabilitySubscriptionTable.setSnssai(resultSet.getString("snssai"));
+        qosSustainabilitySubscriptionTable.setSubscriptionId(resultSet.getString("subscriptionId"));
+        qosSustainabilitySubscriptionTable.setCorrelationId(resultSet.getString("correlationId"));
         qosSustainabilitySubscriptionTable.setRefCount(resultSet.getInt("refCount"));
 
         return qosSustainabilitySubscriptionTable;

@@ -9,6 +9,34 @@ import lombok.Setter;
 @Getter @Setter
 public class SubscriptionRawData {
 
+
+    @Getter @Setter
+    public class TargetUeInformation {
+
+        Object anyUe;
+        Object supi;
+        Object intGroupId;
+    }
+
+    @Getter @Setter
+    public class PlmnId {
+
+        Object mcc;
+        Object mnc;
+    }
+
+
+    @Getter @Setter
+    public class Tai {
+
+        PlmnId plmnId;
+        Object tac;
+    }
+
+
+
+
+
     Object eventID;
     Object notificationURI;
 
@@ -28,16 +56,14 @@ public class SubscriptionRawData {
     @JsonProperty("5Qi")
     Object _5Qi;
 
-    Object mcc;
-    Object mnc;
-    Object tac;
+    Tai tai;
     Object ranUeThroughputThreshold;
     Object qosFlowRetainThreshold;
 
 
     /***************************UE_MOBILITY**********************************************/
 
-    Object supi;
+    TargetUeInformation tgtUe;
 
 
     /***************************NETWORK_PERFORMANCE**********************************************/

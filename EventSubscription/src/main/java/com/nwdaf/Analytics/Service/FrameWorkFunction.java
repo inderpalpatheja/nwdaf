@@ -1,10 +1,10 @@
 package com.nwdaf.Analytics.Service;
 
 
-import com.nwdaf.Analytics.Model.CustomData.EventID;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
-import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
+import com.nwdaf.Analytics.Model.NwdafEvent;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +31,7 @@ public class FrameWorkFunction {
         HashMap<Object, Object> eventInfo = new HashMap<>();
 
         eventInfo.put("ID", eventID);
-        eventInfo.put("Event", EventID.values()[eventID].toString());
+        eventInfo.put("Event", NwdafEvent.values()[eventID].toString());
 
         stats.put("EventInfo", eventInfo);
         stats.put("Counters", EventCounter[eventID].getCountersData());
@@ -60,14 +60,14 @@ public class FrameWorkFunction {
         cumulativeData.put("CumulativeStats", getCumulativeData());
         list.add(cumulativeData);
 
-        for(int eventID = 0; eventID < EventID.values().length; eventID++)
+        for(int eventID = 0; eventID < NwdafEvent.values().length; eventID++)
         {
             HashMap<Object, Object> stats = new HashMap<>();
 
             HashMap<Object, Object> eventInfo = new HashMap<>();
 
             eventInfo.put("ID", eventID);
-            eventInfo.put("Event", EventID.values()[eventID].toString());
+            eventInfo.put("Event", NwdafEvent.values()[eventID].toString());
 
             stats.put("EventInfo", eventInfo);
             stats.put("Counters", EventCounter[eventID].getCountersData());
@@ -128,14 +128,6 @@ public class FrameWorkFunction {
     { return UUID.randomUUID(); }
 
 
-    public static void showQosInfo(NnwdafEventsSubscription nnwdafEventsSubscription)
-    {
-        System.out.println("5Qi: " + nnwdafEventsSubscription.get_5Qi());
-        System.out.println("plmnID: " + nnwdafEventsSubscription.getPlmnID());
-        System.out.println("tac: " + nnwdafEventsSubscription.getTac());
-        System.out.println("ranUeThroughtThreshold: " + nnwdafEventsSubscription.getRanUeThroughputThreshold());
-        System.out.println("qosFlowRetainThreshold: " + nnwdafEventsSubscription.getQosFlowRetainThreshold());
-    }
 
 }
 

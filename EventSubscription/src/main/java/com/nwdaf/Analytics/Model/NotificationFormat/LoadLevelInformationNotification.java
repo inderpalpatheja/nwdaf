@@ -11,9 +11,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class LoadLevelInformationNotification {
 
-    String subscriptionID;
+    String subscriptionId;
     String notificationURI;
-    String snssais;
+    String snssai;
     Integer currentLoadLevel;
 
 }

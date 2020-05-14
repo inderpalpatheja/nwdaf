@@ -22,7 +22,7 @@ public class ServiceExperienceInfoMapper implements RowMapper<ServiceExperienceI
         svcExp.setLowerRange(resultSet.getFloat("lowerRange"));
 
         String supi = resultSet.getString("supi");
-        String snssais = resultSet.getString("snssais");
+        String snssais = resultSet.getString("snssai");
 
         return new ServiceExperienceInfo(message, data_status, supi, snssais, svcExp);
     }

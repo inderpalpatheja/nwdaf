@@ -12,7 +12,7 @@ public class NetworkPerformanceSubscriptionDataMapper implements RowMapper<Netwo
     public NetworkPerformanceSubscriptionData mapRow(ResultSet resultSet, int i) throws SQLException {
 
         Integer ID = resultSet.getInt("ID");
-        String subscriptionID = resultSet.getString("subscriptionID");
+        String subscriptionID = resultSet.getString("subscriptionId");
         String supi = resultSet.getString("supi");
         Integer nwPerfType = resultSet.getInt("nwPerfType");
         Integer relativeRatioThreshold = resultSet.getInt("relativeRatioThreshold");

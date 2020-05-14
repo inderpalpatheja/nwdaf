@@ -14,11 +14,11 @@ public class QosSustainabilityInfoMapper implements RowMapper<QosSustainabilityI
     @Override
     public QosSustainabilityInfo mapRow(ResultSet resultSet, int i) throws SQLException {
 
-        String plmnID = resultSet.getString("plmnID");
-        String snssais = resultSet.getString("snssais");
-        Integer qosFlowRetain = resultSet.getInt("qosFlowRetain");
-        Integer ranUeThroughput = resultSet.getInt("ranUeThroughput");
+        String tai = resultSet.getString("tai");
+        String snssai = resultSet.getString("snssai");
+        Integer qosFlowRet = resultSet.getInt("qosFlowRet");
+        Integer ranUeThrou = resultSet.getInt("ranUeThrou");
 
-        return new QosSustainabilityInfo(message, data_status, plmnID, snssais, qosFlowRetain, ranUeThroughput);
+        return new QosSustainabilityInfo(message, data_status, tai, snssai, qosFlowRet, ranUeThrou);
     }
 }

@@ -15,7 +15,7 @@ public class AnalyticsRowMapper implements RowMapper {
         EventConnection connect = new EventConnection();
         connect.setMessage("Data Found");
         connect.setDataStatus(Boolean.TRUE);
-        connect.setSnssais(resultSet.getString("snssais"));
+        connect.setSnssai(resultSet.getString("snssai"));
         connect.setCurrentLoadLevelInfo(resultSet.getInt("currentLoadLevel"));
 
         return connect;

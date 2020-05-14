@@ -1,6 +1,6 @@
 package com.nwdaf.AMF;
 
-import com.nwdaf.AMF.model.EventID;
+import com.nwdaf.AMF.model.NwdafEvent;
 import org.json.JSONObject;
 
 import static java.lang.System.out;
@@ -21,7 +21,7 @@ public class Functionality {
     final String UNSUB = "https://localhost:8081/nnwdaf-eventssubscription/v1/subscriptions/";
 
 
-    public String subscribe(EventID eventID) throws Exception {
+    public String subscribe(NwdafEvent event) throws Exception {
 
         String line;
         StringBuffer responseContent = new StringBuffer();
@@ -34,7 +34,7 @@ public class Functionality {
         con.setRequestProperty("Accept", "application/json");
         con.setDoOutput(true);
 
-        JSONObject json = EventData.getData(eventID);
+        JSONObject json = EventData.getData(event);
 
 
         try (OutputStream os = con.getOutputStream()) {

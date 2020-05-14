@@ -13,9 +13,9 @@ public class QosSustainabilityInfo {
 
     String message;
     Boolean data_status;
-    String plmnID;
-    String snssais;
-    Integer qosFlowRetain;
-    Integer ranUeThroughput;
+    String tai;
+    String snssai;
+    Integer qosFlowRet;
+    Integer ranUeThrou;
 
 }

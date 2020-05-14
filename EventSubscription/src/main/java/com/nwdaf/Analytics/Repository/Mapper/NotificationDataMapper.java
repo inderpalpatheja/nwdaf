@@ -11,6 +11,6 @@ public class NotificationDataMapper implements RowMapper {
     @Override
     public Object mapRow(ResultSet resultSet, int i) throws SQLException {
 
-        return new NotificationData(resultSet.getString("subscriptionID"), resultSet.getInt("loadLevelThreshold"));
+        return new NotificationData(resultSet.getString("subscriptionId"), resultSet.getInt("loadLevelThreshold"));
     }
 }

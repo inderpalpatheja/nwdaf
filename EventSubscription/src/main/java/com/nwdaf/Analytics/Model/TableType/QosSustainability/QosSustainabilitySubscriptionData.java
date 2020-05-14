@@ -1,62 +1,42 @@
 package com.nwdaf.Analytics.Model.TableType.QosSustainability;
 
-import com.nwdaf.Analytics.Model.CustomData.QosSustainabilityData.PlmnID;
+import com.nwdaf.Analytics.Model.EventSubscription;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.UUID;
 
 
+@Getter @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class QosSustainabilitySubscriptionData {
 
-    @Getter @Setter
-    private Integer ID;
-
-    private UUID subscriptionID;
-
-    @Getter @Setter
-    private Integer _5Qi;
-
-    private PlmnID plmnID;
-
-    @Getter @Setter
-    private String tac;
-
-    @Getter @Setter
-    private String snssais;
-
-    @Getter @Setter
-    private Integer ranUeThroughputThreshold;
-
-    @Getter @Setter
-    private Integer qosFlowRetainThreshold;
+    Integer ID;
+    String subscriptionId;
+    Integer _5Qi;
+    String tai;
+    String snssai;
+    Integer ranUeThrouThrd;
+    Integer qosFlowRetThrd;
 
 
-    public String getSubscriptionID() {
-        return String.valueOf(subscriptionID);
-    }
-
-    public void setSubscriptionID(String subscriptionID) {
-        this.subscriptionID = UUID.fromString(subscriptionID);
-    }
-
-    public String getPlmnID() {
-        return plmnID.toString();
-    }
-
-    public void setPlmnID(String plmnID) {
-
-        String param[] = plmnID.split("-");
-        this.plmnID = new PlmnID(param[0], param[1]);
-    }
-
-
-    public QosSustainabilitySubscriptionData(String plmnID, String snssais)
+    public QosSustainabilitySubscriptionData(String tai, String snssai)
     {
-        this.setPlmnID(plmnID);
-        this.snssais = snssais;
+        this.tai = tai;
+        this.snssai = snssai;
+    }
+
+
+    public QosSustainabilitySubscriptionData(EventSubscription eventSubscription, String subscriptionId)
+    {
+        this.subscriptionId = subscriptionId;
+        this._5Qi = eventSubscription.getQosRequ().get_5Qi();
+        this.tai = eventSubscription.getNetworkArea().getTais().get(0).toString();
+        this.snssai = eventSubscription.getSnssais().get(0).toString();
+        this.ranUeThrouThrd = eventSubscription.getRanUeThrouThrds().get(0);
+        this.qosFlowRetThrd = eventSubscription.getQosFlowRetThrds().get(0);
     }
 
 }

@@ -14,7 +14,7 @@ public class NetworkPerformanceSubscriptionTable {
     Integer ID;
     String supi;
     Integer nwPerfType;
-    String subscriptionID;
-    String correlationID;
+    String subscriptionId;
+    String correlationId;
     Integer refCount;
 }
