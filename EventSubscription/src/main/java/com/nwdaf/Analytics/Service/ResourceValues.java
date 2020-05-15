@@ -40,4 +40,9 @@ public class ResourceValues {
     @Value("${spring.NF.UnSubscribe.url}")
     String DELETE_NF_URL;
 
+    @Value("${spring.SMF.Subscribe.url}")
+    String POST_SMF_URL;
+
+    @Value("${spring.SMF.UnSubscribe.url}")
+    String DELETE_SMF_URL;
 }

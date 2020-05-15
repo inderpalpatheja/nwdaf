@@ -7,7 +7,7 @@ import lombok.Setter;
 public class UserLocation {
 
 
-    private int ID;
+    private Integer ID;
     private String tai;
     private String cellID;
     private Integer timeDuration;

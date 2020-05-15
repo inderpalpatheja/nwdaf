@@ -15,7 +15,7 @@ public class UserDataCongestionSubscriptionTable {
     String supi;
     Integer congType;
     String tai;
-    String subscriptionID;
-    String correlationID;
+    String subscriptionId;
+    String correlationId;
     Integer refCount;
 }

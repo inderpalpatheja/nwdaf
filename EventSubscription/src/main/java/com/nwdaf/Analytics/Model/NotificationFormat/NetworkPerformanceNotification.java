@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class NetworkPerformanceNotification {
 
-    String subscriptionID;
+    String subscriptionId;
     String notificationURI;
     Integer nwPerfType;
     Integer relativeRatio;

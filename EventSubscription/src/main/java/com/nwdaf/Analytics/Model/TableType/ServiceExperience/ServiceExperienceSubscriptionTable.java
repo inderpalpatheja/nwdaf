@@ -13,15 +13,15 @@ public class ServiceExperienceSubscriptionTable {
 
     Integer ID;
     String supi;
-    String snssais;
-    String subscriptionID;
-    String correlationID;
+    String snssai;
+    String subscriptionId;
+    String correlationId;
     Integer refCount;
 
-    public ServiceExperienceSubscriptionTable(String supi, String snssais)
+    public ServiceExperienceSubscriptionTable(String supi, String snssai)
     {
         this.supi = supi;
-        this.snssais = snssais;
+        this.snssai = snssai;
     }
 
 }

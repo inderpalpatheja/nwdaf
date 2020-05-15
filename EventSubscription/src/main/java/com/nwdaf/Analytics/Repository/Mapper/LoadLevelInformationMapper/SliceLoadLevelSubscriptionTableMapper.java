@@ -14,9 +14,9 @@ public class SliceLoadLevelSubscriptionTableMapper implements RowMapper {
         SliceLoadLevelSubscriptionTable subTable = new SliceLoadLevelSubscriptionTable();
 
         subTable.setID(resultSet.getInt("ID"));
-        subTable.setSnssais(resultSet.getString("snssais"));
-        subTable.setSubscriptionID(resultSet.getString("subscriptionID"));
-        subTable.setCorrelationID(resultSet.getString("correlationID"));
+        subTable.setSnssai(resultSet.getString("snssai"));
+        subTable.setSubscriptionId(resultSet.getString("subscriptionId"));
+        subTable.setCorrelationId(resultSet.getString("correlationId"));
 
         return subTable;
     }

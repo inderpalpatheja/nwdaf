@@ -17,8 +17,8 @@ public class nwdafUEmobilitySubscriptionTableMapper implements RowMapper {
 
         uEmobilitySubscriptionTableModel.setID(resultSet.getInt("ID"));
         uEmobilitySubscriptionTableModel.setSupi(resultSet.getString("supi"));
-        uEmobilitySubscriptionTableModel.setSubscriptionID(UUID.fromString(resultSet.getString("subscriptionID")));
-        uEmobilitySubscriptionTableModel.setCorrelationID(UUID.fromString(resultSet.getString("correlationID")));
+        uEmobilitySubscriptionTableModel.setSubscriptionId(resultSet.getString("subscriptionId"));
+        uEmobilitySubscriptionTableModel.setCorrelationId(resultSet.getString("correlationId"));
 
         return uEmobilitySubscriptionTableModel;
     }

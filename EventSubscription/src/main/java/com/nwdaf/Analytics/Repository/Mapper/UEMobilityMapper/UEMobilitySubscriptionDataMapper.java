@@ -24,10 +24,10 @@ public class UEMobilitySubscriptionDataMapper implements RowMapper {
         System.out.println(data.getID());
         data.setSupi(resultSet.getString("supi"));
         System.out.println(data.getSupi());
-        data.setSubscriptionID(resultSet.getString("subscriptionID"));
-        System.out.println(data.getSubscriptionID());
+        data.setSubscriptionId(resultSet.getString("subscriptionId"));
+        System.out.println(data.getSubscriptionId());
 
-        System.out.println("In nwdafUEMobilitySubscriptionDataMapper - "+ data.getSubscriptionID());
+        System.out.println("In nwdafUEMobilitySubscriptionDataMapper - "+ data.getSubscriptionId());
         return data;
     }
 

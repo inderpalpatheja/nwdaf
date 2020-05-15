@@ -14,8 +14,8 @@ public class NetworkPerformanceSubscriptionTableMapper implements RowMapper<Netw
         Integer ID = resultSet.getInt("ID");
         String supi = resultSet.getString("supi");
         Integer nwPerfType = resultSet.getInt("nwPerfType");
-        String subscriptionID = resultSet.getString("subscriptionID");
-        String correlationID = resultSet.getString("correlationID");
+        String subscriptionID = resultSet.getString("subscriptionId");
+        String correlationID = resultSet.getString("correlationId");
         Integer refCount = resultSet.getInt("refCount");
 
         return new NetworkPerformanceSubscriptionTable(ID, supi, nwPerfType, subscriptionID, correlationID, refCount);

@@ -13,7 +13,7 @@ public class SliceLoadLevelInformationMapper implements RowMapper {
 
         SliceLoadLevelInformation loadLevel = new SliceLoadLevelInformation();
 
-        loadLevel.setSnssais(resultSet.getString("snssais"));
+        loadLevel.setSnssai(resultSet.getString("snssai"));
         loadLevel.setCurrentLoadLevel(resultSet.getInt("currentLoadLevel"));
 
         return loadLevel;

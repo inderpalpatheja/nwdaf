@@ -8,8 +8,8 @@ import lombok.Setter;
 public class NnwdafEventsSubscriptionUEmobility {
 
 
-    String subscriptionID;
-    Integer eventID;
+    String subscriptionId;
+    Integer event;
     String notificationURI;
     String supi;
     Integer notifMethod;

@@ -1,7 +1,7 @@
 package com.nwdaf.AMF;
 //import ch.qos.logback.classic.BasicConfigurator;
 
-import com.nwdaf.AMF.model.EventID;
+import com.nwdaf.AMF.model.NwdafEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -21,25 +21,25 @@ public class AmfApplication extends Functionality {
 
     String[] snssaisArray = {"AMF", "SMF", "PCF"};
     String qosLoadType[] = { "ranUeThroughput", "qosFlowRetain" };
-    int[] eventIDArray = {EventID.LOAD_LEVEL_INFORMATION.ordinal(), EventID.QOS_SUSTAINABILITY.ordinal(), EventID.UE_MOBILITY.ordinal()};
+    int[] eventIDArray = { NwdafEvent.LOAD_LEVEL_INFORMATION.ordinal(), NwdafEvent.QOS_SUSTAINABILITY.ordinal(), NwdafEvent.UE_MOBILITY.ordinal()};
 
     Random random = new Random();
 
 
-    public void test(int subList, int eventID, AMFController amfController) throws Exception {
+    public void test(int subList, int event, AMFController amfController) throws Exception {
 
 
 
         do
         {
-            if (eventID == EventID.LOAD_LEVEL_INFORMATION.ordinal() || eventID == 10) {
+            if (event == NwdafEvent.LOAD_LEVEL_INFORMATION.ordinal() || event == 10) {
 
                 while(true)
                 {
                     for (int i = 0; i < subList; i++)
                     {
-                        System.out.println("Subscribing for EventID: " + EventID.LOAD_LEVEL_INFORMATION.toString());
-                        String subscriptionID = subscribe(EventID.LOAD_LEVEL_INFORMATION);
+                        System.out.println("Subscribing for EventID: " + NwdafEvent.LOAD_LEVEL_INFORMATION.toString());
+                        String subscriptionID = subscribe(NwdafEvent.LOAD_LEVEL_INFORMATION);
                     }
 
 
@@ -54,13 +54,13 @@ public class AmfApplication extends Functionality {
                     //Thread.sleep(3 * 1000);
                     //Thread.sleep(20 * 1000);
 
-                    if(eventID == 10)
+                    if(event == 10)
                     { break; }
                 }
             }
 
 
-            if (eventID == EventID.UE_MOBILITY.ordinal() || eventID == 10) {
+            if (event == NwdafEvent.UE_MOBILITY.ordinal() || event == 10) {
 
 
                 while(true)
@@ -68,8 +68,8 @@ public class AmfApplication extends Functionality {
 
                     for (int i = 0; i < subList; i++)
                     {
-                        System.out.println("Subscribing for EventID: " + EventID.UE_MOBILITY.toString());
-                        String subscriptionID = subscribe(EventID.UE_MOBILITY);
+                        System.out.println("Subscribing for EventID: " + NwdafEvent.UE_MOBILITY.toString());
+                        String subscriptionID = subscribe(NwdafEvent.UE_MOBILITY);
                     }
 
 
@@ -87,20 +87,20 @@ public class AmfApplication extends Functionality {
 
                     //Thread.sleep(3 * 1000);
 
-                    if(eventID == 10)
+                    if(event == 10)
                     { break; }
                 }
 
             }
 
-            if (eventID == EventID.QOS_SUSTAINABILITY.ordinal() || eventID == 10) {
+            if (event == NwdafEvent.QOS_SUSTAINABILITY.ordinal() || event == 10) {
 
                 while(true)
                 {
                     for (int i = 0; i < subList; i++)
                     {
-                        System.out.println("Subscribing for EventID: " + EventID.QOS_SUSTAINABILITY.toString());
-                        String subscriptionID = subscribe(EventID.QOS_SUSTAINABILITY);
+                        System.out.println("Subscribing for EventID: " + NwdafEvent.QOS_SUSTAINABILITY.toString());
+                        String subscriptionID = subscribe(NwdafEvent.QOS_SUSTAINABILITY);
                     }
 
 
@@ -115,21 +115,21 @@ public class AmfApplication extends Functionality {
 
                     //Thread.sleep(3 * 1000);
 
-                    if(eventID == 10)
+                    if(event == 10)
                     { break; }
                 }
             }
 
 
 
-            if (eventID == EventID.SERVICE_EXPERIENCE.ordinal() || eventID == 10) {
+            if (event == NwdafEvent.SERVICE_EXPERIENCE.ordinal() || event == 10) {
 
                 while(true)
                 {
                     for (int i = 0; i < subList; i++)
                     {
-                        System.out.println("Subscribing for EventID: " + EventID.SERVICE_EXPERIENCE.toString());
-                        String subscriptionID = subscribe(EventID.SERVICE_EXPERIENCE);
+                        System.out.println("Subscribing for EventID: " + NwdafEvent.SERVICE_EXPERIENCE.toString());
+                        String subscriptionID = subscribe(NwdafEvent.SERVICE_EXPERIENCE);
                     }
 
 
@@ -140,20 +140,20 @@ public class AmfApplication extends Functionality {
 
                     //Thread.sleep(3 * 1000);
 
-                    if(eventID == 10)
+                    if(event == 10)
                     { break; }
                 }
             }
 
 
-            if(eventID == EventID.NETWORK_PERFORMANCE.ordinal() || eventID == 10)
+            if(event == NwdafEvent.NETWORK_PERFORMANCE.ordinal() || event == 10)
             {
                 while(true)
                 {
                     for(int i = 0;i < subList; i++)
                     {
-                        System.out.println("Subscribing for EventID: " + EventID.NETWORK_PERFORMANCE.toString());
-                        String subscriptionID = subscribe(EventID.NETWORK_PERFORMANCE);
+                        System.out.println("Subscribing for EventID: " + NwdafEvent.NETWORK_PERFORMANCE.toString());
+                        String subscriptionID = subscribe(NwdafEvent.NETWORK_PERFORMANCE);
                     }
 
                     for(int j = 0; j < amfController.getCorrelationIDList_NETWORK_PERFORMANCE().size(); j++)
@@ -162,29 +162,29 @@ public class AmfApplication extends Functionality {
 
                     //Thread.sleep(3 * 1000);
 
-                    if(eventID == 10)
+                    if(event == 10)
                     { break; }
                 }
 
             }
 
 
-            if(eventID == EventID.USER_DATA_CONGESTION.ordinal() || eventID == 10)
+            if(event == NwdafEvent.USER_DATA_CONGESTION.ordinal() || event == 10)
             {
                 while(true)
                 {
                     for(int i = 0; i < subList; i++)
                     {
-                        System.out.println("Subscribing for EventID: " + EventID.USER_DATA_CONGESTION.toString());
-                        String subscriptionID = subscribe(EventID.USER_DATA_CONGESTION);
+                        System.out.println("Subscribing for EventID: " + NwdafEvent.USER_DATA_CONGESTION.toString());
+                        String subscriptionID = subscribe(NwdafEvent.USER_DATA_CONGESTION);
                     }
 
                     for(int j = 0; j < amfController.getCorrelationIDList_USER_DATA_CONGESTION().size(); j++)
                     { amfController.sendUserDataCongestionLevel("https://localhost:8081/Noam_EventExposure_Notify", amfController.getCorrelationIDList_USER_DATA_CONGESTION().get(j)); }
 
-                    Thread.sleep(3 * 1000);
+                    //Thread.sleep(3 * 1000);
 
-                    if(eventID == 10)
+                    if(event == 10)
                     { break; }
                 }
             }
@@ -192,7 +192,7 @@ public class AmfApplication extends Functionality {
 
             Thread.sleep(3 * 1000);
 
-        } while(eventID == 10);
+        } while(event == 10);
 
 
 
@@ -217,7 +217,7 @@ public class AmfApplication extends Functionality {
         AmfApplication amfApplication = new AmfApplication();
 
 
-        amfApplication.test(subListInt, eventIDInt, amfController);
+        //amfApplication.test(subListInt, eventIDInt, amfController);
 
     }
 }

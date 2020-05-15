@@ -11,8 +11,8 @@ public class UEMobilitySubscriptionTable {
 
     private Integer ID;
     private String supi;
-    private UUID subscriptionID;
-    private UUID correlationID;
+    private String subscriptionId;
+    private String correlationId;
     private Integer refCount;
 
 }

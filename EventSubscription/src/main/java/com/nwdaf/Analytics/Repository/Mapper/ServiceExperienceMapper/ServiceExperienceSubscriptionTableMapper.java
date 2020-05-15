@@ -14,11 +14,11 @@ public class ServiceExperienceSubscriptionTableMapper implements RowMapper<Servi
 
         Integer ID = resultSet.getInt("ID");
         String supi = resultSet.getString("supi");
-        String snssais = resultSet.getString("snssais");
-        String subscriptionID = resultSet.getString("subscriptionID");
-        String correlationID = resultSet.getString("correlationID");
+        String snssai = resultSet.getString("snssai");
+        String subscriptionId = resultSet.getString("subscriptionId");
+        String correlationId = resultSet.getString("correlationId");
         Integer refCount = resultSet.getInt("refCount");
 
-        return new ServiceExperienceSubscriptionTable(ID, supi, snssais, subscriptionID, correlationID, refCount);
+        return new ServiceExperienceSubscriptionTable(ID, supi, snssai, subscriptionId, correlationId, refCount);
     }
 }
