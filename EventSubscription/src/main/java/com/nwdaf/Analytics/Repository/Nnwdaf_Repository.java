@@ -148,6 +148,16 @@ public class Nnwdaf_Repository {
     }
 
 
+    public AbnormalBehaviourSubscriptionData unsubscribeNF_AbnormalBehaviour(String subscriptionId)
+    {
+        AbnormalBehaviourSubscriptionData abnorBehavrSubData = getSupi_ExcepId_AbnormalBehaviour(subscriptionId);
+
+        jdbcTemplate.update("DELETE FROM nwdafAbnormalBehaviourSubscriptionData WHERE subscriptionId = ?;", subscriptionId);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?;", subscriptionId);
+
+        return decrementRefCount_AbnormalBehaviour(abnorBehavrSubData);
+    }
+
 
 
     public List<EventConnection> checkForData(String snssai, Boolean anySlice) {
@@ -403,12 +413,22 @@ public class Nnwdaf_Repository {
     {
         jdbcTemplate.update("UPDATE nwdafUserDataCongestionSubscriptionTable SET refCount = refCount - 1 WHERE supi = ? AND congType = ?;", new Object[] { usrDataCongSubData.getSupi(), usrDataCongSubData.getCongType() });
 
-        if(getRefCount_NetworkPerformance(usrDataCongSubData.getSupi(), usrDataCongSubData.getCongType()) == 0)
+        if(getRefCount_UserDataCongestion(usrDataCongSubData.getSupi(), usrDataCongSubData.getCongType()) == 0)
         { return usrDataCongSubData; }
 
         return null;
     }
 
+
+    public AbnormalBehaviourSubscriptionData decrementRefCount_AbnormalBehaviour(AbnormalBehaviourSubscriptionData abnorBehavrSubData)
+    {
+        jdbcTemplate.update("UPDATE nwdafAbnormalBehaviourSubscriptionTable SET refCount = refCount - 1 WHERE supi = ? AND excepId = ?;", new Object[] { abnorBehavrSubData.getSupi(), abnorBehavrSubData.getExcepId() });
+
+        if(getRefCount_AbnormalBehaviour(abnorBehavrSubData.getSupi(), abnorBehavrSubData.getExcepId()) == 0)
+        { return abnorBehavrSubData; }
+
+        return null;
+    }
 
 
 
@@ -454,7 +474,7 @@ public class Nnwdaf_Repository {
 
     public QosSustainabilitySubscriptionData getTai_Snssais_QosSustainability(String subscriptionId)
     {
-        String query = "SELECT tai, snssai FROM nwdafQosSustainabilitySubscriptionData WHERE subscriptionId = ?";
+        String query = "SELECT tai, snssai FROM nwdafQosSustainabilitySubscriptionData WHERE subscriptionId = ?;";
 
         try
         {
@@ -483,13 +503,13 @@ public class Nnwdaf_Repository {
     }
 
 
-    public Integer getRefCount_QosSustainability(String snssai, String tai)
+    public Integer getRefCount_QosSustainability(String tai, String snssai)
     {
-        String query = "SELECT refCount FROM nwdafQosSustainabilitySubscriptionTable snssai = ? AND tai = ?;";
+        String query = "SELECT refCount FROM nwdafQosSustainabilitySubscriptionTable WHERE tai = ? AND snssai = ?;";
 
         try
         {
-            return jdbcTemplate.queryForObject(query, new Object[] {snssai, tai}, (resultSet, i) -> resultSet.getInt("refCount"));
+            return jdbcTemplate.queryForObject(query, new Object[] {tai, snssai}, (resultSet, i) -> resultSet.getInt("refCount"));
         }
 
         catch(EmptyResultDataAccessException e)
@@ -532,6 +552,20 @@ public class Nnwdaf_Repository {
 
         try
         { return jdbcTemplate.queryForObject(query, new Object[]{supi, congType}, (resultSet, i) -> resultSet.getInt("refCount")); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return 0; }
+    }
+
+
+    public Integer getRefCount_AbnormalBehaviour(String supi, Integer excepId)
+    {
+        String query = "SELECT refCount FROM nwdafAbnormalBehaviourSubscriptionTable WHERE supi = ? AND excepId = ?;";
+
+        try
+        {
+            return jdbcTemplate.queryForObject(query, new Object[]{supi, excepId}, (resultSet, i) -> resultSet.getInt("refCount"));
+        }
 
         catch(EmptyResultDataAccessException ex)
         { return 0; }
@@ -676,7 +710,7 @@ public class Nnwdaf_Repository {
         { return Boolean.FALSE; }
 
 
-        String query = "INSERT INTO nwdafQosSustainabilityInformation (snssai, tai, ranUeThrou, qosFlowRet) VALUES(?, ?, ?, ?);";
+        String query = "INSERT INTO nwdafQosSustainabilityInformation (tai, snssai, ranUeThrou, qosFlowRet) VALUES(?, ?, ?, ?);";
 
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
@@ -684,8 +718,8 @@ public class Nnwdaf_Repository {
             @Override
             public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
 
-                preparedStatement.setString(1, snssai);
-                preparedStatement.setString(2, tai);
+                preparedStatement.setString(1, tai);
+                preparedStatement.setString(2, snssai);
                 preparedStatement.setInt(3, 0);
                 preparedStatement.setInt(4, 0);
 
@@ -714,15 +748,15 @@ public class Nnwdaf_Repository {
 
     public Boolean addDataQosSustainabilitySubscriptionTable(QosSustainabilitySubscriptionTable qos, boolean getAnalytics) {
 
-        String query = "INSERT INTO nwdafQosSustainabilitySubscriptionTable (snssai, tai, subscriptionId, correlationId, refCount) VALUES (?,?,?,?,?);";
+        String query = "INSERT INTO nwdafQosSustainabilitySubscriptionTable (tai, snssai, subscriptionId, correlationId, refCount) VALUES (?,?,?,?,?);";
 
         return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
             @Override
             public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
 
-                preparedStatement.setString(1, qos.getSnssai());
-                preparedStatement.setString(2, qos.getTai());
+                preparedStatement.setString(1, qos.getTai());
+                preparedStatement.setString(2, qos.getSnssai());
                 preparedStatement.setString(3, qos.getSubscriptionId());
                 preparedStatement.setString(4, qos.getCorrelationId());
 
@@ -822,12 +856,12 @@ public class Nnwdaf_Repository {
 
     public Integer updateRanUeThrou(Integer ranUeThrou, String tai, String snssai) {
 
-        return jdbcTemplate.update("UPDATE nwdafQosSustainabilityInformation SET ranUeThrou = ? WHERE tai = ? AND snssai = ?", new Object[]{ranUeThrou, tai, snssai});
+        return jdbcTemplate.update("UPDATE nwdafQosSustainabilityInformation SET ranUeThrou = ? WHERE tai = ? AND snssai = ?;", new Object[]{ranUeThrou, tai, snssai});
     }
 
     public Integer updateQosFlowRet(Integer qosFlowRet, String tai, String snssai) {
 
-        return jdbcTemplate.update("UPDATE nwdafQosSustainabilityInformation SET qosFlowRet = ? WHERE tai = ? AND snssai = ?", new Object[]{qosFlowRet, tai, snssai});
+        return jdbcTemplate.update("UPDATE nwdafQosSustainabilityInformation SET qosFlowRet = ? WHERE tai = ? AND snssai = ?;", new Object[]{qosFlowRet, tai, snssai});
     }
 
 
@@ -1605,6 +1639,10 @@ public class Nnwdaf_Repository {
     { return jdbcTemplate.update("DELETE FROM nwdafQosSustainabilitySubscriptionTable WHERE correlationId = ?;", correlationId); }
 
 
+    public Integer deleteEntry_AbnormalBehaviourSubscriptionTable(String correlationId)
+    { return jdbcTemplate.update("DELETE FROM nwdafAbnormalBehaviourSubscriptionTable WHERE correlationId = ?;", correlationId); }
+
+
 
     public List<ServiceExperienceInfo> getServiceExperienceInfo(String supi, String snssai, Boolean anyUe)
     {
@@ -1831,6 +1869,24 @@ public class Nnwdaf_Repository {
             usrDataCongSubTable.setCorrelationId(resultSet.getString("correlationId"));
 
             return usrDataCongSubTable;
+        });
+    }
+
+
+
+
+    public AbnormalBehaviourSubscriptionTable getCorrelation_UnSubCorrelation_AbnormalBehaviour(String supi, Integer excepId)
+    {
+        String query = "SELECT subscriptionId, correlationId FROM nwdafAbnormalBehaviourSubscriptionTable WHERE supi = ? AND excepId = ?;";
+
+        return jdbcTemplate.queryForObject(query, new Object[]{supi, excepId}, (resultSet, i) -> {
+
+            AbnormalBehaviourSubscriptionTable abnorBehavrSubTable = new AbnormalBehaviourSubscriptionTable();
+
+            abnorBehavrSubTable.setSubscriptionId(resultSet.getString("subscriptionId"));
+            abnorBehavrSubTable.setCorrelationId(resultSet.getString("correlationId"));
+
+            return abnorBehavrSubTable;
         });
     }
 
@@ -2150,6 +2206,23 @@ public class Nnwdaf_Repository {
 
         catch (EmptyResultDataAccessException ex)
         { return null; }
+    }
+
+
+
+    public AbnormalBehaviourSubscriptionData getSupi_ExcepId_AbnormalBehaviour(String subscriptionId)
+    {
+        String query = "SELECT supi, excepId FROM nwdafAbnormalBehaviourSubscriptionData WHERE subscriptionId = ?";
+
+        return jdbcTemplate.queryForObject(query, new Object[]{subscriptionId}, (resultSet, i) -> {
+
+            AbnormalBehaviourSubscriptionData abnorBehavrSubData = new AbnormalBehaviourSubscriptionData();
+
+            abnorBehavrSubData.setSupi(resultSet.getString("supi"));
+            abnorBehavrSubData.setExcepId(resultSet.getInt("excepId"));
+
+            return abnorBehavrSubData;
+        });
     }
 
 }

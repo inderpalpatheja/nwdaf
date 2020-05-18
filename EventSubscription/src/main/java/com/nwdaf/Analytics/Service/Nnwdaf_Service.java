@@ -20,6 +20,7 @@ import com.nwdaf.Analytics.Model.NotificationFormat.UserDataCongestionNotificati
 import com.nwdaf.Analytics.Model.NwdafEvent;
 import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionTable;
@@ -200,6 +201,7 @@ public class Nnwdaf_Service extends BusinessLogic {
             String notificationURI = nnwdafEventsSubscription.getNotificationURI();
 
             NwdafEvent event = nnwdafEventsSubscription.getEventSubscriptions().get(0).getEvent();
+            EventCounter[event.ordinal()].incrementSubscriptionsReceived();
 
 
 
@@ -445,6 +447,22 @@ public class Nnwdaf_Service extends BusinessLogic {
 
                     unSubscribeRightSide(DELETE_OAM_URL, usrDataCongSubTable.getCorrelationId(), usrDataCongSubTable.getSubscriptionId(), NwdafEvent.USER_DATA_CONGESTION);
                     repository.deleteEntry_UserDataCongestionSubscriptionTable(usrDataCongSubTable.getCorrelationId());
+
+                    EventCounter[event.ordinal()].incrementUnSubscriptionsResponse();
+                }
+            }
+
+
+            else if(event == NwdafEvent.ABNORMAL_BEHAVIOUR)
+            {
+                AbnormalBehaviourSubscriptionData abnorBehavrSubData;
+
+                if((abnorBehavrSubData = repository.unsubscribeNF_AbnormalBehaviour(subscriptionID)) != null)
+                {
+                    AbnormalBehaviourSubscriptionTable abnorBehavrSubTable = repository.getCorrelation_UnSubCorrelation_AbnormalBehaviour(abnorBehavrSubData.getSupi(), abnorBehavrSubData.getExcepId());
+
+                    unSubscribeRightSide(DELETE_SMF_URL, abnorBehavrSubTable.getCorrelationId(), abnorBehavrSubTable.getSubscriptionId(), NwdafEvent.ABNORMAL_BEHAVIOUR);
+                    repository.deleteEntry_AbnormalBehaviourSubscriptionTable(abnorBehavrSubTable.getCorrelationId());
 
                     EventCounter[event.ordinal()].incrementUnSubscriptionsResponse();
                 }
@@ -873,7 +891,7 @@ public class Nnwdaf_Service extends BusinessLogic {
             Float upperRange = Float.valueOf(notificationData.getString("upperRange"));
             Float lowerRange = Float.valueOf(notificationData.getString("lowerRange"));
 
-            String correlationID = notificationData.getString("correlationID");
+            String correlationID = notificationData.getString("correlationId");
             ServiceExperienceSubscriptionTable svcExp_supi_snssais = repository.getSupi_snssais_ServiceExperienceSubscriptionTable(correlationID);
 
             SvcExperience svcExperience = new SvcExperience(mos, upperRange, lowerRange);
@@ -927,19 +945,18 @@ public class Nnwdaf_Service extends BusinessLogic {
             Integer ranUeThroughput = null;
             Integer qosFlowRetain = null;
 
-            if(json.has("ranUeThroughput"))
-            { ranUeThroughput = json.getInt("ranUeThroughput"); }
+            if(json.has("ranUeThrou"))
+            { ranUeThroughput = json.getInt("ranUeThrou"); }
 
             else
-            { qosFlowRetain = json.getInt("qosFlowRetain"); }
+            { qosFlowRetain = json.getInt("qosFlowRet"); }
 
-            String correlationID = json.getString("correlationID");
+            String correlationID = json.getString("correlationId");
             QosSustainabilitySubscriptionData qosData = repository.getTai_Snssais_ByCorrelationID(correlationID);
 
 
             // DELETE Analytics entry in SubscriptionTable (refCount = 0)
             repository.deleteAnalyticsEntry_QosSustainability(correlationID);
-
 
             if(ranUeThroughput != null)
             {
@@ -1084,7 +1101,7 @@ public class Nnwdaf_Service extends BusinessLogic {
         try
         {
             Integer congLevel = notifyData.getInt("congLevel");
-            String correlationID = notifyData.getString("correlationID");
+            String correlationID = notifyData.getString("correlationId");
 
             UserDataCongestionSubscriptionTable usrDataCongDetails = repository.getUserDataCongestionDetails_byCorrelationID(correlationID);
             repository.updateCongestionLevel_UserDataCongestion(congLevel, usrDataCongDetails.getSupi(), usrDataCongDetails.getCongType(), usrDataCongDetails.getTai());

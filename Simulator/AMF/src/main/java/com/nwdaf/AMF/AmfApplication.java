@@ -60,7 +60,7 @@ public class AmfApplication extends Functionality {
             }
 
 
-            if (event == NwdafEvent.UE_MOBILITY.ordinal() || event == 10) {
+          /*  if (event == NwdafEvent.UE_MOBILITY.ordinal() || event == 10) {
 
 
                 while(true)
@@ -91,7 +91,7 @@ public class AmfApplication extends Functionality {
                     { break; }
                 }
 
-            }
+            } */
 
             if (event == NwdafEvent.QOS_SUSTAINABILITY.ordinal() || event == 10) {
 
@@ -190,6 +190,27 @@ public class AmfApplication extends Functionality {
             }
 
 
+            if(event == NwdafEvent.ABNORMAL_BEHAVIOUR.ordinal() || event == 10)
+            {
+                while(true)
+                {
+                    for(int i = 0; i < subList; i++)
+                    {
+                        System.out.println("Subscribing for EventID: " + NwdafEvent.ABNORMAL_BEHAVIOUR.toString());
+                        String subscriptionID = subscribe(NwdafEvent.ABNORMAL_BEHAVIOUR);
+                    }
+
+                    for(int j = 0; j < amfController.getCorrelationIDList_ABNORMAL_BEHAVIOUR().size(); j++)
+                    { amfController.sendAbnormalBehaviourData("https://localhost:8081/Noam_EventExposure_Notify", amfController.getCorrelationIDList_ABNORMAL_BEHAVIOUR().get(j)); }
+
+                    //Thread.sleep(3 * 1000);
+
+                    if(event == 10)
+                    { break; }
+                }
+            }
+
+
             Thread.sleep(3 * 1000);
 
         } while(event == 10);
@@ -217,7 +238,7 @@ public class AmfApplication extends Functionality {
         AmfApplication amfApplication = new AmfApplication();
 
 
-        //amfApplication.test(subListInt, eventIDInt, amfController);
+        amfApplication.test(subListInt, eventIDInt, amfController);
 
     }
 }
