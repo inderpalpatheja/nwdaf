@@ -83,7 +83,7 @@ CREATE TABLE `NWDAF`.`nwdafQosSustainabilitySubscriptionData` (
 `subscriptionId` VARCHAR(128) NOT NULL,
 `5Qi` INT NOT NULL,
 `tai` VARCHAR(128) NOT NULL,
-`snssai` VARCHAR(128) NULL,
+`snssai` VARCHAR(128) NOT NULL,
 `ranUeThrouThrd` INT NULL,
 `qosFlowRetThrd` INT NULL,
 PRIMARY KEY (`ID`),
@@ -95,8 +95,8 @@ ON UPDATE NO ACTION);
 
 CREATE TABLE `NWDAF`.`nwdafQosSustainabilityInformation` (
 `ID` INT NOT NULL AUTO_INCREMENT,
-`snssai` VARCHAR(128) NULL,
 `tai` VARCHAR(128) NOT NULL,
+`snssai` VARCHAR(128) NOT NULL,
 `ranUeThrou` INT NULL,
 `qosFlowRet` INT NULL,
 PRIMARY KEY(`ID`));
@@ -104,8 +104,8 @@ PRIMARY KEY(`ID`));
 
 CREATE TABLE `NWDAF`.`nwdafQosSustainabilitySubscriptionTable` (
 `ID` INT NOT NULL AUTO_INCREMENT,
-`snssai` VARCHAR(128) NULL,
 `tai` VARCHAR(128) NOT NULL,
+`snssai` VARCHAR(128) NOT NULL,
 `subscriptionId` VARCHAR(128) NOT NULL,
 `correlationId` VARCHAR(128) NOT NULL,
 `refCount` INT NOT NULL,

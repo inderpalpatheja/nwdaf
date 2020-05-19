@@ -19,11 +19,11 @@ public class UserDataCongestionInformation {
     Integer congLevel;
 
 
-    public UserDataCongestionInformation(EventSubscription eventSubscription)
+    public UserDataCongestionInformation(EventSubscription eventSubscription, String tai)
     {
         this.supi = eventSubscription.getTgtUe().getSupi();
         this.congType = eventSubscription.getCongType().ordinal();
-        this.tai = eventSubscription.getNetworkArea().getTais().get(0).toString();
+        this.tai = tai;
     }
 
 }

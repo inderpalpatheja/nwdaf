@@ -2290,7 +2290,7 @@ public class BusinessLogic extends ResourceValues {
         SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
         repository.subscribeNF(subscriptionTable);
 
-        NetworkPerformanceSubscriptionData networkPerformanceSubscriptionData = new NetworkPerformanceSubscriptionData();
+        NetworkPerformanceSubscriptionData networkPerformanceSubscriptionData = new NetworkPerformanceSubscriptionData(eventSubscription, subscriptionId);
 
         if(networkPerformanceSubscriptionData.getAbsoluteNumThrd() != null)
         { repository.addNetworkPerformanceSubscriptionData(networkPerformanceSubscriptionData, NetworkPerfThreshold.ABSOLUTE_NUM); }
@@ -2298,7 +2298,7 @@ public class BusinessLogic extends ResourceValues {
         else
         { repository.addNetworkPerformanceSubscriptionData(networkPerformanceSubscriptionData, NetworkPerfThreshold.RELATIVE_RATIO); }
 
-        NetworkPerformanceInformation networkPerformanceInformation = new NetworkPerformanceInformation();
+        NetworkPerformanceInformation networkPerformanceInformation = new NetworkPerformanceInformation(eventSubscription);
         repository.addNetworkPerformanceInformation(networkPerformanceInformation.getSupi(), networkPerformanceInformation.getNwPerfType());
 
 
@@ -2327,9 +2327,9 @@ public class BusinessLogic extends ResourceValues {
         UserDataCongestionSubscriptionData userDataCongestionSubscriptionData = new UserDataCongestionSubscriptionData(eventSubscription, subscriptionId);
         repository.addUserDataCongestionSubscriptionData(userDataCongestionSubscriptionData);
 
-        fetchSupiLocationFromAMF(eventSubscription.getTgtUe().getSupi(), NwdafEvent.USER_DATA_CONGESTION, AmfEventType.LOCATION_REPORT);
+        Tai tai = fetchSupiLocationFromAMF(eventSubscription.getTgtUe().getSupi(), NwdafEvent.USER_DATA_CONGESTION, AmfEventType.LOCATION_REPORT);
 
-        UserDataCongestionInformation userDataCongestionInformation = new UserDataCongestionInformation(eventSubscription);
+        UserDataCongestionInformation userDataCongestionInformation = new UserDataCongestionInformation(eventSubscription, tai.toString());
         repository.addUserDataCongestionInformation(userDataCongestionInformation.getSupi(), userDataCongestionInformation.getCongType(), userDataCongestionInformation.getTai());
 
         String supi = eventSubscription.getTgtUe().getSupi();

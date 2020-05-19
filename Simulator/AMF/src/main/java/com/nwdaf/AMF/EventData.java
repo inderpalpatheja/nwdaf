@@ -1,10 +1,8 @@
 package com.nwdaf.AMF;
 
-import com.nwdaf.AMF.model.CongestionType;
-import com.nwdaf.AMF.model.NetworkPerfType;
-import com.nwdaf.AMF.model.NotificationMethod;
-import com.nwdaf.AMF.model.NwdafEvent;
+import com.nwdaf.AMF.model.*;
 import org.apache.commons.lang.RandomStringUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,6 +32,8 @@ public class EventData {
             case NETWORK_PERFORMANCE: return getNetworkPerformanceData();
 
             case USER_DATA_CONGESTION: return getUserDataCongestion();
+
+            case ABNORMAL_BEHAVIOUR: return getAbnormalBehaviour();
         }
 
         return null;
@@ -44,17 +44,28 @@ public class EventData {
     public static JSONObject getSliceLoadLevelData(Integer notifMethod) throws JSONException
     {
         JSONObject json = new JSONObject();
+        JSONArray eventSubscriptions = new JSONArray();
 
-        json.put("event", NwdafEvent.LOAD_LEVEL_INFORMATION.ordinal());
         json.put("notificationURI", notificationURI);
-        json.put("snssais", snssais[random.nextInt(snssais.length)]);
-        json.put("notifMethod", notifMethod);
 
-        if(notifMethod == NotificationMethod.PERIODIC.ordinal())
-        { json.put("repetitionPeriod", 20 + random.nextInt(20)); }
+        JSONObject event_entry = new JSONObject();
 
-        else
-        { json.put("loadLevelThreshold", 20 + random.nextInt(60)); }
+        event_entry.put("event", NwdafEvent.LOAD_LEVEL_INFORMATION.ordinal());
+        event_entry.put("notificationMethod", NotificationMethod.THRESHOLD.ordinal());
+        event_entry.put("loadLevelThreshold", 20 + random.nextInt(10));
+
+        JSONArray snssais = new JSONArray();
+
+        JSONObject snssai_entry = new JSONObject();
+        snssai_entry.put("sst", random.nextInt(100));
+        snssai_entry.put("sd", RandomStringUtils.randomAlphanumeric(3));
+
+        snssais.put(snssai_entry);
+
+        event_entry.put("snssais", snssais);
+        eventSubscriptions.put(event_entry);
+
+        json.put("eventSubscriptions", eventSubscriptions);
 
         return json;
     }
@@ -63,24 +74,71 @@ public class EventData {
     public static JSONObject getQosSustainabilityData() throws JSONException
     {
         JSONObject json = new JSONObject();
+        JSONArray eventSubscriptions = new JSONArray();
 
-        json.put("event", NwdafEvent.QOS_SUSTAINABILITY.ordinal());
         json.put("notificationURI", notificationURI);
-        json.put("snssais", snssais[random.nextInt(snssais.length)]);
-        json.put("5Qi", random.nextInt(256));
-        //json.put("mcc", String.valueOf(100 + random.nextInt(900)));
-        //json.put("mnc", String.valueOf(10 + random.nextInt(990)));
-        json.put("mcc", String.valueOf(100 + random.nextInt(10)));
-        json.put("mnc", String.valueOf(10));
-        json.put("tac", RandomStringUtils.randomAlphanumeric(6).toUpperCase());
 
-        int thresholdType = random.nextInt(2);
+        JSONObject event_entry = new JSONObject();
 
-        if(thresholdType == 0)
-        { json.put("ranUeThroughputThreshold", 20 + random.nextInt(60)); }
+        event_entry.put("event", NwdafEvent.QOS_SUSTAINABILITY.ordinal());
+        event_entry.put("notificationMethod", NotificationMethod.THRESHOLD.ordinal());
+        event_entry.put("loadLevelThreshold", 20 + random.nextInt(10));
+
+        JSONObject networkArea = new JSONObject();
+        JSONArray tais = new JSONArray();
+
+        JSONObject tai = new JSONObject();
+
+        JSONObject plmnId = new JSONObject();
+        plmnId.put("mcc", 100 + random.nextInt(900));
+        plmnId.put("mnc", 10 + random.nextInt(990));
+
+        tai.put("plmnId", plmnId);
+        tai.put("tac", RandomStringUtils.randomAlphanumeric(4));
+        tais.put(tai);
+
+        networkArea.put("tais", tais);
+
+        JSONObject qosRequ = new JSONObject();
+        qosRequ.put("5Qi", random.nextInt(100));
+
+
+        JSONArray snssais = new JSONArray();
+
+        JSONObject snssai_entry = new JSONObject();
+        snssai_entry.put("sst", random.nextInt(100));
+        snssai_entry.put("sd", RandomStringUtils.randomAlphanumeric(3));
+
+        snssais.put(snssai_entry);
+
+
+        event_entry.put("networkArea", networkArea);
+        event_entry.put("qosRequ", qosRequ);
+        event_entry.put("snssais", snssais);
+
+
+        int randomize = random.nextInt(2);
+
+        if(randomize == 0)
+        {
+            JSONArray qosFlowRetThrds = new JSONArray();
+            qosFlowRetThrds.put(20 + random.nextInt(10));
+
+            event_entry.put("qosFlowRetThrds", qosFlowRetThrds);
+        }
 
         else
-        { json.put("qosFlowRetainThreshold", 20 + random.nextInt(60)); }
+        {
+            JSONArray ranUeThrouThrds = new JSONArray();
+            ranUeThrouThrds.put(20 + random.nextInt(10));
+
+            event_entry.put("ranUeThrouThrds", ranUeThrouThrds);
+        }
+
+
+        eventSubscriptions.put(event_entry);
+
+        json.put("eventSubscriptions", eventSubscriptions);
 
         return json;
     }
@@ -115,11 +173,32 @@ public class EventData {
     {
 
         JSONObject json = new JSONObject();
+        JSONArray eventSubscriptions = new JSONArray();
 
-        json.put("event", NwdafEvent.SERVICE_EXPERIENCE.ordinal());
         json.put("notificationURI", notificationURI);
-        json.put("supi", RandomStringUtils.randomNumeric(15));
-        json.put("snssais", snssais[random.nextInt(snssais.length)]);
+
+        JSONObject event_entry = new JSONObject();
+
+        event_entry.put("event", NwdafEvent.SERVICE_EXPERIENCE.ordinal());
+        event_entry.put("notificationMethod", NotificationMethod.THRESHOLD.ordinal());
+        event_entry.put("loadLevelThreshold", 20 + random.nextInt(10));
+
+        JSONObject tgtUe = new JSONObject();
+        tgtUe.put("supi", RandomStringUtils.randomNumeric(15));
+
+        JSONArray snssais = new JSONArray();
+
+        JSONObject snssai_entry = new JSONObject();
+        snssai_entry.put("sst", random.nextInt(100));
+        snssai_entry.put("sd", RandomStringUtils.randomAlphanumeric(3));
+
+        snssais.put(snssai_entry);
+
+        event_entry.put("tgtUe", tgtUe);
+        event_entry.put("snssais", snssais);
+        eventSubscriptions.put(event_entry);
+
+        json.put("eventSubscriptions", eventSubscriptions);
 
         return json;
     }
@@ -128,21 +207,41 @@ public class EventData {
     public static JSONObject getNetworkPerformanceData() throws JSONException
     {
         JSONObject json = new JSONObject();
+        JSONArray eventSubscriptions = new JSONArray();
 
-        json.put("event", NwdafEvent.NETWORK_PERFORMANCE.ordinal());
         json.put("notificationURI", notificationURI);
-        json.put("supi", RandomStringUtils.randomNumeric(15));
 
+        JSONObject event_entry = new JSONObject();
+
+        event_entry.put("event", NwdafEvent.NETWORK_PERFORMANCE.ordinal());
+        event_entry.put("notificationMethod", NotificationMethod.THRESHOLD.ordinal());
+        event_entry.put("loadLevelThreshold", 20 + random.nextInt(10));
+
+        JSONObject tgtUe = new JSONObject();
+        tgtUe.put("supi", RandomStringUtils.randomNumeric(15));
+
+
+        JSONArray nwPerfRequs = new JSONArray();
+
+        JSONObject nwPerfRequs_entry = new JSONObject();
         Integer nwPerfType = random.nextInt(NetworkPerfType.values().length);
 
-        json.put("nwPerfType", nwPerfType);
-        json.put("notifMethod", NotificationMethod.THRESHOLD.ordinal());
+        nwPerfRequs_entry.put("nwPerfType", nwPerfType);
 
         if(nwPerfType == NetworkPerfType.GNB_ACTIVE_RATIO.ordinal() || nwPerfType == NetworkPerfType.SESS_SUCC_RATIO.ordinal() || nwPerfType == NetworkPerfType.HO_SUCC_RATIO.ordinal())
-        { json.put("relativeRatioThreshold", 20 + random.nextInt(30)); }
+        { nwPerfRequs_entry.put("relativeRatio", 20 + random.nextInt(30)); }
 
         else
-        { json.put("absoluteNumThreshold", 20 + random.nextInt(30)); }
+        { nwPerfRequs_entry.put("absoluteNum", 20 + random.nextInt(30)); }
+
+        nwPerfRequs.put(nwPerfRequs_entry);
+
+        event_entry.put("tgtUe", tgtUe);
+        event_entry.put("nwPerfRequs", nwPerfRequs);
+
+        eventSubscriptions.put(event_entry);
+
+        json.put("eventSubscriptions", eventSubscriptions);
 
         return json;
     }
@@ -151,14 +250,70 @@ public class EventData {
     public static JSONObject getUserDataCongestion() throws JSONException
     {
         JSONObject json = new JSONObject();
+        JSONArray eventSubscriptions = new JSONArray();
 
-        json.put("event", NwdafEvent.USER_DATA_CONGESTION.ordinal());
         json.put("notificationURI", notificationURI);
-        json.put("supi", RandomStringUtils.randomNumeric(15));
-        json.put("congType", random.nextInt(CongestionType.values().length));
-        json.put("congLevelThreshold", 20 + random.nextInt(30));
+
+        JSONObject event_entry = new JSONObject();
+
+        event_entry.put("event", NwdafEvent.USER_DATA_CONGESTION.ordinal());
+        event_entry.put("notificationMethod", NotificationMethod.THRESHOLD.ordinal());
+        event_entry.put("loadLevelThreshold", 20 + random.nextInt(10));
+
+        JSONObject tgtUe = new JSONObject();
+        tgtUe.put("supi", RandomStringUtils.randomNumeric(15));
+
+        JSONArray congThresholds = new JSONArray();
+        JSONObject congThresholds_entry = new JSONObject();
+        congThresholds_entry.put("congLevel", 20 + random.nextInt(10));
+
+        congThresholds.put(congThresholds_entry);
+
+        event_entry.put("tgtUe", tgtUe);
+        event_entry.put("congType", random.nextInt(CongestionType.values().length));
+        event_entry.put("congThresholds", congThresholds);
+
+        eventSubscriptions.put(event_entry);
+
+        json.put("eventSubscriptions", eventSubscriptions);
 
         return json;
+    }
+
+
+    public static JSONObject getAbnormalBehaviour() throws JSONException
+    {
+        JSONObject json = new JSONObject();
+        JSONArray eventSubscriptions = new JSONArray();
+
+        json.put("notificationURI", notificationURI);
+
+        JSONObject event_entry = new JSONObject();
+
+        event_entry.put("event", NwdafEvent.ABNORMAL_BEHAVIOUR.ordinal());
+        event_entry.put("notificationMethod", NotificationMethod.THRESHOLD.ordinal());
+        event_entry.put("loadLevelThreshold", 20 + random.nextInt(10));
+
+        JSONObject tgtUe = new JSONObject();
+        tgtUe.put("supi", RandomStringUtils.randomNumeric(15));
+
+        JSONArray excepRequs = new JSONArray();
+
+        JSONObject excepRequs_entry = new JSONObject();
+        excepRequs_entry.put("excepId", random.nextInt(ExceptionId.values().length));
+        excepRequs_entry.put("excepLevel", 20 + random.nextInt(10));
+
+        excepRequs.put(excepRequs_entry);
+
+        event_entry.put("tgtUe", tgtUe);
+        event_entry.put("excepRequs", excepRequs);
+
+        eventSubscriptions.put(event_entry);
+
+        json.put("eventSubscriptions", eventSubscriptions);
+
+        return json;
+
     }
 
 }

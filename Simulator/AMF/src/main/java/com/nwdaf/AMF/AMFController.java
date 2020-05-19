@@ -314,7 +314,7 @@ public class AMFController extends Functionality {
 
         switch(event)
         {
-            case ABNORMAL_BEHAVIOUR: correlationIDList_UE_MOBILITY.remove(correlationID);
+            case ABNORMAL_BEHAVIOUR: correlationIDList_ABNORMAL_BEHAVIOUR.remove(correlationID);
                                      break;
         }
 
@@ -481,9 +481,9 @@ public class AMFController extends Functionality {
         loadType = loadType.toLowerCase();
 
         if (loadType.equals(ranUeThroughput)) {
-            json.put("ranUeThroughput", 1 + random.nextInt(85));
+            json.put("ranUeThrou", 1 + random.nextInt(85));
         } else if (loadType.equals(qosFlowRetain)) {
-            json.put("qosFlowRetain", 1 + random.nextInt(85));
+            json.put("qosFlowRet", 1 + random.nextInt(85));
         } else {
             return new ResponseEntity<String>("Invalid load value", HttpStatus.NOT_ACCEPTABLE);
         }
