@@ -73,15 +73,16 @@ public class Nnwdaf_Controller {
     public Object nwdaf_analytics(@RequestParam(value = "snssai", required = false) String snssai,
                                   @RequestParam(value = "anySlice", required = false) Boolean anySlice,
                                   @RequestParam(value = "tai", required = false) String tai,
-                                  @RequestParam("event") Integer event,
-                                  @RequestParam(value = "supi", required = false) String supi,
+                                  @RequestParam("event-id") Integer event,
+                                  @RequestParam(value = "tgt-ue", required = false) String supi,
                                   @RequestParam(value = "anyUe", required = false) Boolean anyUe,
                                   @RequestParam(value = "nwPerfType", required = false) Integer nwPerfType,
                                   @RequestParam(value = "congType", required = false) Integer congType,
-                                  @RequestParam(value = "excepId", required = false) Integer excepId) throws IOException, JSONException {
+                                  @RequestParam(value = "excepId", required = false) Integer excepId,
+                                  @RequestParam(value = "maxAnaEntry", required = false) Integer maxAnaEntry) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(event, snssai, anySlice, supi, tai, anyUe, nwPerfType, congType, excepId));
+        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(event, snssai, anySlice, supi, tai, anyUe, nwPerfType, congType, excepId, maxAnaEntry));
     }
 
 

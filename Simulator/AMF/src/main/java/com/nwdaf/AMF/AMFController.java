@@ -19,6 +19,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -36,6 +37,8 @@ public class AMFController extends Functionality {
 
 
     Random random = new Random();
+    SimpleDateFormat sim = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+
 
     public static List<String> correlationIDList_LOAD_LEVEL_INFORMATION = new ArrayList<>();
     public static List<String> correlationIDList_UE_MOBILITY = new ArrayList<>();
@@ -44,6 +47,7 @@ public class AMFController extends Functionality {
     public static List<String> correlationIDList_NETWORK_PERFORMANCE = new ArrayList<>();
     public static List<String> correlationIDList_USER_DATA_CONGESTION = new ArrayList<>();
     public static List<String> correlationIDList_ABNORMAL_BEHAVIOUR = new ArrayList<>();
+    public static List<String> correlationIDList_UE_COMM = new ArrayList<>();
 
 
     public static List<String> getCorrelationIDList_LOAD_LEVEL_INFORMATION() {
@@ -72,6 +76,11 @@ public class AMFController extends Functionality {
 
     public static List<String> getCorrelationIDList_ABNORMAL_BEHAVIOUR() {
         return correlationIDList_ABNORMAL_BEHAVIOUR;
+    }
+
+
+    public static List<String> getCorrelationIDList_UE_COMM() {
+        return correlationIDList_UE_COMM;
     }
 
 
@@ -291,10 +300,17 @@ public class AMFController extends Functionality {
         // Adding unSubCorrelationId into database;
         UUID unSubCorrelationId = UUID.randomUUID();
 
-        if(event == NwdafEvent.ABNORMAL_BEHAVIOUR)
+
+        switch(event)
         {
-            out.println("in-ABNORMAL-BEHAVIOUR----->> + " + notificationTargetAddress + "::" + correlationId);
-            correlationIDList_ABNORMAL_BEHAVIOUR.add(correlationId);
+            case ABNORMAL_BEHAVIOUR: out.println("in-ABNORMAL-BEHAVIOUR----->> + " + notificationTargetAddress + "::" + correlationId);
+                                     correlationIDList_ABNORMAL_BEHAVIOUR.add(correlationId);
+                                     break;
+
+
+            case UE_COMM: out.println("in-UE-COMM----->> + " + notificationTargetAddress + "::" + correlationId);
+                          correlationIDList_UE_COMM.add(correlationId);
+                          break;
         }
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
@@ -308,18 +324,21 @@ public class AMFController extends Functionality {
     public ResponseEntity<String> nsmf_EventExposure_UnSubscribe(@RequestBody String response) throws JSONException, IOException {
 
         JSONObject json = new JSONObject(response);
-        String unSubCorrelationID = json.getString("unSubCorrelationId");
-        String correlationID = json.getString("correlationId");
+        String unSubCorrelationId = json.getString("unSubCorrelationId");
+        String correlationId = json.getString("correlationId");
         NwdafEvent event = NwdafEvent.values()[json.getInt("event")];
 
         switch(event)
         {
-            case ABNORMAL_BEHAVIOUR: correlationIDList_ABNORMAL_BEHAVIOUR.remove(correlationID);
+            case ABNORMAL_BEHAVIOUR: correlationIDList_ABNORMAL_BEHAVIOUR.remove(correlationId);
                                      break;
+
+            case UE_COMM: correlationIDList_UE_COMM.remove(correlationId);
+                          break;
         }
 
 
-        return new ResponseEntity<String>("unSubscribed", HttpStatus.OK);
+        return new ResponseEntity<String>("unSubscribed from SMF", HttpStatus.OK);
     }
 
 
@@ -1136,6 +1155,92 @@ public class AMFController extends Functionality {
         return new ResponseEntity<String>("Sent ABNORMAL_BEHAVIOUR data", HttpStatus.OK);
     }
 
+
+
+
+    @PostMapping("sendUeCommData/{correlationId}")
+    public ResponseEntity<String> sendUeCommData(String notiTargetAddress, @PathVariable("correlationId") String correlationId) throws IOException, JSONException
+    {
+        //  out.println("send Data check1");
+
+        notiTargetAddress = HTTP + "://localhost:8081/Nsmf_EventExposure_Notify";
+        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
+
+        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
+        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
+
+        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
+
+        String updated_URL = notiTargetAddress + "/" + correlationId;
+        //  out.println("updated URl - " + updated_URL);
+        URL url = new URL(updated_URL);
+
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+
+
+        JSONObject json = new JSONObject();
+
+        json.put("correlationId", correlationId);
+        json.put("event", NwdafEvent.UE_COMM.ordinal());
+
+        json.put("commDur", 100 + random.nextInt(900));
+        json.put("ts", sim.format(new Date()));
+        json.put("ulVol", 100 + random.nextInt(900));
+        json.put("dlVol", 100 + random.nextInt(900));
+
+
+        // For POST only - START
+        con.setDoOutput(true);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = json.toString().getBytes("utf-8");
+
+            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
+
+            os.write(input, 0, input.length);
+            os.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // For POST only - END
+
+        int responseCode = con.getResponseCode();
+        //String responseMessage = con.getResponseMessage();
+        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
+        //System.out.println("POST Response Message :: " + responseMessage);
+
+        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // print result
+            // System.out.println("\n\n");
+            //  System.out.println(response);
+        } else {
+            // System.out.println("\n\n");
+            // System.out.println("POST request not worked");
+        }
+        //  return "Data send to " + updated_URL;
+
+        if (con != null) {
+            con.disconnect();
+        }
+
+        return new ResponseEntity<String>("Sent UE_COMM data", HttpStatus.OK);
+    }
 
 
 }

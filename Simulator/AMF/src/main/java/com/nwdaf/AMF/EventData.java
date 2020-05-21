@@ -34,6 +34,8 @@ public class EventData {
             case USER_DATA_CONGESTION: return getUserDataCongestion();
 
             case ABNORMAL_BEHAVIOUR: return getAbnormalBehaviour();
+
+            case UE_COMM: return getUeCommData();
         }
 
         return null;
@@ -307,6 +309,36 @@ public class EventData {
 
         event_entry.put("tgtUe", tgtUe);
         event_entry.put("excepRequs", excepRequs);
+
+        eventSubscriptions.put(event_entry);
+
+        json.put("eventSubscriptions", eventSubscriptions);
+
+        return json;
+
+    }
+
+
+
+    public static JSONObject getUeCommData() throws JSONException {
+
+
+        JSONObject json = new JSONObject();
+        JSONArray eventSubscriptions = new JSONArray();
+
+        json.put("notificationURI", notificationURI);
+
+        JSONObject event_entry = new JSONObject();
+
+        event_entry.put("event", NwdafEvent.UE_COMM.ordinal());
+        event_entry.put("notificationMethod", NotificationMethod.THRESHOLD.ordinal());
+        event_entry.put("loadLevelThreshold", 20 + random.nextInt(10));
+
+        JSONObject tgtUe = new JSONObject();
+        tgtUe.put("supi", RandomStringUtils.randomNumeric(15));
+
+        event_entry.put("tgtUe", tgtUe);
+        event_entry.put("maxAnaEntry", 1);
 
         eventSubscriptions.put(event_entry);
 

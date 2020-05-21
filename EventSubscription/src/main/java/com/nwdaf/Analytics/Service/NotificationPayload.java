@@ -21,6 +21,7 @@ public class NotificationPayload {
 
     static SimpleDateFormat sim = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
     static Random random = new Random();
+    static String flowDir[] = {"IN", "OUT"};
 
 
     // eventID: LOAD_LEVEL_INFORMATION
@@ -307,7 +308,6 @@ public class NotificationPayload {
             JSONObject ipTrafficFilter = new JSONObject();
             JSONArray flowDescriptions = new JSONArray();
 
-            String flowDir[] = {"IN", "OUT"};
             ipTrafficFilter.put("flowId", FlowDirection.values()[random.nextInt(FlowDirection.values().length)].ordinal());
 
             for(int i = 0; i < 1 + random.nextInt(5); i++)
@@ -397,5 +397,57 @@ public class NotificationPayload {
         return json;
     }
 
+
+    public static JSONObject getUeCommPayload(UeCommNotification ueCommNotification) throws JSONException {
+
+        JSONObject json = new JSONObject();
+        JSONArray eventNotifications = new JSONArray();
+
+        JSONObject ueComms = new JSONObject();
+        JSONArray ueCommsArray = new JSONArray();
+
+        JSONObject ueComms_entry = new JSONObject();
+        ueComms_entry.put("commDur", ueCommNotification.getCommDur());
+        ueComms_entry.put("ts", ueCommNotification.getTs());
+
+        JSONObject trafChar = new JSONObject();
+
+        JSONArray fDescs = new JSONArray();
+
+        for(int i = 0; i < FlowDirection.values().length; i++)
+        {
+            JSONObject fDescs_entry = new JSONObject();
+
+            JSONObject ipTrafficFilter = new JSONObject();
+
+            JSONObject flowDescriptions = new JSONObject();
+            flowDescriptions.put("direction", flowDir[i]);
+
+            ipTrafficFilter.put("flowId", FlowDirection.values()[i].toString());
+            ipTrafficFilter.put("flowDescriptions", flowDescriptions);
+
+            fDescs_entry.put("ipTrafficFilter", ipTrafficFilter);
+            fDescs.put(fDescs_entry);
+        }
+
+
+        trafChar.put("fDescs", fDescs);
+
+        ueComms_entry.put("trafChar", trafChar);
+        ueComms_entry.put("ulVol", ueCommNotification.getUlVol());
+        ueComms_entry.put("dlVol", ueCommNotification.getDlVol());
+
+        ueCommsArray.put(ueComms_entry);
+
+        ueComms.put("event", NwdafEvent.UE_COMM.toString());
+        ueComms.put("ueComms", ueCommsArray);
+
+        eventNotifications.put(ueComms);
+
+        json.put("subscriptionId", ueCommNotification.getSubscriptionId());
+        json.put("eventNotifications", eventNotifications);
+
+        return json;
+    }
 
 }

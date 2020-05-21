@@ -261,5 +261,41 @@ CREATE TABLE `NWDAF`.`nwdafAbnormalBehaviourSubscriptionTable` (
 `refCount` INT NOT NULL,
 PRIMARY KEY (`ID`));
 
+
+
+
+
+
+CREATE TABLE `NWDAF`.`nwdafUeCommSubscriptionData` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`subscriptionId` VARCHAR(128) NOT NULL,
+`supi` VARCHAR(128) NOT NULL,
+`maxAnaEntry` INT NOT NULL,
+PRIMARY KEY (`ID`),
+FOREIGN KEY (`subscriptionId`)
+REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionId`)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION);
+
+
+
+CREATE TABLE `NWDAF`.`nwdafUeCommInformation` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`supi` VARCHAR(128) NOT NULL,
+`commDur` INT NOT NULL,
+`ts` VARCHAR(128) NOT NULL,
+`ulVol` INT NULL,
+`dlVol` INT NULL,
+PRIMARY KEY (`ID`));
+
+
+CREATE TABLE `NWDAF`.`nwdafUeCommSubscriptionTable` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`supi` VARCHAR(128) NOT NULL,
+`subscriptionId` VARCHAR(128) NOT NULL,
+`correlationId` VARCHAR(128) NOT NULL,
+`refCount` INT NOT NULL,
+PRIMARY KEY (`ID`));
+
   
   
