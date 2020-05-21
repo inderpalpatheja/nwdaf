@@ -37,5 +37,6 @@ public class EventSubscription {
     ExpectedAnalyticsType exptAnaType;
     List<Snssai> snssais;
     CongestionType congType;
+    Integer maxAnaEntry;
 
 }

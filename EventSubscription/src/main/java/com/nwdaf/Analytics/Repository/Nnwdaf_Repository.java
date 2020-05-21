@@ -25,6 +25,9 @@ import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSu
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.UEmobilitySubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UserLocation;
+import com.nwdaf.Analytics.Model.TableType.UeComm.UeCommInformation;
+import com.nwdaf.Analytics.Model.TableType.UeComm.UeCommSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.UeComm.UeCommSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionSubscriptionTable;
 import com.nwdaf.Analytics.Repository.Mapper.AnalyticsMapper.*;
@@ -69,7 +72,7 @@ public class Nnwdaf_Repository {
         if(event == NwdafEvent.LOAD_LEVEL_INFORMATION || event == NwdafEvent.UE_MOBILITY || event == NwdafEvent.NETWORK_PERFORMANCE)
         { query = "INSERT INTO nwdafSubscriptionTable VALUES(?, ?, ?, ?, ?)"; }
 
-        else if(event == NwdafEvent.QOS_SUSTAINABILITY || event == NwdafEvent.SERVICE_EXPERIENCE || event == NwdafEvent.USER_DATA_CONGESTION || event == NwdafEvent.ABNORMAL_BEHAVIOUR)
+        else if(event == NwdafEvent.QOS_SUSTAINABILITY || event == NwdafEvent.SERVICE_EXPERIENCE || event == NwdafEvent.USER_DATA_CONGESTION || event == NwdafEvent.ABNORMAL_BEHAVIOUR || event == NwdafEvent.UE_COMM)
         { query = "INSERT INTO nwdafSubscriptionTable (subscriptionId, event, notificationURI) VALUES(?, ?, ?)"; }
 
 
@@ -156,6 +159,17 @@ public class Nnwdaf_Repository {
         jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?;", subscriptionId);
 
         return decrementRefCount_AbnormalBehaviour(abnorBehavrSubData);
+    }
+
+
+    public String unsubscribeNF_UeComm(String subscriptionId)
+    {
+        String supi = getSupi_UeCommSubscriptionData(subscriptionId);
+
+        jdbcTemplate.update("DELETE FROM nwdafUeCommSubscriptionData WHERE subscriptionId = ?;", subscriptionId);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?;", subscriptionId);
+
+        return decrementRefCount_UeComm(supi);
     }
 
 
@@ -431,10 +445,26 @@ public class Nnwdaf_Repository {
     }
 
 
+    public String decrementRefCount_UeComm(String supi)
+    {
+        jdbcTemplate.update("UPDATE nwdafUeCommSubscriptionTable SET refCount = refCount - 1 WHERE supi = ?;", supi);
+
+        if(getRefCount_UeComm(supi) == 0)
+        { return supi; }
+
+        return null;
+    }
+
+
 
     public Integer deleteEntry_SliceLoadLevelSubscriptionTable(String snssai) throws NullPointerException {
 
-        return jdbcTemplate.update("DELETE FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssai = ?", snssai);
+        return jdbcTemplate.update("DELETE FROM nwdafSliceLoadLevelSubscriptionTable WHERE snssai = ?;", snssai);
+    }
+
+    public Integer deleteEntry_SliceLoadLevelInformation(String snssai) throws NullPointerException {
+
+        return jdbcTemplate.update("DELETE FROM nwdafSliceLoadLevelInformation WHERE snssai = ?;", snssai);
     }
 
 
@@ -1642,6 +1672,38 @@ public class Nnwdaf_Repository {
     public Integer deleteEntry_AbnormalBehaviourSubscriptionTable(String correlationId)
     { return jdbcTemplate.update("DELETE FROM nwdafAbnormalBehaviourSubscriptionTable WHERE correlationId = ?;", correlationId); }
 
+    public Integer deleteEntry_UeCommSubscriptionTable(String correlationId)
+    { return jdbcTemplate.update("DELETE FROM nwdafUeCommSubscriptionTable WHERE correlationId = ?;", correlationId); }
+
+
+
+    /****************************************************************************************************************************************/
+
+
+
+    public Integer deleteEntry_ServiceExperienceInformation(String supi, String snssai)
+    { return jdbcTemplate.update("DELETE FROM nwdafServiceExperienceInformation WHERE supi = ? AND snssai = ?;", new Object[] {supi, snssai}); }
+
+
+    public Integer deleteEntry_NetworkPerformanceInformation(String supi, Integer nwPerfType)
+    { return jdbcTemplate.update("DELETE FROM nwdafNetworkPerformanceInformation WHERE supi = ? AND nwPerfType = ?;", new Object[] {supi, nwPerfType}); }
+
+
+    public Integer deleteEntry_UserDataCongestionInformation(String supi, Integer congType)
+    { return jdbcTemplate.update("DELETE FROM nwdafUserDataCongestionInformation WHERE supi = ? AND congType = ?;", new Object[] {supi, congType}); }
+
+
+    public Integer deleteEntry_QosSustainabilityInformation(String tai, String snssai)
+    { return jdbcTemplate.update("DELETE FROM nwdafQosSustainabilityInformation WHERE tai = ? AND snssai = ?;", new Object[] {tai, snssai}); }
+
+
+    public Integer deleteEntry_AbnormalBehaviourInformation(String supi, Integer excepId)
+    { return jdbcTemplate.update("DELETE FROM nwdafAbnormalBehaviourInformation WHERE supi = ? AND excepId = ?;", new Object[] {supi, excepId}); }
+
+
+
+
+
 
 
     public List<ServiceExperienceInfo> getServiceExperienceInfo(String supi, String snssai, Boolean anyUe)
@@ -2225,4 +2287,163 @@ public class Nnwdaf_Repository {
         });
     }
 
+
+
+    /************************************UE_COMM***********************************************/
+
+
+
+
+    public Boolean addUeCommSubscriptionData(UeCommSubscriptionData ueCommSubscriptionData)
+    {
+        String query = "INSERT INTO nwdafUeCommSubscriptionData (subscriptionId, supi, maxAnaEntry) VALUES (?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setString(1, ueCommSubscriptionData.getSubscriptionId());
+            preparedStatement.setString(2, ueCommSubscriptionData.getSupi());
+            preparedStatement.setInt(3, ueCommSubscriptionData.getMaxAnaEntry());
+
+            return preparedStatement.execute();
+        });
+    }
+
+
+    public Boolean addUeCommInformation(UeCommInformation ueCommInformation)
+    {
+        String query = "INSERT INTO nwdafUeCommInformation (supi, commDur, ts, ulVol, dlVol) VALUES (?, ?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setString(1, ueCommInformation.getSupi());
+            preparedStatement.setInt(2, ueCommInformation.getCommDur());
+            preparedStatement.setString(3, ueCommInformation.getTs());
+            preparedStatement.setInt(4, ueCommInformation.getUlVol());
+            preparedStatement.setInt(5, ueCommInformation.getDlVol());
+
+            return preparedStatement.execute();
+        });
+    }
+
+
+    public Boolean addUeCommSubscriptionTable(UeCommSubscriptionTable ueCommSubscriptionTable, boolean getAnalytics)
+    {
+        String query = "INSERT INTO nwdafUeCommSubscriptionTable (supi, subscriptionId, correlationId, refCount) VALUES (?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setString(1, ueCommSubscriptionTable.getSupi());
+            preparedStatement.setString(2, ueCommSubscriptionTable.getSubscriptionId());
+            preparedStatement.setString(3, ueCommSubscriptionTable.getCorrelationId());
+
+            if(getAnalytics)
+            { preparedStatement.setInt(4, 0); }
+
+            else
+            { preparedStatement.setInt(4, 1); }
+
+            return preparedStatement.execute();
+        });
+    }
+
+
+    public boolean ueComm_SupiExists(String supi, TableType ueCommTable)
+    {
+        String query = "";
+
+        if(ueCommTable == TableType.SUBSCRIPTION_TABLE)
+        { query = "SELECT EXISTS(SELECT 1 FROM nwdafUeCommSubscriptionTable WHERE supi = ?) AS supi_exists;"; }
+
+        else if(ueCommTable == TableType.INFORMATION_TABLE)
+        { query = "SELECT EXISTS(SELECT 1 FROM nwdafUeCommInformation WHERE supi = ?) AS supi_exists;"; }
+
+        Integer exists = jdbcTemplate.queryForObject(query, new Object[]{supi}, (resultSet, i) -> resultSet.getInt("supi_exists"));
+
+        return exists == 1;
+    }
+
+
+    public Integer updateRefCount_UeComm(String supi)
+    { return jdbcTemplate.update("UPDATE nwdafUeCommSubscriptionTable SET refCount = refCount + 1 WHERE supi = ?;", supi); }
+
+
+    public String getSupiByCorrelationId_UeComm(String correlationId)
+    {
+        String query = "SELECT supi FROM nwdafUeCommSubscriptionTable WHERE correlationId = ?";
+        return jdbcTemplate.queryForObject(query, new Object[]{correlationId}, (resultSet, i) -> resultSet.getString("supi"));
+    }
+
+
+    public String getSubscriptionBySupi_UeComm(String supi)
+    {
+        String query = "SELECT subscriptionId FROM nwdafUeCommSubscriptionData WHERE supi = ?;";
+        return jdbcTemplate.queryForObject(query, new Object[]{supi}, (resultSet, i) -> resultSet.getString("subscriptionId"));
+    }
+
+
+    public List<Object> getUeCommAnalytics(String supi, Integer maxAnaEntry)
+    {
+        String query = "SELECT commDur, ts, ulVol, dlVol FROM nwdafUeCommInformation WHERE supi = ? LIMIT ?";
+
+        try
+        { return jdbcTemplate.query(query, new Object[]{supi, maxAnaEntry}, new UeCommInfoMapper()); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
+
+
+    public Integer deleteAnalyticsEntry_UeComm(String correlationId)
+    { return jdbcTemplate.update("DELETE FROM nwdafUeCommSubscriptionTable WHERE correlationId = ? AND refCount = 0;", correlationId); }
+
+
+    public Integer getSupiTimeSlotsCount_UeComm(String supi)
+    {
+        String query = "SELECT COUNT(ID) FROM nwdafUeCommInformation WHERE supi = ?;";
+        return jdbcTemplate.queryForObject(query, new Object[]{supi}, (resultSet, i) -> resultSet.getInt("COUNT(ID)"));
+    }
+
+    public boolean maxAnaEntryReached(String supi, Integer anaEntry)
+    {
+        String query = "SELECT EXISTS(SELECT 1 FROM nwdafUeCommSubscriptionData WHERE supi = ? AND maxAnaEntry = ?) AS maxEntries;";
+        Integer reached = jdbcTemplate.queryForObject(query, new Object[]{supi, anaEntry}, (resultSet, i) -> resultSet.getInt("maxEntries"));
+
+        return reached == 1;
+    }
+
+    public Integer deleteLRUtimeSlot_UeComm(String supi)
+    { return jdbcTemplate.update("DELETE FROM nwdafUeCommInformation WHERE supi = ? ORDER BY ID LIMIT 1;", supi); }
+
+
+    public String getSupi_UeCommSubscriptionData(String subscriptionId)
+    {
+        String query = "SELECT supi FROM nwdafUeCommSubscriptionData WHERE subscriptionId = ?;";
+        return jdbcTemplate.queryForObject(query, new Object[]{subscriptionId}, (resultSet, i) -> resultSet.getString("supi"));
+    }
+
+    public Integer getRefCount_UeComm(String supi)
+    {
+        String query = "SELECT refCount FROM nwdafUeCommSubscriptionTable WHERE supi = ?;";
+        return jdbcTemplate.queryForObject(query, new Object[]{supi}, (resultSet, i) -> resultSet.getInt("refCount"));
+    }
+
+
+    public UeCommSubscriptionTable getCorrelation_UnSubCorrelation_UeComm(String supi)
+    {
+        String query = "SELECT subscriptionId, correlationId FROM nwdafUeCommSubscriptionTable WHERE supi = ?;";
+
+        return jdbcTemplate.queryForObject(query, new Object[]{supi}, (resultSet, i) -> {
+
+            UeCommSubscriptionTable ueCommSubscriptionTable = new UeCommSubscriptionTable();
+
+            ueCommSubscriptionTable.setSubscriptionId(resultSet.getString("subscriptionId"));
+            ueCommSubscriptionTable.setCorrelationId(resultSet.getString("correlationId"));
+
+            return ueCommSubscriptionTable;
+        });
+    }
+
+
+    public Integer deleteEntry_UeCommInformation(String supi)
+    { return jdbcTemplate.update("DELETE FROM nwdafUeCommInformation WHERE supi = ?;", supi); }
 }

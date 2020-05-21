@@ -40,6 +40,8 @@ import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.UEmobilitySubscr
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionModel;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UserLocation;
+import com.nwdaf.Analytics.Model.TableType.UeComm.UeCommSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.UeComm.UeCommSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionInformation;
 import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionSubscriptionTable;
@@ -1970,6 +1972,78 @@ public class BusinessLogic extends ResourceValues {
 
 
 
+    /***************************************UE_COMM************************************************************************/
+
+
+
+    public Object checkForData_UeComm(String supi, boolean getAnalytics) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+        if(getAnalytics)
+        { }
+
+        else
+        { collectDataForUeComm(supi, false); }
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+        return null;
+    }
+
+
+    public void collectDataForUeComm(String supi, boolean getAnalytics) throws IOException, JSONException {
+
+        if(repository.ueComm_SupiExists(supi, TableType.SUBSCRIPTION_TABLE))
+        {
+            if(!getAnalytics)
+            { repository.updateRefCount_UeComm(supi); }
+        }
+
+        else
+        {
+            String correlationId = FrameWorkFunction.getUniqueID().toString();
+            String unSubcorrelationId = subscribeRightSide(POST_SMF_URL, correlationId, NwdafEvent.UE_COMM);
+
+            responseHandlerUeComm(supi, correlationId, unSubcorrelationId, getAnalytics);
+        }
+
+    }
+
+
+    public void responseHandlerUeComm(String supi, String correlationId, String unSubcorrelationId, boolean getAnalytics)
+    {
+        UeCommSubscriptionTable ueCommSubscriptionTable = new UeCommSubscriptionTable();
+
+        ueCommSubscriptionTable.setSupi(supi);
+        ueCommSubscriptionTable.setSubscriptionId(unSubcorrelationId);
+        ueCommSubscriptionTable.setCorrelationId(correlationId);
+
+        repository.addUeCommSubscriptionTable(ueCommSubscriptionTable, getAnalytics);
+    }
+
+
+
+    public Object analyticsRequest_UeComm(String supi, Integer maxAnaEntry) throws IOException, JSONException {
+
+        List<Object> ueAnalyticsSet = repository.getUeCommAnalytics(supi, maxAnaEntry);
+
+        if(ueAnalyticsSet == null || ueAnalyticsSet.isEmpty())
+        {
+            collectDataForUeComm(supi, true);
+            return new ResponseEntity<String>("Data Not Found", HttpStatus.NOT_FOUND);
+        }
+
+        else
+        {
+            HashMap<Object, Object> analytics = new HashMap<>();
+            analytics.put("ueComms", ueAnalyticsSet);
+
+            return analytics;
+        }
+    }
+
+
 
     /**********************************************************************************************************************************/
 
@@ -1997,6 +2071,10 @@ public class BusinessLogic extends ResourceValues {
 
     public void sendAbnormalBehaviourNotification(AbnormalBehaviourNotification abnorBehavrNotifyData) throws JSONException, IOException
     { sendNotificationToNF(abnorBehavrNotifyData.getNotificationURI(), NotificationPayload.getAbnormalBehaviourPayload(abnorBehavrNotifyData), NwdafEvent.ABNORMAL_BEHAVIOUR); }
+
+
+    public void sendUeCommNotification(UeCommNotification ueCommNotification) throws JSONException, IOException
+    { sendNotificationToNF(ueCommNotification.getNotificationURI(), NotificationPayload.getUeCommPayload(ueCommNotification), NwdafEvent.UE_COMM); }
 
 
 
@@ -2197,6 +2275,8 @@ public class BusinessLogic extends ResourceValues {
 
             case ABNORMAL_BEHAVIOUR: return subscribeAbnormalBehaviour(eventSubscription, subscriptionId, notificationURI);
 
+            case UE_COMM: return subscribeUeComm(eventSubscription, subscriptionId, notificationURI);
+
         }
 
         return null;
@@ -2369,6 +2449,25 @@ public class BusinessLogic extends ResourceValues {
         return null;
     }
 
+
+
+    public Object subscribeUeComm(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws IOException, JSONException {
+
+        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
+        repository.subscribeNF(subscriptionTable);
+
+        UeCommSubscriptionData ueCommSubscriptionData = new UeCommSubscriptionData(eventSubscription, subscriptionId);
+        repository.addUeCommSubscriptionData(ueCommSubscriptionData);
+
+        String supi = eventSubscription.getTgtUe().getSupi();
+
+        Object obj = checkForData_UeComm(supi, false);
+
+        if(obj instanceof ResponseEntity)
+        { return obj; }
+
+        return null;
+    }
 
 
 }
