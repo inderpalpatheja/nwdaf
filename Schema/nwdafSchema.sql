@@ -297,5 +297,53 @@ CREATE TABLE `NWDAF`.`nwdafUeCommSubscriptionTable` (
 `refCount` INT NOT NULL,
 PRIMARY KEY (`ID`));
 
+
+
+
+
+
+
+
+CREATE TABLE `NWDAF`.`nwdafNfLoadSubscriptionData` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`subscriptionId` VARCHAR(128) NOT NULL,
+`nfType` INT NOT NULL,
+`nfInstanceId` VARCHAR(128) NOT NULL,
+`supi` VARCHAR(128) NULL,
+`snssai` VARCHAR(128) NULL,
+`nfLoadLevelThrd` INT NULL,
+`nfCpuUsageThrd` INT NULL,
+`nfMemoryUsageThrd` INT NULL,
+`nfStorageUsageThrd` INT NULL,
+PRIMARY KEY (`ID`),
+FOREIGN KEY (`subscriptionId`)
+REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionId`)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION);
+
+
+
+CREATE TABLE `NWDAF`.`nwdafNfLoadInformation` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`nfType` INT NOT NULL,
+`nfInstanceId` VARCHAR(128) NOT NULL,
+`nfLoadLevel` INT NOT NULL,
+`nfCpuUsage` INT NOT NULL,
+`nfMemoryUsage` INT NOT NULL,
+`nfStorageUsage` INT NOT NULL,
+PRIMARY KEY (`ID`));
+
+
+CREATE TABLE `NWDAF`.`nwdafNfLoadSubscriptionTable` (
+`ID` INT NOT NULL AUTO_INCREMENT,
+`nfType` INT NOT NULL,
+`nfInstanceId` VARCHAR(128) NOT NULL,
+`subscriptionId` VARCHAR(128) NOT NULL,
+`correlationId` VARCHAR(128) NOT NULL,
+`refCount` INT NOT NULL,
+PRIMARY KEY (`ID`));
+
+
+
   
   

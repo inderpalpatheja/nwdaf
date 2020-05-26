@@ -4,6 +4,8 @@ import com.nwdaf.Analytics.Model.CustomData.AbnormalBehaviour.AdditionalData.Flo
 import com.nwdaf.Analytics.Model.CustomData.AbnormalBehaviour.ExceptionId;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfType;
+import com.nwdaf.Analytics.Model.CustomData.NfLoad.NFType;
+import com.nwdaf.Analytics.Model.CustomData.NfLoad.NfThresholdType;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.CustomData.UserDataCongestion.CongestionType;
 import com.nwdaf.Analytics.Model.NotificationFormat.*;
@@ -445,6 +447,56 @@ public class NotificationPayload {
         eventNotifications.put(ueComms);
 
         json.put("subscriptionId", ueCommNotification.getSubscriptionId());
+        json.put("eventNotifications", eventNotifications);
+
+        return json;
+    }
+
+
+
+
+    public static JSONObject getNfLoadPayload(NfLoadNotification nfLoadNotification, NfThresholdType thresholdType) throws JSONException {
+
+        JSONObject json = new JSONObject();
+        JSONArray eventNotifications = new JSONArray();
+
+        JSONObject nfLoadLevelInfo = new JSONObject();
+        JSONArray nfLoadLevelInfoArray = new JSONArray();
+
+        JSONObject nfLoadLevelInfo_entry = new JSONObject();
+
+        nfLoadLevelInfo_entry.put("nfType", NFType.values()[nfLoadNotification.getNfType()].toString());
+        nfLoadLevelInfo_entry.put("nfInstanceId", nfLoadNotification.getNfInstanceId());
+
+        JSONObject nfStatus = new JSONObject();
+        nfStatus.put("statusRegistered", random.nextInt(100));
+
+        nfLoadLevelInfo_entry.put("nfStatus", nfStatus);
+
+
+        switch(thresholdType)
+        {
+            case CPU_USAGE: nfLoadLevelInfo_entry.put("nfCpuUsage", nfLoadNotification.getNfCpuUsage());
+                            break;
+
+            case MEMORY_USAGE: nfLoadLevelInfo_entry.put("nfMemoryUsage", nfLoadNotification.getNfMemoryUsage());
+                               break;
+
+            case STORAGE_USAGE: nfLoadLevelInfo_entry.put("nfStorageUsage", nfLoadNotification.getNfStorageUsage());
+                                break;
+
+            case LOAD_LEVEL: nfLoadLevelInfo_entry.put("nfLoadLevel", nfLoadNotification.getNfLoadLevel());
+                             break;
+        }
+
+        nfLoadLevelInfoArray.put(nfLoadLevelInfo_entry);
+
+        nfLoadLevelInfo.put("event", NwdafEvent.NF_LOAD.toString());
+        nfLoadLevelInfo.put("nfLoadLevelInfo", nfLoadLevelInfoArray);
+
+        eventNotifications.put(nfLoadLevelInfo);
+
+        json.put("subscriptionId", nfLoadNotification.getSubscriptionId());
         json.put("eventNotifications", eventNotifications);
 
         return json;

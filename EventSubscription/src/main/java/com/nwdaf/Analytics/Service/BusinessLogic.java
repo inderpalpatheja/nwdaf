@@ -8,6 +8,8 @@ import com.nwdaf.Analytics.Model.AnalyticsInformation.QosSustainabilityInfo;
 import com.nwdaf.Analytics.Model.AnalyticsInformation.ServiceExperienceInfo;
 import com.nwdaf.Analytics.Model.CustomData.*;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
+import com.nwdaf.Analytics.Model.CustomData.NfLoad.NFType;
+import com.nwdaf.Analytics.Model.CustomData.NfLoad.NfThresholdType;
 import com.nwdaf.Analytics.Model.EventSubscription;
 import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NetworkArea.NetworkAreaInfo;
@@ -26,6 +28,9 @@ import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSu
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceInformation;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadInformation;
+import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.QosSustainability.QosSustainabilitySubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceInformation;
 import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSubscriptionData;
@@ -79,7 +84,8 @@ public class BusinessLogic extends ResourceValues {
     Set<String> subID_SET = new HashSet<>();
     public int subThValue = 0;
     public int currentLoadLevel = 0;
-
+    final Integer SUPI_NF[] = { NFType.AMF.ordinal(), NFType.SMF.ordinal() };
+    Random random = new Random();
 
     //UserLocation userLocation = new UserLocation();
 
@@ -2045,6 +2051,124 @@ public class BusinessLogic extends ResourceValues {
 
 
 
+
+    /***************************************NF_LOAD**********************************************************************************/
+
+
+    public Object checkForData_NfLoad(Integer nfType, String nfInstanceId, boolean getAnalytics) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+
+        if(getAnalytics)
+        { }
+
+        else
+        { collectDataForNfLoad(nfType, nfInstanceId, false); }
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+        return null;
+    }
+
+
+    public void collectDataForNfLoad(Integer nfType, String nfInstanceId, boolean getAnalytics) throws IOException, JSONException {
+
+        if(repository.nfLoad_NfType_NfInstanceIdExists(nfType, nfInstanceId, TableType.SUBSCRIPTION_TABLE))
+        {
+            if(!getAnalytics)
+            { repository.updateRefCount_NfLoad(nfType, nfInstanceId); }
+        }
+
+        else
+        {
+            String correlationId = FrameWorkFunction.getUniqueID().toString();
+            String unSubcorrelationId = subscribeRightSide(POST_OAM_URL, correlationId, NwdafEvent.NF_LOAD);
+
+            responseHandlerNfLoad(nfType, nfInstanceId, correlationId, unSubcorrelationId, getAnalytics);
+        }
+    }
+
+
+
+    public void responseHandlerNfLoad(Integer nfType, String nfInstanceId, String correlationId, String unSubcorrelationId, boolean getAnalytics)
+    {
+        NfLoadSubscriptionTable nfLoadSubscriptionTable = new NfLoadSubscriptionTable();
+
+        nfLoadSubscriptionTable.setNfType(nfType);
+        nfLoadSubscriptionTable.setNfInstanceId(nfInstanceId);
+        nfLoadSubscriptionTable.setCorrelationId(correlationId);
+        nfLoadSubscriptionTable.setSubscriptionId(unSubcorrelationId);
+
+        repository.addNfLoadSubscriptionTable(nfLoadSubscriptionTable, getAnalytics);
+    }
+
+
+
+    public String getNfInstanceFromUDM(String supi, Integer nfType) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+
+        URL obj = new URL(GET_UDM_UECM);
+
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+        con.setDoOutput(true);
+
+
+        JSONObject json = new JSONObject();
+
+        json.put("supi", supi);
+        json.put("nfType", nfType);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = json.toString().getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(con.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            //  out.println("Status: " + con.getResponseCode());
+            //  out.println("Message: " + response.toString());
+        }
+
+        return con.getHeaderField("nfInstanceId");
+    }
+
+
+
+    public Object analyticsRequest_NfLoad(Integer nfType, String nfInstanceId) throws IOException, JSONException {
+
+        List<Object> nfLoadSet = repository.getNfLoadAnalytics(nfType, nfInstanceId);
+
+        if(nfLoadSet == null || nfLoadSet.isEmpty())
+        {
+            collectDataForNfLoad(nfType, nfInstanceId, true);
+            return new ResponseEntity<String>("Data Not Found", HttpStatus.NOT_FOUND);
+        }
+
+        else
+        {
+            HashMap<Object, Object> analytics = new HashMap<>();
+            analytics.put("nfLoadLevelInfo", nfLoadSet);
+
+            return analytics;
+        }
+    }
+
+
+
     /**********************************************************************************************************************************/
 
 
@@ -2075,6 +2199,12 @@ public class BusinessLogic extends ResourceValues {
 
     public void sendUeCommNotification(UeCommNotification ueCommNotification) throws JSONException, IOException
     { sendNotificationToNF(ueCommNotification.getNotificationURI(), NotificationPayload.getUeCommPayload(ueCommNotification), NwdafEvent.UE_COMM); }
+
+
+    public void sendNfLoadNotification(NfLoadNotification nfLoadNotification, NfThresholdType thresholdType) throws JSONException, IOException
+    { sendNotificationToNF(nfLoadNotification.getNotificationURI(), NotificationPayload.getNfLoadPayload(nfLoadNotification, thresholdType), NwdafEvent.NF_LOAD); }
+
+
 
 
 
@@ -2256,6 +2386,55 @@ public class BusinessLogic extends ResourceValues {
 
 
 
+    /*****************************************************************************************************************************/
+
+
+    public void nfLoadNotificationManager(Integer nfType, String nfInstanceId, Integer threshold, NfThresholdType thresholdType) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+
+        List<NfLoadSubscriptionData> subscriptions = repository.getCrossedThresholdSubscriptions_NfLoad(nfType, nfInstanceId, threshold, thresholdType);
+
+        for(NfLoadSubscriptionData subscriber: subscriptions)
+        {
+            NfLoadNotification nfLoadNotification = new NfLoadNotification();
+
+            nfLoadNotification.setSubscriptionId(subscriber.getSubscriptionId());
+            nfLoadNotification.setNotificationURI(repository.getNotificationURI(subscriber.getSubscriptionId()));
+
+            nfLoadNotification.setNfType(nfType);
+            nfLoadNotification.setNfInstanceId(nfInstanceId);
+
+            switch(thresholdType)
+            {
+                case CPU_USAGE: nfLoadNotification.setNfCpuUsage(threshold);
+                                break;
+
+                case MEMORY_USAGE: nfLoadNotification.setNfMemoryUsage(threshold);
+                                   break;
+
+                case STORAGE_USAGE: nfLoadNotification.setNfStorageUsage(threshold);
+                                    break;
+
+                case LOAD_LEVEL: nfLoadNotification.setNfLoadLevel(threshold);
+                                 break;
+            }
+
+            sendNfLoadNotification(nfLoadNotification, thresholdType);
+        }
+
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+    }
+
+
+
+    /*****************************************************************************************************************************/
+
+
+
 
     public Object subscribeForEvent(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws JSONException, IOException {
 
@@ -2276,6 +2455,8 @@ public class BusinessLogic extends ResourceValues {
             case ABNORMAL_BEHAVIOUR: return subscribeAbnormalBehaviour(eventSubscription, subscriptionId, notificationURI);
 
             case UE_COMM: return subscribeUeComm(eventSubscription, subscriptionId, notificationURI);
+
+            case NF_LOAD: return subscribeNfLoad(eventSubscription, subscriptionId, notificationURI);
 
         }
 
@@ -2450,7 +2631,7 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-
+    // Subscribe for event: UE_COMM
     public Object subscribeUeComm(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws IOException, JSONException {
 
         SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
@@ -2462,6 +2643,67 @@ public class BusinessLogic extends ResourceValues {
         String supi = eventSubscription.getTgtUe().getSupi();
 
         Object obj = checkForData_UeComm(supi, false);
+
+        if(obj instanceof ResponseEntity)
+        { return obj; }
+
+        return null;
+    }
+
+
+    // Subscribe for event: NF_LOAD
+    public Object subscribeNfLoad(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws IOException, JSONException {
+
+        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
+        repository.subscribeNF(subscriptionTable);
+
+        return eventSubscription.getNfTypes() != null ? subsribeNfLoadByNFType(eventSubscription, subscriptionId) : subscribeNfLoadBySupi(eventSubscription, subscriptionId);
+    }
+
+
+
+    public Object subscribeNfLoadBySupi(EventSubscription eventSubscription, String subscriptionId) throws IOException, JSONException {
+
+        String supi = eventSubscription.getTgtUe().getSupi();
+        String snssai = eventSubscription.getSnssais().get(0).toString();
+
+        NfLoadSubscriptionData nfLoadSubscriptionData = new NfLoadSubscriptionData(eventSubscription, subscriptionId);
+        nfLoadSubscriptionData.subscribeThruSupi(supi, snssai);
+
+        Integer nfType = SUPI_NF[random.nextInt(SUPI_NF.length)];
+        String nfInstanceId = getNfInstanceFromUDM(supi, nfType);
+
+        nfLoadSubscriptionData.setNfType(nfType);
+        nfLoadSubscriptionData.setNfInstanceId(nfInstanceId);
+
+        repository.addNfLoadSubscriptionData(nfLoadSubscriptionData);
+
+        NfLoadInformation nfLoadInformation = new NfLoadInformation(nfType, nfInstanceId);
+        repository.addNfLoadInformation(nfLoadInformation);
+
+        Object obj = checkForData_NfLoad(nfType, nfInstanceId, false);
+
+        if(obj instanceof ResponseEntity)
+        { return obj; }
+
+        return null;
+    }
+
+
+    public Object subsribeNfLoadByNFType(EventSubscription eventSubscription, String subscriptionId) throws IOException, JSONException {
+
+        Integer nfType = eventSubscription.getNfTypes().get(0).ordinal();
+        String nfInstanceId = eventSubscription.getNfInstanceIds().get(0);
+
+        NfLoadSubscriptionData nfLoadSubscriptionData = new NfLoadSubscriptionData(eventSubscription, subscriptionId);
+        nfLoadSubscriptionData.subscribeThruNFType(nfType, nfInstanceId);
+
+        repository.addNfLoadSubscriptionData(nfLoadSubscriptionData);
+
+        NfLoadInformation nfLoadInformation = new NfLoadInformation(nfType, nfInstanceId);
+        repository.addNfLoadInformation(nfLoadInformation);
+
+        Object obj = checkForData_NfLoad(nfType, nfInstanceId, false);
 
         if(obj instanceof ResponseEntity)
         { return obj; }
