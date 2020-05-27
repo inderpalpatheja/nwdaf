@@ -19,4 +19,6 @@ public class AnalyticsRawData {
     Integer congType;
     Integer excepId;
     Integer maxAnaEntry;
+    Integer nfType;
+    String nfInstanceId;
 }

@@ -45,4 +45,7 @@ public class ResourceValues {
 
     @Value("${spring.SMF.UnSubscribe.url}")
     String DELETE_SMF_URL;
+
+    @Value("${spring.UDM.UECM.Get.url}")
+    String GET_UDM_UECM;
 }

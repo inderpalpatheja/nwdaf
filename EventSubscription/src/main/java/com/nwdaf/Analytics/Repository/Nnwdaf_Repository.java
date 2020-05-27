@@ -6,6 +6,7 @@ import com.nwdaf.Analytics.Model.*;
 import com.nwdaf.Analytics.Model.AnalyticsInformation.QosSustainabilityInfo;
 import com.nwdaf.Analytics.Model.AnalyticsInformation.ServiceExperienceInfo;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
+import com.nwdaf.Analytics.Model.CustomData.NfLoad.NfThresholdType;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.SvcExperience;
 import com.nwdaf.Analytics.Model.CustomData.TableType;
@@ -14,6 +15,9 @@ import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSu
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelInformation;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadInformation;
+import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionTable;
@@ -51,6 +55,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.Random;
 
@@ -72,7 +77,7 @@ public class Nnwdaf_Repository {
         if(event == NwdafEvent.LOAD_LEVEL_INFORMATION || event == NwdafEvent.UE_MOBILITY || event == NwdafEvent.NETWORK_PERFORMANCE)
         { query = "INSERT INTO nwdafSubscriptionTable VALUES(?, ?, ?, ?, ?)"; }
 
-        else if(event == NwdafEvent.QOS_SUSTAINABILITY || event == NwdafEvent.SERVICE_EXPERIENCE || event == NwdafEvent.USER_DATA_CONGESTION || event == NwdafEvent.ABNORMAL_BEHAVIOUR || event == NwdafEvent.UE_COMM)
+        else if(event == NwdafEvent.QOS_SUSTAINABILITY || event == NwdafEvent.SERVICE_EXPERIENCE || event == NwdafEvent.USER_DATA_CONGESTION || event == NwdafEvent.ABNORMAL_BEHAVIOUR || event == NwdafEvent.UE_COMM || event == NwdafEvent.NF_LOAD)
         { query = "INSERT INTO nwdafSubscriptionTable (subscriptionId, event, notificationURI) VALUES(?, ?, ?)"; }
 
 
@@ -2446,4 +2451,211 @@ public class Nnwdaf_Repository {
 
     public Integer deleteEntry_UeCommInformation(String supi)
     { return jdbcTemplate.update("DELETE FROM nwdafUeCommInformation WHERE supi = ?;", supi); }
+
+
+
+
+
+
+
+
+
+
+
+    /************************************NF_LOAD***********************************************/
+
+
+
+    public Boolean addNfLoadSubscriptionData(NfLoadSubscriptionData nfLoadSubscriptionData)
+    {
+        String query = "INSERT INTO nwdafNfLoadSubscriptionData (subscriptionId, nfType, nfInstanceId, supi, snssai, nfLoadLevelThrd, nfCpuUsageThrd, nfMemoryUsageThrd, nfStorageUsageThrd) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setString(1, nfLoadSubscriptionData.getSubscriptionId());
+            preparedStatement.setInt(2, nfLoadSubscriptionData.getNfType());
+            preparedStatement.setString(3, nfLoadSubscriptionData.getNfInstanceId());
+
+
+            if(nfLoadSubscriptionData.getSupi() == null)
+            { preparedStatement.setNull(4, Types.VARCHAR); }
+
+            else
+            { preparedStatement.setString(4, nfLoadSubscriptionData.getSupi()); }
+
+
+
+            if(nfLoadSubscriptionData.getSnssai() == null)
+            { preparedStatement.setNull(5, Types.VARCHAR); }
+
+            else
+            { preparedStatement.setString(5, nfLoadSubscriptionData.getSnssai()); }
+
+
+
+            if(nfLoadSubscriptionData.getNfLoadLevelThrd() == null)
+            { preparedStatement.setNull(6, Types.INTEGER); }
+
+            else
+            { preparedStatement.setInt(6, nfLoadSubscriptionData.getNfLoadLevelThrd()); }
+
+
+            if(nfLoadSubscriptionData.getNfCpuUsageThrd() == null)
+            { preparedStatement.setNull(7, Types.INTEGER); }
+
+            else
+            { preparedStatement.setInt(7, nfLoadSubscriptionData.getNfCpuUsageThrd()); }
+
+
+            if(nfLoadSubscriptionData.getNfMemoryUsageThrd() == null)
+            { preparedStatement.setNull(8, Types.INTEGER); }
+
+            else
+            { preparedStatement.setInt(8, nfLoadSubscriptionData.getNfMemoryUsageThrd()); }
+
+
+            if(nfLoadSubscriptionData.getNfStorageUsageThrd() == null)
+            { preparedStatement.setNull(9, Types.INTEGER); }
+
+            else
+            { preparedStatement.setInt(9, nfLoadSubscriptionData.getNfStorageUsageThrd()); }
+
+            return preparedStatement.execute();
+        });
+    }
+
+
+
+    public Boolean addNfLoadInformation(NfLoadInformation nfLoadInformation)
+    {
+        if(nfLoad_NfType_NfInstanceIdExists(nfLoadInformation.getNfType(), nfLoadInformation.getNfInstanceId(), TableType.INFORMATION_TABLE))
+        { return Boolean.FALSE; }
+
+        String query = "INSERT INTO nwdafNfLoadInformation (nfType, nfInstanceId, nfLoadLevel, nfCpuUsage, nfMemoryUsage, nfStorageUsage) VALUES (?, ?, ?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setInt(1, nfLoadInformation.getNfType());
+            preparedStatement.setString(2, nfLoadInformation.getNfInstanceId());
+
+            preparedStatement.setInt(3, 0);
+            preparedStatement.setInt(4, 0);
+            preparedStatement.setInt(5, 0);
+            preparedStatement.setInt(6, 0);
+
+            return preparedStatement.execute();
+        });
+    }
+
+
+    public Boolean addNfLoadSubscriptionTable(NfLoadSubscriptionTable nfLoadSubscriptionTable, boolean getAnalytics)
+    {
+        String query = "INSERT INTO nwdafNfLoadSubscriptionTable (nfType, nfInstanceId, subscriptionId, correlationId, refCount) VALUES (?, ?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setInt(1, nfLoadSubscriptionTable.getNfType());
+            preparedStatement.setString(2, nfLoadSubscriptionTable.getNfInstanceId());
+            preparedStatement.setString(3, nfLoadSubscriptionTable.getSubscriptionId());
+            preparedStatement.setString(4, nfLoadSubscriptionTable.getCorrelationId());
+
+            if(getAnalytics)
+            { preparedStatement.setInt(5, 0);  }
+
+            else
+            { preparedStatement.setInt(5, 1); }
+
+            return preparedStatement.execute();
+        });
+    }
+
+
+    public boolean nfLoad_NfType_NfInstanceIdExists(Integer nfType, String nfInstanceId, TableType nfLoadTable)
+    {
+        String query = "";
+
+        if(nfLoadTable == TableType.SUBSCRIPTION_TABLE)
+        { query = "SELECT EXISTS(SELECT 1 FROM nwdafNfLoadSubscriptionTable WHERE nfType = ? AND nfInstanceId = ?) AS nfInfo;"; }
+
+        else if(nfLoadTable == TableType.INFORMATION_TABLE)
+        { query = "SELECT EXISTS(SELECT 1 FROM nwdafNfLoadInformation WHERE nfType = ? AND nfInstanceId = ?) AS nfInfo;"; }
+
+        Integer exists = jdbcTemplate.queryForObject(query, new Object[]{nfType, nfInstanceId}, (resultSet, i) -> resultSet.getInt("nfInfo"));
+
+        return exists == 1;
+    }
+
+
+    public Integer updateRefCount_NfLoad(Integer nfType, String nfInstanceId)
+    { return jdbcTemplate.update("UPDATE nwdafNfLoadSubscriptionTable SET refCount = refCount + 1 WHERE nfType = ? AND nfInstanceId = ?;", new Object[] {nfType, nfInstanceId}); }
+
+
+
+    public NfLoadSubscriptionData getNfType_NfInstanceId_ByCorrelationId(String correlationId)
+    {
+        String query = "SELECT nfType, nfInstanceId FROM nwdafNfLoadSubscriptionTable WHERE correlationId = ?;";
+
+        return jdbcTemplate.queryForObject(query, new Object[]{correlationId}, (resultSet, i) -> {
+
+            NfLoadSubscriptionData nfLoadSubscriptionData = new NfLoadSubscriptionData();
+
+            nfLoadSubscriptionData.setNfType(resultSet.getInt("nfType"));
+            nfLoadSubscriptionData.setNfInstanceId(resultSet.getString("nfInstanceId"));
+
+            return nfLoadSubscriptionData;
+        });
+    }
+
+
+    public Integer updateNfThresholdLevel(Integer nfType, String nfInstanceId, Integer threshold, NfThresholdType thresholdType)
+    {
+        switch(thresholdType)
+        {
+            case CPU_USAGE: return jdbcTemplate.update("UPDATE nwdafNfLoadInformation SET nfCpuUsage = ? WHERE nfType = ? AND nfInstanceId = ?;", new Object[] {threshold, nfType, nfInstanceId});
+
+            case MEMORY_USAGE: return jdbcTemplate.update("UPDATE nwdafNfLoadInformation SET nfMemoryUsage = ? WHERE nfType = ? AND nfInstanceId = ?;", new Object[] {threshold, nfType, nfInstanceId});
+
+            case STORAGE_USAGE: return jdbcTemplate.update("UPDATE nwdafNfLoadInformation SET nfStorageUsage = ? WHERE nfType = ? AND nfInstanceId = ?;", new Object[] {threshold, nfType, nfInstanceId});
+
+            case LOAD_LEVEL: return jdbcTemplate.update("UPDATE nwdafNfLoadInformation SET nfLoadLevel = ? WHERE nfType = ? AND nfInstanceId = ?;", new Object[] {threshold, nfType, nfInstanceId});
+        }
+
+        return null;
+    }
+
+
+    public List<NfLoadSubscriptionData> getCrossedThresholdSubscriptions_NfLoad(Integer nfType, String nfInstanceId, Integer threshold, NfThresholdType thresholdType)
+    {
+        String query = "";
+
+        switch(thresholdType)
+        {
+            case CPU_USAGE: query = "SELECT subscriptionId, nfCpuUsageThrd FROM nwdafNfLoadSubscriptionData WHERE nfType = ? AND nfInstanceId = ? AND nfCpuUsageThrd < ?;";
+                            break;
+
+            case MEMORY_USAGE: query = "SELECT subscriptionId, nfMemoryUsageThrd FROM nwdafNfLoadSubscriptionData WHERE nfType = ? AND nfInstanceId = ? AND nfMemoryUsageThrd < ?;";
+                               break;
+
+            case STORAGE_USAGE: query = "SELECT subscriptionId, nfStorageUsageThrd FROM nwdafNfLoadSubscriptionData WHERE nfType = ? AND nfInstanceId = ? AND nfStorageUsageThrd < ?;";
+                                break;
+
+            case LOAD_LEVEL: query = "SELECT subscriptionId, nfLoadLevelThrd FROM nwdafNfLoadSubscriptionData WHERE nfType = ? AND nfInstanceId = ? AND nfLoadLevelThrd < ?;";
+                             break;
+        }
+
+        return jdbcTemplate.query(query, new Object[] {nfType, nfInstanceId, threshold}, new NfLoadCrossedThresholdMapper(thresholdType));
+    }
+
+
+    public List<Object> getNfLoadAnalytics(Integer nfType, String nfInstanceId)
+    {
+        String query = "SELECT * FROM nwdafNfLoadInformation WHERE nfType = ? AND nfInstanceId = ?;";
+
+        try
+        { return jdbcTemplate.query(query, new Object[] {nfType, nfInstanceId}, new NfLoadLevelInfoMapper()); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
+    }
+
 }

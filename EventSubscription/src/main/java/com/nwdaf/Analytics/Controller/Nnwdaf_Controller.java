@@ -79,10 +79,12 @@ public class Nnwdaf_Controller {
                                   @RequestParam(value = "nwPerfType", required = false) Integer nwPerfType,
                                   @RequestParam(value = "congType", required = false) Integer congType,
                                   @RequestParam(value = "excepId", required = false) Integer excepId,
-                                  @RequestParam(value = "maxAnaEntry", required = false) Integer maxAnaEntry) throws IOException, JSONException {
+                                  @RequestParam(value = "maxAnaEntry", required = false) Integer maxAnaEntry,
+                                  @RequestParam(value = "nfType", required = false) Integer nfType,
+                                  @RequestParam(value = "nfInstanceId", required = false) String nfInstanceId) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(event, snssai, anySlice, supi, tai, anyUe, nwPerfType, congType, excepId, maxAnaEntry));
+        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(event, snssai, anySlice, supi, tai, anyUe, nwPerfType, congType, excepId, maxAnaEntry, nfType, nfInstanceId));
     }
 
 
@@ -181,7 +183,7 @@ public class Nnwdaf_Controller {
 
     // Accepting Notification related to QOS_SUSTAINABILITY & NETWORK_PERFORMANCE [ from Simulator]
     @PostMapping("/Noam_EventExposure_Notify/{correlationId}")
-    public void acceptingNotification_OAM(@RequestBody String response) throws JSONException {
+    public void acceptingNotification_OAM(@RequestBody String response) throws JSONException, IOException {
 
         nwdaf_service.notificationHandlerOAM(response);
     }

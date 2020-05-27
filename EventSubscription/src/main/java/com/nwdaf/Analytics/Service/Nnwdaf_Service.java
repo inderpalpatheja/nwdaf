@@ -6,6 +6,7 @@ import com.nwdaf.Analytics.Model.CustomData.AbnormalBehaviour.ExceptionId;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfType;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfValue;
+import com.nwdaf.Analytics.Model.CustomData.NfLoad.NfThresholdType;
 import com.nwdaf.Analytics.Model.EventSubscription;
 import com.nwdaf.Analytics.Model.NetworkArea.PlmnId;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
@@ -18,6 +19,7 @@ import com.nwdaf.Analytics.Model.NwdafEvent;
 import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionTable;
@@ -155,6 +157,9 @@ public class Nnwdaf_Service extends BusinessLogic {
 
             else if(event == NwdafEvent.UE_COMM)
             { return analyticsRequest_UeComm(analytics.getSupi(), analytics.getMaxAnaEntry());  }
+
+            else if(event == NwdafEvent.NF_LOAD)
+            { return analyticsRequest_NfLoad(analytics.getNfType(), analytics.getNfInstanceId()); }
 
 
             // Object snssaisDataList = checkForData_LoadLevelInformation(nnwdafEventsSubscription, true);
@@ -1271,12 +1276,40 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
 
+
+    /*************************************NF_LOAD***********************************************************/
+
+
+    public void notificationHandler_NfLoad(JSONObject jsonData) throws JSONException, IOException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+        EventCounter[NwdafEvent.NF_LOAD.ordinal()].incrementSubscriptionNotificationsReceived();
+
+        String correlationId = jsonData.getString("correlationId");
+        Integer threshold = jsonData.getInt("threshold");
+        NfThresholdType thresholdType = NfThresholdType.values()[jsonData.getInt("thresholdType")];
+
+        NfLoadSubscriptionData nfLoadSubscriptionData = repository.getNfType_NfInstanceId_ByCorrelationId(correlationId);
+
+        Integer nfType = nfLoadSubscriptionData.getNfType();
+        String nfInstanceId = nfLoadSubscriptionData.getNfInstanceId();
+
+        repository.updateNfThresholdLevel(nfType, nfInstanceId, threshold, thresholdType);
+
+        nfLoadNotificationManager(nfType, nfInstanceId, threshold, thresholdType);
+    }
+
+
+
+
+
     /********************************************************************************************************************/
 
 
 
 
-    public void notificationHandlerOAM(String response) throws JSONException {
+    public void notificationHandlerOAM(String response) throws JSONException, IOException {
 
         JSONObject json = new JSONObject(response);
 
@@ -1292,8 +1325,12 @@ public class Nnwdaf_Service extends BusinessLogic {
 
             case USER_DATA_CONGESTION: notificationHandler_UserDataCongestion(json);
                                        break;
+
+            case NF_LOAD: notificationHandler_NfLoad(json);
+                          break;
         }
     }
+
 
 
     public void notificationHandlerSMF(String response) throws JSONException, IOException {

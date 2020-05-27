@@ -2,8 +2,10 @@ package com.nwdaf.AMF;
 
 
 import com.nwdaf.AMF.model.AmfEventType;
+import com.nwdaf.AMF.model.NFType;
 import com.nwdaf.AMF.model.Namf_EventExposure.Namf_EventExposure_Subscribe;
 
+import com.nwdaf.AMF.model.NfThresholdType;
 import com.nwdaf.AMF.model.NwdafEvent;
 import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONArray;
@@ -48,6 +50,7 @@ public class AMFController extends Functionality {
     public static List<String> correlationIDList_USER_DATA_CONGESTION = new ArrayList<>();
     public static List<String> correlationIDList_ABNORMAL_BEHAVIOUR = new ArrayList<>();
     public static List<String> correlationIDList_UE_COMM = new ArrayList<>();
+    public static List<String> correlationIDList_NF_LOAD = new ArrayList<>();
 
 
     public static List<String> getCorrelationIDList_LOAD_LEVEL_INFORMATION() {
@@ -77,6 +80,11 @@ public class AMFController extends Functionality {
     public static List<String> getCorrelationIDList_ABNORMAL_BEHAVIOUR() {
         return correlationIDList_ABNORMAL_BEHAVIOUR;
     }
+
+    public static List<String> getCorrelationIDList_NF_LOAD() {
+        return correlationIDList_NF_LOAD;
+    }
+
 
 
     public static List<String> getCorrelationIDList_UE_COMM() {
@@ -110,7 +118,7 @@ public class AMFController extends Functionality {
         String subscriptionID = json.getString("subscriptionId");
 
 
-        unsubscribe(subscriptionID);
+        //unsubscribe(subscriptionID);
     }
 
 
@@ -177,6 +185,9 @@ public class AMFController extends Functionality {
 
             case USER_DATA_CONGESTION: correlationIDList_USER_DATA_CONGESTION.remove(correlationId);
                                        break;
+
+            case NF_LOAD: correlationIDList_NF_LOAD.remove(correlationId);
+                          break;
         }
 
 
@@ -219,22 +230,32 @@ public class AMFController extends Functionality {
 
         NwdafEvent event = NwdafEvent.values()[json.getInt("event")];
 
-        if(event == NwdafEvent.QOS_SUSTAINABILITY)
-        {
-            out.println("in-QOS_SUSTAINABILITY----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
-            correlationIDList_QOS_SUSTAINABILITY.add(obj.getCorrelationId());
-        }
 
-        else if(event == NwdafEvent.NETWORK_PERFORMANCE)
+        switch(event)
         {
-            out.println("in-NETWORK_PERFORMANCE----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
-            correlationIDList_NETWORK_PERFORMANCE.add(obj.getCorrelationId());
-        }
+            case QOS_SUSTAINABILITY:
+                out.println("in-QOS_SUSTAINABILITY----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
+                correlationIDList_QOS_SUSTAINABILITY.add(obj.getCorrelationId());
+                break;
 
-        else if(event == NwdafEvent.USER_DATA_CONGESTION)
-        {
-            out.println("in-USER_DATA_CONGESTION----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
-            correlationIDList_USER_DATA_CONGESTION.add(obj.getCorrelationId());
+
+            case NETWORK_PERFORMANCE:
+                out.println("in-NETWORK_PERFORMANCE----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
+                correlationIDList_NETWORK_PERFORMANCE.add(obj.getCorrelationId());
+                break;
+
+
+            case USER_DATA_CONGESTION:
+                out.println("in-USER_DATA_CONGESTION----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
+                correlationIDList_USER_DATA_CONGESTION.add(obj.getCorrelationId());
+                break;
+
+
+            case NF_LOAD:
+                out.println("in-NF_LOAD----->> + " + obj.getNotificationTargetAddress() + "::" + obj.getCorrelationId());
+                correlationIDList_NF_LOAD.add(obj.getCorrelationId());
+                break;
+
         }
 
         return new ResponseEntity<String>(String.valueOf(unSubCorrelationId), HttpStatus.OK);
@@ -1242,6 +1263,111 @@ public class AMFController extends Functionality {
         return new ResponseEntity<String>("Sent UE_COMM data", HttpStatus.OK);
     }
 
+
+
+    @PostMapping("/Nudm_UECM_Get")
+    public ResponseEntity<?> nUdm_UECM_Get(@RequestBody String response) throws JSONException {
+
+        JSONObject jsonData = new JSONObject(response);
+
+        String supi = jsonData.getString("supi");
+        NFType nfType = NFType.values()[jsonData.getInt("nfType")];
+
+        String nfInstanceId = UUID.randomUUID().toString();
+
+        HttpHeaders responseHeaders = new HttpHeaders();
+
+        responseHeaders.set("supi", supi);
+        responseHeaders.set("nfInstanceId", nfInstanceId);
+
+        return new ResponseEntity(responseHeaders, HttpStatus.FOUND);
+    }
+
+
+
+
+
+    @PostMapping("sendNfLoadData/{correlationId}")
+    public ResponseEntity<String> sendNfLoadData(String notiTargetAddress, @PathVariable("correlationId") String correlationId) throws IOException, JSONException
+    {
+        //  out.println("send Data check1");
+
+        notiTargetAddress = HTTP + "://localhost:8081/Noam_EventExposure_Notify";
+        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
+
+        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
+        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
+
+        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
+
+        String updated_URL = notiTargetAddress + "/" + correlationId;
+        //  out.println("updated URl - " + updated_URL);
+        URL url = new URL(updated_URL);
+
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+
+
+        JSONObject json = new JSONObject();
+
+        json.put("correlationId", correlationId);
+        json.put("event", NwdafEvent.NF_LOAD.ordinal());
+        json.put("threshold", 20 + random.nextInt(80));
+        json.put("thresholdType", random.nextInt(NfThresholdType.values().length));
+
+
+
+        // For POST only - START
+        con.setDoOutput(true);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = json.toString().getBytes("utf-8");
+
+            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
+
+            os.write(input, 0, input.length);
+            os.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // For POST only - END
+
+        int responseCode = con.getResponseCode();
+        //String responseMessage = con.getResponseMessage();
+        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
+        //System.out.println("POST Response Message :: " + responseMessage);
+
+        if (responseCode == HttpURLConnection.HTTP_OK) { //success
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // print result
+            // System.out.println("\n\n");
+            //  System.out.println(response);
+        } else {
+            // System.out.println("\n\n");
+            // System.out.println("POST request not worked");
+        }
+        //  return "Data send to " + updated_URL;
+
+        if (con != null) {
+            con.disconnect();
+        }
+
+        return new ResponseEntity<String>("Sent NF_LOAD data", HttpStatus.OK);
+    }
 
 }
 

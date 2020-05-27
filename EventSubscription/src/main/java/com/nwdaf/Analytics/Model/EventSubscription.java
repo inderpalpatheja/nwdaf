@@ -3,6 +3,7 @@ package com.nwdaf.Analytics.Model;
 import com.nwdaf.Analytics.Model.CustomData.AbnormalBehaviour.Exception;
 import com.nwdaf.Analytics.Model.CustomData.AbnormalBehaviour.ExpectedAnalyticsType;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfRequirement;
+import com.nwdaf.Analytics.Model.CustomData.NfLoad.NFType;
 import com.nwdaf.Analytics.Model.CustomData.NotificationMethod;
 import com.nwdaf.Analytics.Model.CustomData.QosSustainability.QosRequirement;
 import com.nwdaf.Analytics.Model.CustomData.QosSustainability.RetainabilityThreshold;
@@ -33,6 +34,9 @@ public class EventSubscription {
     List<Integer> ranUeThrouThrds;
     List<NetworkPerfRequirement> nwPerfRequs;
     List<ThresholdLevel> congThresholds;
+    List<ThresholdLevel> nfLoadLvlThds;
+    List<String> nfInstanceIds;
+    List<NFType> nfTypes;
     List<Exception> excepRequs;
     ExpectedAnalyticsType exptAnaType;
     List<Snssai> snssais;
