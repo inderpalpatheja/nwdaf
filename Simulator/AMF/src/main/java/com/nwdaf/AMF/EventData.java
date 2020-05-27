@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Random;
+import java.util.UUID;
 
 
 public class EventData {
@@ -36,6 +37,8 @@ public class EventData {
             case ABNORMAL_BEHAVIOUR: return getAbnormalBehaviour();
 
             case UE_COMM: return getUeCommData();
+
+            case NF_LOAD: return getNfLoadData();
         }
 
         return null;
@@ -339,6 +342,73 @@ public class EventData {
 
         event_entry.put("tgtUe", tgtUe);
         event_entry.put("maxAnaEntry", 1);
+
+        eventSubscriptions.put(event_entry);
+
+        json.put("eventSubscriptions", eventSubscriptions);
+
+        return json;
+
+    }
+
+
+    public static JSONObject getNfLoadData() throws JSONException {
+
+
+        JSONObject json = new JSONObject();
+        JSONArray eventSubscriptions = new JSONArray();
+
+        json.put("notificationURI", notificationURI);
+
+        JSONObject event_entry = new JSONObject();
+
+        event_entry.put("event", NwdafEvent.NF_LOAD.ordinal());
+
+
+        JSONArray nfLoadLvlThds = new JSONArray();
+        JSONObject nfLoadLvlThds_entry = new JSONObject();
+
+        nfLoadLvlThds_entry.put("nfLoadLevel", 20 + random.nextInt(20));
+        nfLoadLvlThds_entry.put("nfCpuUsage", 20 + random.nextInt(20));
+        nfLoadLvlThds_entry.put("nfMemoryUsage", 20 + random.nextInt(20));
+        nfLoadLvlThds_entry.put("nfStorageUsage", 20 + random.nextInt(20));
+
+        nfLoadLvlThds.put(nfLoadLvlThds_entry);
+
+        event_entry.put("nfLoadLvlThds", nfLoadLvlThds);
+
+
+        if(random.nextInt(2) == 0)
+        {
+            JSONArray nfTypes = new JSONArray();
+            nfTypes.put(random.nextInt(NFType.values().length));
+
+            JSONArray nfInstanceIds = new JSONArray();
+            nfInstanceIds.put(UUID.randomUUID().toString());
+
+            event_entry.put("nfTypes", nfTypes);
+            event_entry.put("nfInstanceIds", nfInstanceIds);
+        }
+
+        else
+        {
+            JSONObject tgtUe = new JSONObject();
+            tgtUe.put("supi", RandomStringUtils.randomNumeric(15));
+
+
+            JSONArray snssais = new JSONArray();
+
+            JSONObject snssai_entry = new JSONObject();
+            snssai_entry.put("sst", random.nextInt(100));
+            snssai_entry.put("sd", RandomStringUtils.randomAlphanumeric(3));
+
+            snssais.put(snssai_entry);
+
+
+            event_entry.put("tgtUe", tgtUe);
+            event_entry.put("snssais", snssais);
+        }
+
 
         eventSubscriptions.put(event_entry);
 

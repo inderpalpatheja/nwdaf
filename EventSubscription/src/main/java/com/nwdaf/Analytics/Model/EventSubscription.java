@@ -22,9 +22,9 @@ import java.util.List;
 public class EventSubscription {
 
 
-    Boolean anySlice;
+    Boolean anySlice = Boolean.FALSE;
     NwdafEvent event;
-    NotificationMethod notificationMethod;
+    NotificationMethod notificationMethod = NotificationMethod.THRESHOLD;
     Integer loadLevelThreshold;
     NetworkAreaInfo networkArea;
     QosRequirement qosRequ;

@@ -224,11 +224,34 @@ public class AmfApplication extends Functionality {
                     for(int j = 0; j < amfController.getCorrelationIDList_UE_COMM().size(); j++)
                     { amfController.sendUeCommData("https://localhost:8081/Nsmf_EventExposure_Notify", amfController.getCorrelationIDList_UE_COMM().get(j)); }
 
+                    //Thread.sleep(3 * 1000);
+
+                    if(event == 10)
+                    { break; }
+                }
+            }
+
+
+            if(event == NwdafEvent.NF_LOAD.ordinal() || event == 10)
+            {
+
+                while(true)
+                {
+                    for(int i = 0; i < subList; i++)
+                    {
+                        System.out.println("Subscribing for EventID: " + NwdafEvent.NF_LOAD.toString());
+                        String subscriptionID = subscribe(NwdafEvent.NF_LOAD);
+                    }
+
+                    for(int j = 0; j < amfController.getCorrelationIDList_NF_LOAD().size(); j++)
+                    { amfController.sendNfLoadData("https://localhost:8081/Noam_EventExposure_Notify", amfController.getCorrelationIDList_NF_LOAD().get(j)); }
+
                     Thread.sleep(3 * 1000);
 
                     if(event == 10)
                     { break; }
                 }
+
             }
 
 

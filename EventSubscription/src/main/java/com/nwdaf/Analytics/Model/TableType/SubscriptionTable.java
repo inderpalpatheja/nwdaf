@@ -27,7 +27,7 @@ public class SubscriptionTable {
         this.event = eventSubscription.getEvent().ordinal();
         this.notificationURI = notificationURI;
         this.notificationMethod = eventSubscription.getNotificationMethod().ordinal();
-        this.repetitionPeriod = (notificationMethod == NotificationMethod.PERIODIC.ordinal()) ? eventSubscription.getRepetitionPeriod() : 0;
+        this.repetitionPeriod = eventSubscription.getRepetitionPeriod();
     }
 
 }

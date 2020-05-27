@@ -35,12 +35,8 @@ public class QosSustainabilitySubscriptionData {
         this._5Qi = eventSubscription.getQosRequ().get_5Qi();
         this.tai = eventSubscription.getNetworkArea().getTais().get(0).toString();
         this.snssai = eventSubscription.getSnssais().get(0).toString();
-
-        if(eventSubscription.getRanUeThrouThrds() != null && !eventSubscription.getRanUeThrouThrds().isEmpty())
-        { this.ranUeThrouThrd = eventSubscription.getRanUeThrouThrds().get(0); }
-
-        else
-        { this.qosFlowRetThrd = eventSubscription.getQosFlowRetThrds().get(0); }
+        this.ranUeThrouThrd = eventSubscription.getRanUeThrouThrds().get(0);
+        this.qosFlowRetThrd = eventSubscription.getQosFlowRetThrds().get(0);
     }
 
 }

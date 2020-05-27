@@ -9,7 +9,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class TargetUeInformation {
 
-    Boolean anyUe;
+    Boolean anyUe = Boolean.FALSE;
     String supi;
     String intGroupId;
 }

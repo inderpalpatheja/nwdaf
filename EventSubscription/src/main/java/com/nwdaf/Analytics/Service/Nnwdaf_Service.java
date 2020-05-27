@@ -1,21 +1,19 @@
 package com.nwdaf.Analytics.Service;
 
 import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
-import com.nwdaf.Analytics.Model.APIBuildInformation;
+import com.nwdaf.Analytics.Model.*;
 import com.nwdaf.Analytics.Model.CustomData.AbnormalBehaviour.ExceptionId;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfType;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfValue;
 import com.nwdaf.Analytics.Model.CustomData.NfLoad.NfThresholdType;
-import com.nwdaf.Analytics.Model.EventSubscription;
+import com.nwdaf.Analytics.Model.CustomData.TargetUeInformation;
 import com.nwdaf.Analytics.Model.NetworkArea.PlmnId;
 import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.SvcExperience;
 import com.nwdaf.Analytics.Model.NetworkArea.Tai;
 import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
-import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.NotificationFormat.*;
-import com.nwdaf.Analytics.Model.NwdafEvent;
 import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionTable;
@@ -113,22 +111,14 @@ public class Nnwdaf_Service extends BusinessLogic {
     /************************************************************************************************************************/
 
 
-    public Object nwdaf_analytics(AnalyticsRawData analytics)  {
+    public Object nwdaf_analytics(Integer eventId, TargetUeInformation tgtUe, EventFilter eventFilter)  {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
         try
         {
-            if(analytics.getAnyUe() == null)
-            { analytics.setAnyUe(Boolean.FALSE); }
-
-            if(analytics.getAnySlice() == null)
-            { analytics.setAnySlice(Boolean.FALSE); }
-
-
-            NwdafEvent event = NwdafEvent.values()[analytics.getEvent()];
-
+            NwdafEvent event = NwdafEvent.values()[eventId];
 
 
            /* if(event == NwdafEvent.UE_MOBILITY)
@@ -136,30 +126,30 @@ public class Nnwdaf_Service extends BusinessLogic {
 
 
             if(event == NwdafEvent.QOS_SUSTAINABILITY)
-            { return checkForData_QosSustainability(analytics.getSnssai(), analytics.getTai(), true); }
+            { return checkForData_QosSustainability(eventFilter.getSnssais().get(0).toString(), eventFilter.getNetworkArea().getTais().get(0).toString(), true); }
 
 
             else if(event == NwdafEvent.SERVICE_EXPERIENCE)
-            { return checkForData_ServiceExperience(analytics.getSupi(), analytics.getSnssai(), analytics.getAnyUe(), true); }
+            { return checkForData_ServiceExperience(tgtUe.getSupi(), eventFilter.getSnssais().get(0).toString(), tgtUe.getAnyUe(), true); }
 
 
             else if(event == NwdafEvent.NETWORK_PERFORMANCE)
-            { return checkForData_NetworkPerformance(analytics.getSupi(), analytics.getNwPerfType(), analytics.getAnyUe(), true); }
+            { return checkForData_NetworkPerformance(tgtUe.getSupi(), eventFilter.getNwPerfTypes().get(0).ordinal(), tgtUe.getAnyUe(), true); }
 
 
-            else if(event == NwdafEvent.USER_DATA_CONGESTION)
-            { return checkForData_UserDataCongestion(analytics.getSupi(), analytics.getCongType(), true); }
+            //else if(event == NwdafEvent.USER_DATA_CONGESTION)
+            //{ return checkForData_UserDataCongestion(tgtUe.getSupi(), analytics.getCongType(), true); }
 
 
             else if(event == NwdafEvent.ABNORMAL_BEHAVIOUR)
-            { return checkForData_AbnormalBehaviour(analytics.getSupi(), analytics.getExcepId(), true); }
+            { return checkForData_AbnormalBehaviour(tgtUe.getSupi(), eventFilter.getExcepIds().get(0).ordinal(), true); }
 
 
             else if(event == NwdafEvent.UE_COMM)
-            { return analyticsRequest_UeComm(analytics.getSupi(), analytics.getMaxAnaEntry());  }
+            { return analyticsRequest_UeComm(tgtUe.getSupi(), eventFilter.getMaxAnaEntry());  }
 
             else if(event == NwdafEvent.NF_LOAD)
-            { return analyticsRequest_NfLoad(analytics.getNfType(), analytics.getNfInstanceId()); }
+            { return analyticsRequest_NfLoad(eventFilter.getNfTypes().get(0).ordinal(), eventFilter.getNfInstanceIds().get(0)); }
 
 
             // Object snssaisDataList = checkForData_LoadLevelInformation(nnwdafEventsSubscription, true);
