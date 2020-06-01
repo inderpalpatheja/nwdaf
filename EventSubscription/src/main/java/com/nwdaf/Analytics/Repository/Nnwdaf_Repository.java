@@ -70,30 +70,26 @@ public class Nnwdaf_Repository {
 
     public Boolean subscribeNF(SubscriptionTable subscription) throws NullPointerException {
 
-        String query = "";
+        String query = "INSERT INTO nwdafSubscriptionTable VALUES (?, ?, ?, ?, ?);";
 
-        NwdafEvent event = NwdafEvent.values()[subscription.getEvent()];
+        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
 
-        if(event == NwdafEvent.LOAD_LEVEL_INFORMATION || event == NwdafEvent.UE_MOBILITY || event == NwdafEvent.NETWORK_PERFORMANCE)
-        { query = "INSERT INTO nwdafSubscriptionTable VALUES(?, ?, ?, ?, ?)"; }
+            @Override
+            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
 
-        else if(event == NwdafEvent.QOS_SUSTAINABILITY || event == NwdafEvent.SERVICE_EXPERIENCE || event == NwdafEvent.USER_DATA_CONGESTION || event == NwdafEvent.ABNORMAL_BEHAVIOUR || event == NwdafEvent.UE_COMM || event == NwdafEvent.NF_LOAD)
-        { query = "INSERT INTO nwdafSubscriptionTable (subscriptionId, event, notificationURI) VALUES(?, ?, ?)"; }
-
-
-        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
-
-            preparedStatement.setString(1, subscription.getSubscriptionId());
-            preparedStatement.setInt(2, subscription.getEvent());
-            preparedStatement.setString(3, subscription.getNotificationURI());
-
-            if(event == NwdafEvent.LOAD_LEVEL_INFORMATION || event == NwdafEvent.UE_MOBILITY || event == NwdafEvent.NETWORK_PERFORMANCE)
-            {
+                preparedStatement.setString(1, subscription.getSubscriptionId());
+                preparedStatement.setInt(2, subscription.getEvent());
+                preparedStatement.setString(3, subscription.getNotificationURI());
                 preparedStatement.setInt(4, subscription.getNotificationMethod());
-                preparedStatement.setInt(5, subscription.getRepetitionPeriod());
-            }
 
-            return preparedStatement.execute();
+                if(subscription.getRepetitionPeriod() == null)
+                { preparedStatement.setNull(5, Types.INTEGER); }
+
+                else
+                { preparedStatement.setInt(5, subscription.getRepetitionPeriod()); }
+
+                return preparedStatement.execute();
+            }
         });
     }
 
@@ -322,7 +318,12 @@ public class Nnwdaf_Repository {
 
                 preparedStatement.setString(1, sliceLoadLevel.getSubscriptionId());
                 preparedStatement.setString(2, sliceLoadLevel.getSnssai());
-                preparedStatement.setInt(3, sliceLoadLevel.getLoadLevelThreshold());
+
+                if(sliceLoadLevel.getLoadLevelThreshold() == null)
+                { preparedStatement.setNull(3, Types.INTEGER); }
+
+                else
+                { preparedStatement.setInt(3, sliceLoadLevel.getLoadLevelThreshold()); }
 
                 return preparedStatement.execute();
             }
@@ -710,29 +711,27 @@ public class Nnwdaf_Repository {
 
     public Boolean addDataQosSustainabilitySubscriptionData(QosSustainabilitySubscriptionData qosSubscription) throws NullPointerException
     {
-        String query;
-
-        if(qosSubscription.getRanUeThrouThrd() != null)
-        { query = "INSERT INTO nwdafQosSustainabilitySubscriptionData (subscriptionID, 5Qi, tai, snssai, ranUeThrouThrd) VALUES(?, ?, ?, ?, ?);"; }
-
-        else
-        { query = "INSERT INTO nwdafQosSustainabilitySubscriptionData (subscriptionID, 5Qi, tai, snssai, qosFlowRetThrd) VALUES(?, ?, ?, ?, ?);"; }
-
+        String query = "INSERT INTO nwdafQosSustainabilitySubscriptionData (subscriptionId, 5Qi, tai, snssai, ranUeThrouThrd, qosFlowRetThrd) VALUES (?, ?, ?, ?, ?, ?);";
 
         return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
 
             preparedStatement.setString(1, qosSubscription.getSubscriptionId());
-
             preparedStatement.setInt(2, qosSubscription.get_5Qi());
             preparedStatement.setString(3, qosSubscription.getTai());
-
             preparedStatement.setString(4, qosSubscription.getSnssai());
 
-            if(qosSubscription.getRanUeThrouThrd() != null)
-            { preparedStatement.setInt(5, qosSubscription.getRanUeThrouThrd()); }
+            if(qosSubscription.getRanUeThrouThrd() == null)
+            { preparedStatement.setNull(5, Types.INTEGER); }
 
             else
-            { preparedStatement.setInt(5, qosSubscription.getQosFlowRetThrd()); }
+            { preparedStatement.setInt(5, qosSubscription.getRanUeThrouThrd()); }
+
+
+            if(qosSubscription.getQosFlowRetThrd() == null)
+            { preparedStatement.setNull(6, Types.INTEGER); }
+
+            else
+            { preparedStatement.setInt(6, qosSubscription.getQosFlowRetThrd()); }
 
             return preparedStatement.execute();
         });

@@ -2494,7 +2494,6 @@ public class BusinessLogic extends ResourceValues {
     // Subscribe for event: QOS_SUSTAINABILITY
     public Object subscribeQosSustainability(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws IOException, JSONException {
 
-
         SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
         repository.subscribeNF(subscriptionTable);
 

@@ -118,7 +118,7 @@ public class AMFController extends Functionality {
         String subscriptionID = json.getString("subscriptionId");
 
 
-        //unsubscribe(subscriptionID);
+        unsubscribe(subscriptionID);
     }
 
 

@@ -2,6 +2,7 @@ package com.nwdaf.Analytics.Controller;
 
 
 import com.nwdaf.Analytics.Model.CustomData.TargetUeInformation;
+import com.nwdaf.Analytics.Model.EventFilter;
 import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.*;
 import java.net.*;
+import java.util.HashMap;
 
 
 @RestController
@@ -56,9 +58,9 @@ public class Nnwdaf_Controller {
 
 
     /**
-     * @param snssai
-     * @param anySlice
-     * @param event
+     * @param eventId
+     * @param tgtUe
+     * @param eventFilter
      * @return
      * @throws IOException
      * @throws JSONException
@@ -70,23 +72,26 @@ public class Nnwdaf_Controller {
     @ApiOperation(value = "Get Analytics Details By snssais or anySlice Details",
             notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
             response = Object.class)
-    public Object nwdaf_analytics(@RequestParam(value = "snssai", required = false) String snssai,
-                                  @RequestParam(value = "anySlice", required = false) Boolean anySlice,
-                                  @RequestParam(value = "tai", required = false) String tai,
-                                  @RequestParam("event-id") Integer event,
-                                  @RequestParam(value = "tgt-ue", required = false) String supi,
-                                  @RequestParam(value = "anyUe", required = false) Boolean anyUe,
-                                  @RequestParam(value = "nwPerfType", required = false) Integer nwPerfType,
-                                  @RequestParam(value = "congType", required = false) Integer congType,
-                                  @RequestParam(value = "excepId", required = false) Integer excepId,
-                                  @RequestParam(value = "maxAnaEntry", required = false) Integer maxAnaEntry,
-                                  @RequestParam(value = "nfType", required = false) Integer nfType,
-                                  @RequestParam(value = "nfInstanceId", required = false) String nfInstanceId) throws IOException, JSONException {
+    public Object nwdaf_analytics(@RequestParam("event-id") Integer eventId, TargetUeInformation tgtUe, EventFilter eventFilter) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analytics(new AnalyticsRawData(event, snssai, anySlice, supi, tai, anyUe, nwPerfType, congType, excepId, maxAnaEntry, nfType, nfInstanceId));
+        return nwdaf_service.nwdaf_analytics(eventId, tgtUe, eventFilter);
     }
 
+
+
+    // For testing purpose only
+    @GetMapping("/testQueryParams")
+    public Object getEventFilterData(@RequestParam("event-id") Integer eventId, TargetUeInformation tgtUe, EventFilter eventFilter)
+    {
+        HashMap<Object, Object> map = new HashMap<>();
+
+        map.put("event-id", NwdafEvent.values()[eventId].toString());
+        map.put("tgt-Ue", tgtUe);
+        map.put("event-filter", eventFilter);
+
+        return map;
+    }
 
 
 

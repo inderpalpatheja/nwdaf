@@ -14,7 +14,4 @@ public class NetworkAreaInfo {
 
     List<Tai> tais;
 
-    public NetworkAreaInfo()
-    { tais = new ArrayList<>(); }
-
 }
