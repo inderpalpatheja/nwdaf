@@ -18,11 +18,4 @@ public class QosSustainabilitySubscriptionTable {
     String correlationId;
     Integer refCount;
 
-
-    public QosSustainabilitySubscriptionTable(String subscriptionId, String correlationId)
-    {
-        this.subscriptionId = subscriptionId;
-        this.correlationId = correlationId;
-    }
-
 }

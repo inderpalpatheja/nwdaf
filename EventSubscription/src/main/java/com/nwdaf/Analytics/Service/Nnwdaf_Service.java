@@ -7,17 +7,17 @@ import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThresh
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfType;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfValue;
 import com.nwdaf.Analytics.Model.CustomData.NfLoad.NfThresholdType;
+import com.nwdaf.Analytics.Model.CustomData.QosSustainability.QosThresholdType;
 import com.nwdaf.Analytics.Model.CustomData.TargetUeInformation;
 import com.nwdaf.Analytics.Model.NetworkArea.PlmnId;
-import com.nwdaf.Analytics.Model.CustomData.QosType;
 import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.SvcExperience;
 import com.nwdaf.Analytics.Model.NetworkArea.Tai;
 import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
 import com.nwdaf.Analytics.Model.NotificationFormat.*;
-import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadSubscriptionData;
+import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionTable;
@@ -28,7 +28,6 @@ import com.nwdaf.Analytics.Model.TableType.ServiceExperience.ServiceExperienceSu
 import com.nwdaf.Analytics.Model.TableType.UEMobility.RawDataUE.NnwdafEventsSubscriptionUEmobility;
 import com.nwdaf.Analytics.Model.TableType.UEMobility.UEMobilitySubscriptionModel;
 import com.nwdaf.Analytics.Model.TableType.UeComm.UeCommInformation;
-import com.nwdaf.Analytics.Model.TableType.UeComm.UeCommSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.UeComm.UeCommSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.UserDataCongestion.UserDataCongestionSubscriptionTable;
@@ -121,8 +120,8 @@ public class Nnwdaf_Service extends BusinessLogic {
             NwdafEvent event = NwdafEvent.values()[eventId];
 
 
-           /* if(event == NwdafEvent.UE_MOBILITY)
-            { return nwdaf_analyticsUEmobility(nnwdafEventsSubscription); } */
+            if(event == NwdafEvent.UE_MOBILITY)
+            { return nwdaf_analyticsUEmobility(tgtUe.getSupi()); }
 
 
             if(event == NwdafEvent.QOS_SUSTAINABILITY)
@@ -497,6 +496,24 @@ public class Nnwdaf_Service extends BusinessLogic {
             }
 
 
+            else if(event == NwdafEvent.NF_LOAD)
+            {
+                NfLoadSubscriptionData nfLoadSubscriptionData;
+
+                if((nfLoadSubscriptionData = repository.unsubscribeNF_NfLoad(subscriptionID)) != null)
+                {
+                    NfLoadSubscriptionTable nfLoadSubscriptionTable = repository.getCorrelation_UnSubCorrelation_NfLoad(nfLoadSubscriptionData.getNfType(), nfLoadSubscriptionData.getNfInstanceId());
+
+                    unSubscribeRightSide(DELETE_OAM_URL, nfLoadSubscriptionTable.getCorrelationId(), nfLoadSubscriptionTable.getSubscriptionId(), NwdafEvent.NF_LOAD);
+
+                    repository.deleteEntry_NfLoadSubscriptionTable(nfLoadSubscriptionTable.getCorrelationId());
+                    repository.deleteEntry_NfLoadInformation(nfLoadSubscriptionData.getNfType(), nfLoadSubscriptionData.getNfInstanceId());
+
+                    EventCounter[event.ordinal()].incrementUnSubscriptionsResponse();
+                }
+            }
+
+
 
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
             return new ResponseEntity<NnwdafEventsSubscription>(HttpStatus.NO_CONTENT);
@@ -799,27 +816,18 @@ public class Nnwdaf_Service extends BusinessLogic {
 
     /****UEmobility******/
 
-    public Object nwdaf_analyticsUEmobility(EventSubscription eventSubscription) throws IOException, JSONException {
+    public Object nwdaf_analyticsUEmobility(String supi) throws IOException, JSONException {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
+        NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUEmobility = new NnwdafEventsSubscriptionUEmobility();
+        nnwdafEventsSubscriptionUEmobility.setSupi(supi);
 
-        if (eventSubscription.getEvent() == NwdafEvent.UE_MOBILITY) {
+        Object supiDataList = check_For_dataUEmobility(nnwdafEventsSubscriptionUEmobility, true);
 
-            NnwdafEventsSubscriptionUEmobility nnwdafEventsSubscriptionUE = new NnwdafEventsSubscriptionUEmobility();
-            nnwdafEventsSubscriptionUE.setSupi(eventSubscription.getTgtUe().getSupi());
-
-            Object supiDataList = check_For_dataUEmobility(nnwdafEventsSubscriptionUE, true);
-
-
-            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
-            return supiDataList;
-
-        } else {
-
-            return "eventID: eventID for UEmobility must be 5";
-        }
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+        return supiDataList;
     }
 
 
@@ -959,7 +967,7 @@ public class Nnwdaf_Service extends BusinessLogic {
     /*************************************QOS_SUSTAINABILITY***********************************************************/
 
 
-    public void notificationHandler_QosSustainability(String response)
+    public void notificationHandler_QosSustainability(JSONObject jsonData)
     {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
@@ -968,38 +976,31 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         try
         {
-            JSONObject json = new JSONObject(response);
+            String correlationId = jsonData.getString("correlationId");
+            QosThresholdType qosThresholdType;
+            Integer threshold;
 
-            Integer ranUeThroughput = null;
-            Integer qosFlowRetain = null;
-
-            if(json.has("ranUeThrou"))
-            { ranUeThroughput = json.getInt("ranUeThrou"); }
+            if(jsonData.has("ranUeThrou"))
+            {
+                qosThresholdType = QosThresholdType.RAN_UE_THROUGHPUT;
+                threshold = jsonData.getInt("ranUeThrou");
+            }
 
             else
-            { qosFlowRetain = json.getInt("qosFlowRet"); }
-
-            String correlationID = json.getString("correlationId");
-            QosSustainabilitySubscriptionData qosData = repository.getTai_Snssais_ByCorrelationID(correlationID);
-
-
-            // DELETE Analytics entry in SubscriptionTable (refCount = 0)
-            repository.deleteAnalyticsEntry_QosSustainability(correlationID);
-
-            if(ranUeThroughput != null)
             {
-                repository.updateRanUeThrou(ranUeThroughput, qosData.getTai(), qosData.getSnssai());
-
-                qosNotificationManager(QosType.RAN_UE_THROUGHPUT);
+                qosThresholdType = QosThresholdType.QOS_FLOW_RETAIN;
+                threshold = jsonData.getInt("qosFlowRet");
             }
 
-            else if(qosFlowRetain != null)
-            {
-                repository.updateQosFlowRet(qosFlowRetain, qosData.getTai(), qosData.getSnssai());
 
-                qosNotificationManager(QosType.QOS_FLOW_RETAIN);
-            }
+            QosSustainabilitySubscriptionData qosSustainabilitySubscriptionData = repository.getTaiSnssai_ByCorrelationId_QosSustainability(correlationId);
 
+            String tai = qosSustainabilitySubscriptionData.getTai();
+            String snssai = qosSustainabilitySubscriptionData.getSnssai();
+
+            repository.updateQosSustainabilityThresholdLevel(tai, snssai, threshold, qosThresholdType);
+
+            qosSustainabilityNotificationManager(tai, snssai, threshold, qosThresholdType);
 
             logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
         }
@@ -1013,6 +1014,12 @@ public class Nnwdaf_Service extends BusinessLogic {
         catch (JSONException e)
         {
             ErrorCounters.incrementJsonException();
+            e.printStackTrace();
+        }
+
+        catch(IOException e)
+        {
+            ErrorCounters.incrementIOException();
             e.printStackTrace();
         }
     }
@@ -1307,7 +1314,7 @@ public class Nnwdaf_Service extends BusinessLogic {
 
         switch(event)
         {
-            case QOS_SUSTAINABILITY: notificationHandler_QosSustainability(response);
+            case QOS_SUSTAINABILITY: notificationHandler_QosSustainability(json);
                                      break;
 
             case NETWORK_PERFORMANCE: notificationHandler_NetworkPerformance(response);

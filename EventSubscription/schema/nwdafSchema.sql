@@ -86,6 +86,7 @@ CREATE TABLE `NWDAF`.`nwdafQosSustainabilitySubscriptionData` (
 `snssai` VARCHAR(128) NOT NULL,
 `ranUeThrouThrd` INT NULL,
 `qosFlowRetThrd` INT NULL,
+`relTimeUnit` VARCHAR(8) NULL,
 PRIMARY KEY (`ID`),
 FOREIGN KEY (`subscriptionId`)
 REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionId`)

@@ -30,7 +30,7 @@ public class EventSubscription {
     QosRequirement qosRequ;
     Integer repetitionPeriod;
     TargetUeInformation tgtUe;
-    List<Integer> qosFlowRetThrds;
+    List<RetainabilityThreshold> qosFlowRetThrds;
     List<Integer> ranUeThrouThrds;
     List<NetworkPerfRequirement> nwPerfRequs;
     List<ThresholdLevel> congThresholds;

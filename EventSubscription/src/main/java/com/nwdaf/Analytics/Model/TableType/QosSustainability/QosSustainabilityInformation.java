@@ -1,12 +1,14 @@
 package com.nwdaf.Analytics.Model.TableType.QosSustainability;
 
 import com.nwdaf.Analytics.Model.EventSubscription;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class QosSustainabilityInformation {
 
 

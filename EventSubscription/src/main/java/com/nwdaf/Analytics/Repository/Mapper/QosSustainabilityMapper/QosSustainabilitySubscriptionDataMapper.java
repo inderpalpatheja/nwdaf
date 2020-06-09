@@ -6,24 +6,20 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class QosSustainabilitySubscriptionDataMapper implements RowMapper {
+public class QosSustainabilitySubscriptionDataMapper implements RowMapper<QosSustainabilitySubscriptionData> {
 
     @Override
-    public Object mapRow(ResultSet resultSet, int i) throws SQLException {
+    public QosSustainabilitySubscriptionData mapRow(ResultSet resultSet, int i) throws SQLException {
 
-        QosSustainabilitySubscriptionData qosSustainabilitySubscriptionData = new QosSustainabilitySubscriptionData();
+        Integer ID = resultSet.getInt("ID");
+        String subscriptionId = resultSet.getString("subscriptionId");
+        Integer _5Qi = resultSet.getInt("5Qi");
+        String tai = resultSet.getString("tai");
+        String snssai = resultSet.getString("snssai");
+        Integer ranUeThrouThrd = resultSet.getInt("ranUeThrouThrd");
+        Integer qosFlowRetThrd = resultSet.getInt("qosFlowRetThrd");
+        String relTimeUnit = resultSet.getString("relTimeUnit");
 
-        qosSustainabilitySubscriptionData.setID(resultSet.getInt("ID"));
-        qosSustainabilitySubscriptionData.setSubscriptionId(resultSet.getString("subscriptionId"));
-
-        qosSustainabilitySubscriptionData.set_5Qi(resultSet.getInt("5Qi"));
-        qosSustainabilitySubscriptionData.setTai(resultSet.getString("tai"));
-
-        qosSustainabilitySubscriptionData.setSnssai(resultSet.getString("snssai"));
-        qosSustainabilitySubscriptionData.setRanUeThrouThrd(resultSet.getInt("ranUeThrouThrd"));
-        qosSustainabilitySubscriptionData.setQosFlowRetThrd(resultSet.getInt("qosFlowRetThrd"));
-
-        return qosSustainabilitySubscriptionData;
-
+        return new QosSustainabilitySubscriptionData(ID, subscriptionId, _5Qi, tai, snssai, ranUeThrouThrd, qosFlowRetThrd, relTimeUnit);
     }
 }

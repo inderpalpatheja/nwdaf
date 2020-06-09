@@ -20,13 +20,8 @@ public class QosSustainabilitySubscriptionData {
     String snssai;
     Integer ranUeThrouThrd;
     Integer qosFlowRetThrd;
+    String relTimeUnit;
 
-
-    public QosSustainabilitySubscriptionData(String tai, String snssai)
-    {
-        this.tai = tai;
-        this.snssai = snssai;
-    }
 
 
     public QosSustainabilitySubscriptionData(EventSubscription eventSubscription, String subscriptionId)
@@ -35,8 +30,16 @@ public class QosSustainabilitySubscriptionData {
         this._5Qi = eventSubscription.getQosRequ().get_5Qi();
         this.tai = eventSubscription.getNetworkArea().getTais().get(0).toString();
         this.snssai = eventSubscription.getSnssais().get(0).toString();
-        this.ranUeThrouThrd = eventSubscription.getRanUeThrouThrds().get(0);
-        this.qosFlowRetThrd = eventSubscription.getQosFlowRetThrds().get(0);
+
+
+        if(eventSubscription.getRanUeThrouThrds() != null && !eventSubscription.getRanUeThrouThrds().isEmpty())
+        { this.ranUeThrouThrd = eventSubscription.getRanUeThrouThrds().get(0); }
+
+        if(eventSubscription.getQosFlowRetThrds() != null && !eventSubscription.getQosFlowRetThrds().isEmpty())
+        {
+            this.qosFlowRetThrd = eventSubscription.getQosFlowRetThrds().get(0).getRelFlowNum();
+            this.relTimeUnit = eventSubscription.getQosFlowRetThrds().get(0).getRelTimeUnit().toString();
+        }
     }
 
 }

@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter @Setter
 public class UEmobilitySubscriptionTable {
 
-    Integer Id;
+    Integer ID;
     String supi;
     String subscriptionId;
     String correlationId;
