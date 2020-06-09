@@ -6,7 +6,7 @@ import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThresh
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfType;
 import com.nwdaf.Analytics.Model.CustomData.NfLoad.NFType;
 import com.nwdaf.Analytics.Model.CustomData.NfLoad.NfThresholdType;
-import com.nwdaf.Analytics.Model.CustomData.QosType;
+import com.nwdaf.Analytics.Model.CustomData.QosSustainability.QosThresholdType;
 import com.nwdaf.Analytics.Model.CustomData.UserDataCongestion.CongestionType;
 import com.nwdaf.Analytics.Model.NotificationFormat.*;
 import com.nwdaf.Analytics.Model.NwdafEvent;
@@ -58,52 +58,66 @@ public class NotificationPayload {
 
 
     // eventID: QOS_SUSTAINABILITY
-    public static JSONObject getQosSustainabilityPayload(QosSustainabilityNotification qosNotifyData) throws JSONException
+    public static JSONObject getQosSustainabilityPayload(QosSustainabilityNotification qosNotifyData, QosThresholdType qosThresholdType) throws JSONException
     {
         JSONObject json = new JSONObject();
         JSONArray eventNotifications = new JSONArray();
 
-        json.put("subscriptionId", qosNotifyData.getSubscriptionId());
 
-        JSONObject qosPayload = new JSONObject();
+        JSONObject qosSustainInfos = new JSONObject();
+        JSONArray qosSustainInfosArray = new JSONArray();
+        JSONObject qosSustainInfos_entry = new JSONObject();
 
-        String tai_info[] = qosNotifyData.getTai().split("-");
 
-        String mcc = tai_info[0];
-        String mnc = tai_info[1];
-        String tac = tai_info[2];
+        String areaInfo_data[] = qosNotifyData.getTai().split("-");
 
-        JSONArray qosSustainInfos = new JSONArray();
+        String mcc = areaInfo_data[0];
+        String mnc = areaInfo_data[1];
+        String tac = areaInfo_data[2];
 
-        JSONObject qosInfo = new JSONObject();
         JSONObject areaInfo = new JSONObject();
-        JSONObject plmnID_json = new JSONObject();
 
-        plmnID_json.put("mcc", mcc);
-        plmnID_json.put("mnc", mnc);
+        JSONArray tais = new JSONArray();
 
-        areaInfo.put("plmnId", plmnID_json);
-        areaInfo.put("tac", tac);
+        JSONObject tai_entry = new JSONObject();
 
-        qosInfo.put("areaInfo", areaInfo);
+        JSONObject plmnId = new JSONObject();
+        plmnId.put("mcc", mcc);
+        plmnId.put("mnc", mnc);
+
+        tai_entry.put("plmnId", plmnId);
+        tai_entry.put("tac", tac);
+
+        tais.put(tai_entry);
+        areaInfo.put("tais", tais);
 
 
-        JSONArray arrayThreshold = new JSONArray();
-        arrayThreshold.put(qosNotifyData.getThreshold());
+        qosSustainInfos_entry.put("areaInfo", areaInfo);
 
-        if(qosNotifyData.getThresholdType() == QosType.RAN_UE_THROUGHPUT)
-        { qosInfo.put("ranUeThrouThd", arrayThreshold); }
 
-        else
-        { qosInfo.put("qosFlowRetThd", arrayThreshold); }
+        switch(qosThresholdType)
+        {
+            case QOS_FLOW_RETAIN: JSONObject qosFlowRetThd = new JSONObject();
+                                  qosFlowRetThd.put("relFlowNum", qosNotifyData.getQosFlowRet());
+                                  qosFlowRetThd.put("relTimeUnit", qosNotifyData.getRelTimeUnit());
 
-        qosSustainInfos.put(qosInfo);
+                                  qosSustainInfos_entry.put("qosFlowRetThd", qosFlowRetThd);
+                                  break;
 
-        qosPayload.put("event", NwdafEvent.QOS_SUSTAINABILITY.toString());
-        qosPayload.put("qosSustainInfos", qosSustainInfos);
 
-        eventNotifications.put(qosPayload);
 
+            case RAN_UE_THROUGHPUT: qosSustainInfos_entry.put("ranUeThrouThd", qosNotifyData.getRanUeThrou());
+                                    break;
+        }
+
+        qosSustainInfosArray.put(qosSustainInfos_entry);
+
+        qosSustainInfos.put("event", NwdafEvent.QOS_SUSTAINABILITY.toString());
+        qosSustainInfos.put("qosSustainInfos", qosSustainInfosArray);
+
+        eventNotifications.put(qosSustainInfos);
+
+        json.put("subscriptionId", qosNotifyData.getSubscriptionId());
         json.put("eventNotifications", eventNotifications);
 
         return json;

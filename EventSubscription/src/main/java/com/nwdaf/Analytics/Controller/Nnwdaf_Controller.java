@@ -13,11 +13,15 @@ import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
 import io.swagger.annotations.ApiOperation;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -91,6 +95,23 @@ public class Nnwdaf_Controller {
         map.put("event-filter", eventFilter);
 
         return map;
+    }
+
+
+    @PostMapping("/test/restTemplate")
+    public ResponseEntity<?> restTemplateTest(@RequestBody String response) throws JSONException, URISyntaxException {
+
+        JSONObject json = new JSONObject(response);
+
+        System.out.println("Name: " + json.getString("Name"));
+        System.out.println("Age: " + json.getInt("Age"));
+
+        URI location = new URI("http://localhost:8443/nikhil");
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setLocation(location);
+        httpHeaders.set("Message", "RestTemplate Up & working!");
+
+        return new ResponseEntity("Its Done", httpHeaders, HttpStatus.ACCEPTED);
     }
 
 

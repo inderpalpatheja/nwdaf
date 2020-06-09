@@ -122,12 +122,15 @@ public class EventData {
         event_entry.put("snssais", snssais);
 
 
-        int randomize = random.nextInt(2);
-
-        if(randomize == 0)
+        if(random.nextInt(2) == 0)
         {
             JSONArray qosFlowRetThrds = new JSONArray();
-            qosFlowRetThrds.put(20 + random.nextInt(10));
+
+            JSONObject qosFlowRetThrds_entry = new JSONObject();
+            qosFlowRetThrds_entry.put("relFlowNum", 10 + random.nextInt(20));
+            qosFlowRetThrds_entry.put("relTimeUnit", random.nextInt(TimeUnit.values().length));
+
+            qosFlowRetThrds.put(qosFlowRetThrds_entry);
 
             event_entry.put("qosFlowRetThrds", qosFlowRetThrds);
         }
@@ -162,12 +165,23 @@ public class EventData {
 
 
         JSONObject json = new JSONObject();
+        JSONArray eventSubscriptions = new JSONArray();
 
-        json.put("event", NwdafEvent.UE_MOBILITY.ordinal());
         json.put("notificationURI", notificationURI);
-        json.put("notifMethod", 0);
-        json.put("repetitionPeriod", 10 + random.nextInt(10));
-        json.put("supi", RandomStringUtils.randomNumeric(15));
+
+        JSONObject event_entry = new JSONObject();
+
+        event_entry.put("event", NwdafEvent.UE_MOBILITY.ordinal());
+        event_entry.put("notificationMethod", NotificationMethod.PERIODIC.ordinal());
+        event_entry.put("repetitionPeriod", 20 + random.nextInt(10));
+
+        JSONObject tgtUe = new JSONObject();
+        tgtUe.put("supi", RandomStringUtils.randomNumeric(15));
+
+        event_entry.put("tgtUe", tgtUe);
+        eventSubscriptions.put(event_entry);
+
+        json.put("eventSubscriptions", eventSubscriptions);
 
         return json;
     }

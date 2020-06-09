@@ -1,6 +1,6 @@
 package com.nwdaf.Analytics.Model.NotificationFormat;
 
-import com.nwdaf.Analytics.Model.CustomData.QosType;
+import com.nwdaf.Analytics.Model.CustomData.QosSustainability.QosThresholdType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,9 +14,11 @@ public class QosSustainabilityNotification {
 
     String subscriptionId;
     String notificationURI;
+
     String tai;
     String snssai;
-    Integer threshold;
-    QosType thresholdType;
+    Integer ranUeThrou;
 
+    Integer qosFlowRet;
+    String relTimeUnit;
 }

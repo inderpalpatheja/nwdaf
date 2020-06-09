@@ -4,22 +4,20 @@ import com.nwdaf.Analytics.Controller.ConnectionCheck.ConnectionStatus;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnection;
 import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnectionForUEMobility;
 import com.nwdaf.Analytics.Model.AMFModel.AMFModel;
-import com.nwdaf.Analytics.Model.AnalyticsInformation.QosSustainabilityInfo;
 import com.nwdaf.Analytics.Model.AnalyticsInformation.ServiceExperienceInfo;
 import com.nwdaf.Analytics.Model.CustomData.*;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
 import com.nwdaf.Analytics.Model.CustomData.NfLoad.NFType;
 import com.nwdaf.Analytics.Model.CustomData.NfLoad.NfThresholdType;
+import com.nwdaf.Analytics.Model.CustomData.QosSustainability.QosThresholdType;
 import com.nwdaf.Analytics.Model.EventSubscription;
 import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
-import com.nwdaf.Analytics.Model.NetworkArea.NetworkAreaInfo;
 import com.nwdaf.Analytics.Model.NetworkArea.PlmnId;
 import com.nwdaf.Analytics.Model.NetworkArea.Tai;
 import com.nwdaf.Analytics.Model.Nnrf.Nnrf_Model;
 import com.nwdaf.Analytics.Model.NotificationData;
 import com.nwdaf.Analytics.Model.NotificationFormat.*;
 import com.nwdaf.Analytics.Model.NwdafEvent;
-import com.nwdaf.Analytics.Model.QosNotificationData;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourInformation;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionTable;
@@ -58,9 +56,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.net.*;
@@ -89,6 +86,12 @@ public class BusinessLogic extends ResourceValues {
 
     //UserLocation userLocation = new UserLocation();
 
+
+    RestTemplate restTemplate;
+
+    @Autowired
+    public BusinessLogic()
+    { restTemplate = new RestTemplate(); }
 
 
 
@@ -598,75 +601,7 @@ public class BusinessLogic extends ResourceValues {
     }
 
 
-    protected void qosNotificationManager(QosType qosType)  {
 
-        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
-        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
-
-        try
-        {
-            List<QosSustainabilityInformation> list = repository.getAll_Tai_Snssai_QosSustainabilityInformation(qosType);
-
-            if (list == null || list.isEmpty()) {
-                logger.warn("no snssais Found [ Null object ]");
-                return;
-            }
-
-            QosSustainabilityNotification qosNotifyData = new QosSustainabilityNotification();
-
-            for (QosSustainabilityInformation qos : list) {
-                List<QosNotificationData> dataSet;
-
-                if (qosType == QosType.RAN_UE_THROUGHPUT) {
-                    dataSet = repository.getAllQosNotificationData(qos.getTai(), qos.getSnssai(), qos.getRanUeThrou(), qosType);
-                } else {
-                    dataSet = repository.getAllQosNotificationData(qos.getTai(), qos.getSnssai(), qos.getQosFlowRet(), qosType);
-                }
-
-
-                if (dataSet != null && !dataSet.isEmpty()) {
-                    if (qosType == QosType.RAN_UE_THROUGHPUT) {
-                        for (QosNotificationData notifyData : dataSet) {
-                            initiate_QosSustainabilityNotifyData(qosNotifyData, notifyData.getSubscriptionId() ,repository.getNotificationURI(notifyData.getSubscriptionId()), qos.getTai() ,qos.getSnssai(), qos.getRanUeThrou(), QosType.RAN_UE_THROUGHPUT);
-                        }
-                    } else {
-                        for (QosNotificationData notifyData : dataSet) {
-                            initiate_QosSustainabilityNotifyData(qosNotifyData, notifyData.getSubscriptionId() ,repository.getNotificationURI(notifyData.getSubscriptionId()), qos.getTai() ,qos.getSnssai(), qos.getQosFlowRet(), QosType.QOS_FLOW_RETAIN);
-                        }
-                    }
-                }
-            }
-
-            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
-        }
-
-        catch(JSONException e)
-        {
-            ErrorCounters.incrementJsonException();
-            e.printStackTrace();
-        }
-
-        catch(IOException e)
-        {
-            ErrorCounters.incrementIOException();
-            e.printStackTrace();
-        }
-
-    }
-
-
-
-    public void initiate_QosSustainabilityNotifyData(QosSustainabilityNotification qosNotifyData, String subscriptionId, String notificationURI, String tai, String snssai, Integer threshold, QosType thresholdType) throws IOException, JSONException {
-
-        qosNotifyData.setSubscriptionId(subscriptionId);
-        qosNotifyData.setNotificationURI(notificationURI);
-        qosNotifyData.setTai(tai);
-        qosNotifyData.setSnssai(snssai);
-        qosNotifyData.setThreshold(threshold);
-        qosNotifyData.setThresholdType(thresholdType);
-
-        sendQosSustainabilityNotification(qosNotifyData);
-    }
 
 
     public void initiate_SliceLoadLevelNotifyData(LoadLevelInformationNotification ldLevelNotifyData, String subscriptionId, String notificationURI, String snssai, Integer currentLoadLevel) throws IOException, JSONException {
@@ -903,9 +838,10 @@ public class BusinessLogic extends ResourceValues {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        Object snssais_object = repository.findby_supi(eventSubscription.getTgtUe().getSupi());
+        //Object snssais_object = repository.findby_supi(eventSubscription.getTgtUe().getSupi());
+        boolean supiExists = repository.supiExists(eventSubscription.getTgtUe().getSupi());
 
-        if (snssais_object == null) {
+        if (!supiExists) {
 
             // Generating CorrelationID
             String correlationId = FrameWorkFunction.getUniqueID().toString();
@@ -1398,9 +1334,9 @@ public class BusinessLogic extends ResourceValues {
 
         JSONObject json = new JSONObject();
 
-        json.put("correlationID", amfModel.getCorrelationId());
+        json.put("correlationId", amfModel.getCorrelationId());
         json.put("unSubCorrelationId", amfModel.getUnSubCorrelationId());
-        json.put("eventID", NwdafEvent.UE_MOBILITY.ordinal());
+        json.put("event", NwdafEvent.UE_MOBILITY.ordinal());
 
 
         // notificationTargetUrl = Namf_EventExposure_Notify
@@ -1570,18 +1506,7 @@ public class BusinessLogic extends ResourceValues {
 
 
         if(getAnalytics)
-        {
-            List<QosSustainabilityInfo> qosInfo = repository.getQosSustainabilityInfo(tai, snssai);
-            collectDataForQosSustainability(snssai, tai, true);
-
-            repository.setNwdafQosSustainabilityInformation(snssai, tai);
-
-            if(qosInfo == null || qosInfo.isEmpty())
-            { return new ResponseEntity<String>("Data Not Found", HttpStatus.NOT_FOUND); }
-
-            else
-            { return new ResponseEntity(qosInfo, HttpStatus.OK); }
-        }
+        { }
 
         else
         { collectDataForQosSustainability(snssai, tai, false); }
@@ -1595,10 +1520,10 @@ public class BusinessLogic extends ResourceValues {
     public void collectDataForQosSustainability(String snssai, String tai, boolean getAnalytics) throws IOException, JSONException {
 
 
-        if(repository.plmnIdSnssaisExists_QosSustainability(tai, snssai, TableType.SUBSCRIPTION_TABLE))
+        if(repository.taiSnssai_Exists_QosSustainability(tai, snssai, TableType.SUBSCRIPTION_TABLE))
         {
             if(!getAnalytics)
-            { repository.increaseRefCountQosSustainability(tai, snssai); }
+            { repository.updateRefCount_QosSustainability(tai, snssai); }
         }
 
         else
@@ -1858,17 +1783,8 @@ public class BusinessLogic extends ResourceValues {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-
-        URL obj = new URL(POST_AMF_URL);
-
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-        con.setDoOutput(true);
-
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         JSONObject json = new JSONObject();
 
@@ -1876,33 +1792,18 @@ public class BusinessLogic extends ResourceValues {
         json.put("supi", supi);
         json.put("event", event.ordinal());
 
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-            os.write(input, 0, input.length);
-        }
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(POST_AMF_URL, HttpMethod.POST, requestEntity, String.class);
 
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(con.getInputStream(), "utf-8"))) {
-            StringBuilder response = new StringBuilder();
-            String responseLine = null;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
-            }
-            //  out.println("Status: " + con.getResponseCode());
-            //  out.println("Message: " + response.toString());
-        }
+        HttpHeaders responseHeaders = responseEntity.getHeaders();
 
+        String mcc = responseHeaders.getFirst("mcc");
+        String mnc = responseHeaders.getFirst("mnc");
+        String tac = responseHeaders.getFirst("tac");
 
-        Tai tai = new Tai(new PlmnId(con.getHeaderField("mcc"), con.getHeaderField("mnc")), con.getHeaderField("tac"));
-        //NetworkAreaInfo networkAreaInfo = new NetworkAreaInfo();
-        //networkAreaInfo.getTais().add(tai);
+        Tai tai = new Tai(new PlmnId(mcc, mnc), tac);
 
-        //eventSubscription.setNetworkArea(networkAreaInfo);
-
-        /*
-        subscription.getTai().getPlmnId().setMcc(con.getHeaderField("mcc"));
-        subscription.getTai().getPlmnId().setMnc(con.getHeaderField("mnc"));
-        subscription.getTai().setTac(con.getHeaderField("tac")); */
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
 
         return tai;
     }
@@ -2105,46 +2006,30 @@ public class BusinessLogic extends ResourceValues {
 
 
 
-    public String getNfInstanceFromUDM(String supi, Integer nfType) throws IOException, JSONException {
+    public String getNfInstanceFromUDM(String supi, Integer nfType) throws JSONException {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-
-        URL obj = new URL(GET_UDM_UECM);
-
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-        con.setDoOutput(true);
-
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         JSONObject json = new JSONObject();
 
         json.put("supi", supi);
         json.put("nfType", nfType);
 
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-            os.write(input, 0, input.length);
-        }
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(GET_UDM_UECM, HttpMethod.POST, requestEntity, String.class);
 
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(con.getInputStream(), "utf-8"))) {
-            StringBuilder response = new StringBuilder();
-            String responseLine = null;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
-            }
-            //  out.println("Status: " + con.getResponseCode());
-            //  out.println("Message: " + response.toString());
-        }
+        HttpHeaders responseHeaders = responseEntity.getHeaders();
+        String nfInstanceId = responseHeaders.getFirst("nfInstanceId");
 
-        return con.getHeaderField("nfInstanceId");
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+
+        return nfInstanceId;
     }
+
 
 
 
@@ -2177,8 +2062,8 @@ public class BusinessLogic extends ResourceValues {
     { sendNotificationToNF(ldLevelNotifyData.getNotificationURI(), NotificationPayload.getLoadLevelInformationPayload(ldLevelNotifyData), NwdafEvent.LOAD_LEVEL_INFORMATION); }
 
 
-    public void sendQosSustainabilityNotification(QosSustainabilityNotification qosNotifyData) throws JSONException, IOException
-    { sendNotificationToNF(qosNotifyData.getNotificationURI(), NotificationPayload.getQosSustainabilityPayload(qosNotifyData), NwdafEvent.QOS_SUSTAINABILITY); }
+    public void sendQosSustainabilityNotification(QosSustainabilityNotification qosNotifyData, QosThresholdType qosThresholdType) throws JSONException, IOException
+    { sendNotificationToNF(qosNotifyData.getNotificationURI(), NotificationPayload.getQosSustainabilityPayload(qosNotifyData, qosThresholdType), NwdafEvent.QOS_SUSTAINABILITY); }
 
 
     public void sendServiceExperienceNotification(ServiceExperienceNotification svcExpNotifyData) throws JSONException, IOException
@@ -2215,46 +2100,11 @@ public class BusinessLogic extends ResourceValues {
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
 
-        URL url = new URL(notificationURI);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-
-        try {
-            con.setRequestMethod("POST");
-        } catch (ProtocolException e) {
-            e.printStackTrace();
-        }
-
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-        con.setDoOutput(true);
-
-
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = notificationPayload.toString().getBytes("utf-8");
-
-            os.write(input, 0, input.length);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // Read the response from input stream;
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(con.getInputStream(), "utf-8"))) {
-            StringBuilder response = new StringBuilder();
-
-            String responseLine = null;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
-            }
-
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            con.disconnect();
-        }
+        HttpEntity<String> requestEntity = new HttpEntity<>(notificationPayload.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(notificationURI, HttpMethod.POST, requestEntity, String.class);
 
 
         EventCounter[event.ordinal()].incrementSubscriptionNotificationsSent();
@@ -2271,16 +2121,8 @@ public class BusinessLogic extends ResourceValues {
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-
-        URL obj = new URL(subscribeURI);
-
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         JSONObject json = new JSONObject();
 
@@ -2288,44 +2130,14 @@ public class BusinessLogic extends ResourceValues {
         json.put("notificationTargetAddress", subscribeURI);
         json.put("event", event.ordinal());
 
-        // For POST only - START
-        con.setDoOutput(true);
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(subscribeURI, HttpMethod.POST, requestEntity, String.class);
 
-            ErrorCounters.incrementIOException();
-            e.printStackTrace();
-        }
-        // For POST only - END
-        int responseCode = con.getResponseCode();
+        String unSubCorrelationId = responseEntity.getBody();
 
-        if (responseCode != HttpStatus.OK.value()) {
-            throw new IOException();
-        }
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
 
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-
-            EventCounter[event.ordinal()].incrementSubscriptionsSent();
-            logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
-
-            // UnSubCorrelationID received from the Right-Side
-            return response.toString();
-        }
-
-        return null;
+        return unSubCorrelationId;
     }
 
 
@@ -2335,52 +2147,22 @@ public class BusinessLogic extends ResourceValues {
 
     public void unSubscribeRightSide(String unSubscribeURI, String correlationId, String unSubCorrelationId, NwdafEvent event) throws JSONException, IOException
     {
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        URL obj = new URL(unSubscribeURI);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
+        JSONObject json = new JSONObject();
+        json.put("unSubCorrelationId", unSubCorrelationId);
+        json.put("correlationId", correlationId);
+        json.put("event", event.ordinal());
 
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("unSubCorrelationId", unSubCorrelationId);
-        jsonObject.put("correlationId", correlationId);
-        jsonObject.put("event", event.ordinal());
-
-        con.setRequestMethod("DELETE");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-        con.setDoOutput(true);
-
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = jsonObject.toString().getBytes("utf-8");
-
-            os.write(input, 0, input.length);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        // Read the response from input stream;
-        try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(con.getInputStream(), "utf-8"))) {
-            StringBuilder response = new StringBuilder();
-
-            String responseLine = null;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
-            }
-
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            con.disconnect();
-        }
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(unSubscribeURI, HttpMethod.DELETE, requestEntity, String.class);
 
         EventCounter[event.ordinal()].incrementUnSubscriptionsSent();
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
     }
 
 
@@ -2389,6 +2171,7 @@ public class BusinessLogic extends ResourceValues {
     /*****************************************************************************************************************************/
 
 
+    // event: NF_LOAD Notification Manager
     public void nfLoadNotificationManager(Integer nfType, String nfInstanceId, Integer threshold, NfThresholdType thresholdType) throws IOException, JSONException {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
@@ -2424,6 +2207,43 @@ public class BusinessLogic extends ResourceValues {
 
             sendNfLoadNotification(nfLoadNotification, thresholdType);
         }
+
+
+        logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
+    }
+
+
+
+    public void qosSustainabilityNotificationManager(String tai, String snssai, Integer threshold, QosThresholdType qosThresholdType) throws IOException, JSONException {
+
+        final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
+        logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
+
+
+        List<QosSustainabilitySubscriptionData> subscriptions = repository.getCrossedThresholdSubscriptions_QosSustainability(tai, snssai, threshold, qosThresholdType);
+
+        for(QosSustainabilitySubscriptionData subscriber: subscriptions)
+        {
+            QosSustainabilityNotification qosSustainabilityNotification = new QosSustainabilityNotification();
+
+            qosSustainabilityNotification.setTai(tai);
+            qosSustainabilityNotification.setSnssai(snssai);
+            qosSustainabilityNotification.setSubscriptionId(subscriber.getSubscriptionId());
+            qosSustainabilityNotification.setNotificationURI(repository.getNotificationURI(subscriber.getSubscriptionId()));
+
+            switch(qosThresholdType)
+            {
+                case QOS_FLOW_RETAIN: qosSustainabilityNotification.setQosFlowRet(subscriber.getQosFlowRetThrd());
+                                      qosSustainabilityNotification.setRelTimeUnit(subscriber.getRelTimeUnit());
+                                      break;
+
+                case RAN_UE_THROUGHPUT: qosSustainabilityNotification.setRanUeThrou(subscriber.getRanUeThrouThrd());
+                                        break;
+            }
+
+            sendQosSustainabilityNotification(qosSustainabilityNotification, qosThresholdType);
+        }
+
 
 
         logger.debug(FrameWorkFunction.EXIT + FUNCTION_NAME);
@@ -2712,3 +2532,61 @@ public class BusinessLogic extends ResourceValues {
 
 
 }
+
+
+
+
+
+
+
+/*
+public void unSubscribeRightSide(String unSubscribeURI, String correlationId, String unSubCorrelationId, NwdafEvent event) throws JSONException, IOException
+    {
+
+        URL obj = new URL(unSubscribeURI);
+
+
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("unSubCorrelationId", unSubCorrelationId);
+        jsonObject.put("correlationId", correlationId);
+        jsonObject.put("event", event.ordinal());
+
+        con.setRequestMethod("DELETE");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Content-Type", "application/json; utf-8");
+        con.setRequestProperty("Accept", "application/json");
+        con.setDoOutput(true);
+
+        try (OutputStream os = con.getOutputStream()) {
+            byte[] input = jsonObject.toString().getBytes("utf-8");
+
+            os.write(input, 0, input.length);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        // Read the response from input stream;
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(con.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            con.disconnect();
+        }
+
+        EventCounter[event.ordinal()].incrementUnSubscriptionsSent();
+    }
+ */

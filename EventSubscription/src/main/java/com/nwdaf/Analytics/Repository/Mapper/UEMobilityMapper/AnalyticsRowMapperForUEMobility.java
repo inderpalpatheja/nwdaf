@@ -18,7 +18,6 @@ public class AnalyticsRowMapperForUEMobility implements RowMapper {
         connect.setSupi(resultSet.getString("supi"));
         connect.setTs(resultSet.getDate("ts"));
         connect.setDurationSec(resultSet.getInt("DurationSec"));
-        connect.setLocation(resultSet.getString("location"));
 
         return connect;
 

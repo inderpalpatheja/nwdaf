@@ -60,7 +60,7 @@ public class AmfApplication extends Functionality {
             }
 
 
-          /*  if (event == NwdafEvent.UE_MOBILITY.ordinal() || event == 10) {
+            if (event == NwdafEvent.UE_MOBILITY.ordinal() || event == 10) {
 
 
                 while(true)
@@ -91,7 +91,7 @@ public class AmfApplication extends Functionality {
                     { break; }
                 }
 
-            } */
+            }
 
             if (event == NwdafEvent.QOS_SUSTAINABILITY.ordinal() || event == 10) {
 
@@ -246,7 +246,7 @@ public class AmfApplication extends Functionality {
                     for(int j = 0; j < amfController.getCorrelationIDList_NF_LOAD().size(); j++)
                     { amfController.sendNfLoadData("https://localhost:8081/Noam_EventExposure_Notify", amfController.getCorrelationIDList_NF_LOAD().get(j)); }
 
-                    Thread.sleep(3 * 1000);
+                    //Thread.sleep(3 * 1000);
 
                     if(event == 10)
                     { break; }
@@ -282,7 +282,7 @@ public class AmfApplication extends Functionality {
         AmfApplication amfApplication = new AmfApplication();
 
 
-        //amfApplication.test(subListInt, eventIDInt, amfController);
+        amfApplication.test(subListInt, eventIDInt, amfController);
 
     }
 }

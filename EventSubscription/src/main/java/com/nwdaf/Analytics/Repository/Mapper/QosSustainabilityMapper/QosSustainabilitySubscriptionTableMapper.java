@@ -6,19 +6,18 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class QosSustainabilitySubscriptionTableMapper implements RowMapper {
+public class QosSustainabilitySubscriptionTableMapper implements RowMapper<QosSustainabilitySubscriptionTable> {
 
     @Override
-    public Object mapRow(ResultSet resultSet, int i) throws SQLException {
+    public QosSustainabilitySubscriptionTable mapRow(ResultSet resultSet, int i) throws SQLException {
 
-        QosSustainabilitySubscriptionTable qosSustainabilitySubscriptionTable = new QosSustainabilitySubscriptionTable();
+        Integer ID = resultSet.getInt("ID");
+        String snssai = resultSet.getString("snssai");
+        String tai = resultSet.getString("tai");
+        String subscriptionId = resultSet.getString("subscriptionId");
+        String correlationId = resultSet.getString("correlationId");
+        Integer refCount = resultSet.getInt("refCount");
 
-        qosSustainabilitySubscriptionTable.setID(resultSet.getInt("ID"));
-        qosSustainabilitySubscriptionTable.setSnssai(resultSet.getString("snssai"));
-        qosSustainabilitySubscriptionTable.setSubscriptionId(resultSet.getString("subscriptionId"));
-        qosSustainabilitySubscriptionTable.setCorrelationId(resultSet.getString("correlationId"));
-        qosSustainabilitySubscriptionTable.setRefCount(resultSet.getInt("refCount"));
-
-        return qosSustainabilitySubscriptionTable;
+        return new QosSustainabilitySubscriptionTable(ID, snssai, tai, subscriptionId, correlationId, refCount);
     }
 }

@@ -1,5 +1,6 @@
 package com.nwdaf.Analytics.Model.CustomData.QosSustainability;
 
+import com.nwdaf.Analytics.Model.TimeUnit;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,6 +8,6 @@ import lombok.Setter;
 public class RetainabilityThreshold {
 
     Integer relFlowNum;
-    Integer relTimeUnit;
+    TimeUnit relTimeUnit;
     Integer relFlowRatio;
 }

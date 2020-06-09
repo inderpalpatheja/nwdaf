@@ -12,10 +12,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -40,6 +40,15 @@ public class AMFController extends Functionality {
 
     Random random = new Random();
     SimpleDateFormat sim = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+
+
+    RestTemplate restTemplate;
+
+
+    @Autowired
+    public AMFController()
+    { restTemplate = new RestTemplate(); }
+
 
 
     public static List<String> correlationIDList_LOAD_LEVEL_INFORMATION = new ArrayList<>();
@@ -396,87 +405,23 @@ public class AMFController extends Functionality {
     public ResponseEntity<String> sendData(String notiTargetAddress,
                                            @PathVariable("correlationId") String correlationId) throws IOException, JSONException {
 
-        //  out.println("send Data check1");
-
         notiTargetAddress = HTTP + "://localhost:8081/Nnrf_NFManagement_NFStatusNotify";
-        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
-
-        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
-        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
-
-        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
-
         String updated_URL = notiTargetAddress + "/" + correlationId;
-        //  out.println("updated URl - " + updated_URL);
-        URL url = new URL(updated_URL);
 
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-
-
-        // String notificationString = "\n\nSending Notification to " + notiTargetAddress + "/" +
-        //      correlationID;
-
-        // int currnetLoadLevel =50;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         JSONObject json = new JSONObject();
 
         json.put("currentLoadLevel", 1 + random.nextInt(85));
         json.put("correlationId", correlationId);
 
-        // out.println("check " + correlationID);
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(updated_URL, HttpMethod.POST, requestEntity, String.class);
 
-        // For POST only - START
-        con.setDoOutput(true);
-
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-
-            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
-
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // For POST only - END
-
-        int responseCode = con.getResponseCode();
-        //String responseMessage = con.getResponseMessage();
-        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
-        //System.out.println("POST Response Message :: " + responseMessage);
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // print result
-            // System.out.println("\n\n");
-            //  System.out.println(response);
-        } else {
-            // System.out.println("\n\n");
-            // System.out.println("POST request not worked");
-        }
-        //  return "Data send to " + updated_URL;
-
-        if (con != null) {
-            con.disconnect();
-        }
-
-        return new ResponseEntity<String>("Send", HttpStatus.OK);
+        return new ResponseEntity<String>("Sent LOAD_LEVEL_INFORMATION data", HttpStatus.OK);
     }
+
 
 
     //  @Override
@@ -488,33 +433,12 @@ public class AMFController extends Functionality {
     @PostMapping("/sendQosSustainabilityData/{qosLoadType}/{correlationId}")
     public ResponseEntity<String> sendData(String notiTargetAddress, @PathVariable("qosLoadType") String loadType, @PathVariable("correlationId") String correlationId) throws IOException, JSONException {
 
-        //  out.println("send Data check1");
-
         notiTargetAddress = HTTP + "://localhost:8081/Noam_EventExposure_Notify";
-        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
-
-        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
-        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
-
-        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
-
         String updated_URL = notiTargetAddress + "/" + correlationId;
-        //  out.println("updated URl - " + updated_URL);
-        URL url = new URL(updated_URL);
 
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-
-
-        // String notificationString = "\n\nSending Notification to " + notiTargetAddress + "/" +
-        //      correlationID;
-
-        // int currnetLoadLevel =50;
 
         JSONObject json = new JSONObject();
 
@@ -531,54 +455,13 @@ public class AMFController extends Functionality {
         json.put("correlationId", correlationId);
         json.put("event", NwdafEvent.QOS_SUSTAINABILITY.ordinal());
 
-        // out.println("check " + correlationID);
 
-        // For POST only - START
-        con.setDoOutput(true);
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(updated_URL, HttpMethod.POST, requestEntity, String.class);
 
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-
-            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
-
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // For POST only - END
-
-        int responseCode = con.getResponseCode();
-        //String responseMessage = con.getResponseMessage();
-        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
-        //System.out.println("POST Response Message :: " + responseMessage);
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // print result
-            // System.out.println("\n\n");
-            //  System.out.println(response);
-        } else {
-            // System.out.println("\n\n");
-            // System.out.println("POST request not worked");
-        }
-        //  return "Data send to " + updated_URL;
-
-        if (con != null) {
-            con.disconnect();
-        }
-
-        return new ResponseEntity<String>("Send", HttpStatus.OK);
+        return new ResponseEntity<String>("Sent QOS_SUSTAINABILITY Data", HttpStatus.OK);
     }
+
 
 
     public ResponseEntity<String> sendDataForUEMobility(String notiTargetAddress,
@@ -608,15 +491,6 @@ public class AMFController extends Functionality {
 
         String updated_URL = notiTargetAddress + "/" + correlationID;
         //  out.println("updated URl - " + updated_URL);
-        URL url = new URL(updated_URL);
-
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
 
 
         JSONObject plmnObject = new JSONObject();
@@ -666,42 +540,16 @@ public class AMFController extends Functionality {
         //out.println(USER_LOCATION_ARRAY);
 
 
-        // For POST only - START
-        con.setDoOutput(true);
-
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = USER_LOCATION_ARRAY.toString().getBytes("utf-8");
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
 
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // For POST only - END
+        HttpEntity<String> requestEntity = new HttpEntity<>(USER_LOCATION_ARRAY.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(updated_URL, HttpMethod.POST, requestEntity, String.class);
 
-        int responseCode = con.getResponseCode();
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-        }
-
-
-        if (con != null) {
-            con.disconnect();
-        }
-
-        // return new ResponseEntity<String>(USER_LOCATION_ARRAY.toString(), HttpStatus.OK);
-        return new ResponseEntity<>("Created", HttpStatus.OK);
+        return new ResponseEntity<>("Sent UE_MOBILITY data", HttpStatus.OK);
     }
+
 
 
     public void testJSONData() throws JSONException {
@@ -835,43 +683,11 @@ public class AMFController extends Functionality {
     @PostMapping("/sendServiceExperienceData/{correlationId}")
     public ResponseEntity<String> sendServiceExperienceData(String notiTargetAddress, @PathVariable("correlationId") String correlationId) throws IOException, JSONException {
 
-        //  out.println("send Data check1");
-
         notiTargetAddress = HTTP + "://localhost:8081/Nnf_EventExposure_Notify";
-        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
-
-        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
-        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
-
-        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
-
         String updated_URL = notiTargetAddress + "/" + correlationId;
-        //  out.println("updated URl - " + updated_URL);
-        URL url = new URL(updated_URL);
 
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-
-
-        /***************************************************
-
-        JSONObject json = new JSONObject();
-
-        List<Float> svcExpData = new ArrayList<>();
-        int dataSet = 10 + random.nextInt(6);
-
-        for(int i = 0; i < dataSet; i++)
-        { svcExpData.add(10 * random.nextFloat()); }
-
-        json.put("correlationID", correlationID);
-        json.put("svcExpData", svcExpData.toString());
-
-        ***************************************************/
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         JSONObject json = new JSONObject();
 
@@ -882,79 +698,21 @@ public class AMFController extends Functionality {
         json.put("correlationId", correlationId);
 
 
-        // For POST only - START
-        con.setDoOutput(true);
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(updated_URL, HttpMethod.POST, requestEntity, String.class);
 
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-
-            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
-
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // For POST only - END
-
-        int responseCode = con.getResponseCode();
-        //String responseMessage = con.getResponseMessage();
-        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
-        //System.out.println("POST Response Message :: " + responseMessage);
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // print result
-            // System.out.println("\n\n");
-            //  System.out.println(response);
-        } else {
-            // System.out.println("\n\n");
-            // System.out.println("POST request not worked");
-        }
-        //  return "Data send to " + updated_URL;
-
-        if (con != null) {
-            con.disconnect();
-        }
-
-        return new ResponseEntity<String>("Sent", HttpStatus.OK);
+        return new ResponseEntity<String>("Sent SERVICE_EXPERIENCE data", HttpStatus.OK);
     }
 
 
     @PostMapping("sendNetworkPerformanceData/{correlationId}")
     public ResponseEntity<String> sendNetworkPerformanceData(String notiTargetAddress, @PathVariable("correlationId") String correlationId) throws IOException, JSONException
     {
-        //  out.println("send Data check1");
-
         notiTargetAddress = HTTP + "://localhost:8081/Noam_EventExposure_Notify";
-        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
-
-        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
-        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
-
-        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
-
         String updated_URL = notiTargetAddress + "/" + correlationId;
-        //  out.println("updated URl - " + updated_URL);
-        URL url = new URL(updated_URL);
 
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         JSONObject json = new JSONObject();
 
@@ -962,50 +720,8 @@ public class AMFController extends Functionality {
         json.put("correlationId", correlationId);
         json.put("event", NwdafEvent.NETWORK_PERFORMANCE.ordinal());
 
-
-        // For POST only - START
-        con.setDoOutput(true);
-
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-
-            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
-
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // For POST only - END
-
-        int responseCode = con.getResponseCode();
-        //String responseMessage = con.getResponseMessage();
-        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
-        //System.out.println("POST Response Message :: " + responseMessage);
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // print result
-            // System.out.println("\n\n");
-            //  System.out.println(response);
-        } else {
-            // System.out.println("\n\n");
-            // System.out.println("POST request not worked");
-        }
-        //  return "Data send to " + updated_URL;
-
-        if (con != null) {
-            con.disconnect();
-        }
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(updated_URL, HttpMethod.POST, requestEntity, String.class);
 
         return new ResponseEntity<String>("Sent NETWORK_PERFORMANCE data", HttpStatus.OK);
     }
@@ -1014,28 +730,12 @@ public class AMFController extends Functionality {
 
     @PostMapping("sendUserDataCongestionLevel/{correlationId}")
     public ResponseEntity<String> sendUserDataCongestionLevel(String notiTargetAddress, @PathVariable("correlationId") String correlationId) throws IOException, JSONException {
-        //  out.println("send Data check1");
 
         notiTargetAddress = HTTP + "://localhost:8081/Noam_EventExposure_Notify";
-        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
-
-        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
-        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
-
-        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
-
         String updated_URL = notiTargetAddress + "/" + correlationId;
-        //  out.println("updated URl - " + updated_URL);
-        URL url = new URL(updated_URL);
 
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         JSONObject json = new JSONObject();
 
@@ -1043,50 +743,8 @@ public class AMFController extends Functionality {
         json.put("correlationId", correlationId);
         json.put("event", NwdafEvent.USER_DATA_CONGESTION.ordinal());
 
-
-        // For POST only - START
-        con.setDoOutput(true);
-
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-
-            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
-
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // For POST only - END
-
-        int responseCode = con.getResponseCode();
-        //String responseMessage = con.getResponseMessage();
-        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
-        //System.out.println("POST Response Message :: " + responseMessage);
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // print result
-            // System.out.println("\n\n");
-            //  System.out.println(response);
-        } else {
-            // System.out.println("\n\n");
-            // System.out.println("POST request not worked");
-        }
-        //  return "Data send to " + updated_URL;
-
-        if (con != null) {
-            con.disconnect();
-        }
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(updated_URL, HttpMethod.POST, requestEntity, String.class);
 
         return new ResponseEntity<String>("Sent USER_DATA_CONGESTION data", HttpStatus.OK);
     }
@@ -1099,28 +757,11 @@ public class AMFController extends Functionality {
     @PostMapping("sendAbnormalBehaviourData/{correlationId}")
     public ResponseEntity<String> sendAbnormalBehaviourData(String notiTargetAddress, @PathVariable("correlationId") String correlationId) throws IOException, JSONException
     {
-        //  out.println("send Data check1");
-
         notiTargetAddress = HTTP + "://localhost:8081/Nsmf_EventExposure_Notify";
-        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
-
-        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
-        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
-
-        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
-
         String updated_URL = notiTargetAddress + "/" + correlationId;
-        //  out.println("updated URl - " + updated_URL);
-        URL url = new URL(updated_URL);
 
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         JSONObject json = new JSONObject();
 
@@ -1128,50 +769,8 @@ public class AMFController extends Functionality {
         json.put("correlationId", correlationId);
         json.put("event", NwdafEvent.ABNORMAL_BEHAVIOUR.ordinal());
 
-
-        // For POST only - START
-        con.setDoOutput(true);
-
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-
-            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
-
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // For POST only - END
-
-        int responseCode = con.getResponseCode();
-        //String responseMessage = con.getResponseMessage();
-        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
-        //System.out.println("POST Response Message :: " + responseMessage);
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // print result
-            // System.out.println("\n\n");
-            //  System.out.println(response);
-        } else {
-            // System.out.println("\n\n");
-            // System.out.println("POST request not worked");
-        }
-        //  return "Data send to " + updated_URL;
-
-        if (con != null) {
-            con.disconnect();
-        }
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(updated_URL, HttpMethod.POST, requestEntity, String.class);
 
         return new ResponseEntity<String>("Sent ABNORMAL_BEHAVIOUR data", HttpStatus.OK);
     }
@@ -1182,28 +781,11 @@ public class AMFController extends Functionality {
     @PostMapping("sendUeCommData/{correlationId}")
     public ResponseEntity<String> sendUeCommData(String notiTargetAddress, @PathVariable("correlationId") String correlationId) throws IOException, JSONException
     {
-        //  out.println("send Data check1");
-
         notiTargetAddress = HTTP + "://localhost:8081/Nsmf_EventExposure_Notify";
-        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
-
-        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
-        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
-
-        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
-
         String updated_URL = notiTargetAddress + "/" + correlationId;
-        //  out.println("updated URl - " + updated_URL);
-        URL url = new URL(updated_URL);
 
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         JSONObject json = new JSONObject();
 
@@ -1216,49 +798,8 @@ public class AMFController extends Functionality {
         json.put("dlVol", 100 + random.nextInt(900));
 
 
-        // For POST only - START
-        con.setDoOutput(true);
-
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-
-            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
-
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // For POST only - END
-
-        int responseCode = con.getResponseCode();
-        //String responseMessage = con.getResponseMessage();
-        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
-        //System.out.println("POST Response Message :: " + responseMessage);
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // print result
-            // System.out.println("\n\n");
-            //  System.out.println(response);
-        } else {
-            // System.out.println("\n\n");
-            // System.out.println("POST request not worked");
-        }
-        //  return "Data send to " + updated_URL;
-
-        if (con != null) {
-            con.disconnect();
-        }
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(updated_URL, HttpMethod.POST, requestEntity, String.class);
 
         return new ResponseEntity<String>("Sent UE_COMM data", HttpStatus.OK);
     }
@@ -1290,28 +831,11 @@ public class AMFController extends Functionality {
     @PostMapping("sendNfLoadData/{correlationId}")
     public ResponseEntity<String> sendNfLoadData(String notiTargetAddress, @PathVariable("correlationId") String correlationId) throws IOException, JSONException
     {
-        //  out.println("send Data check1");
-
         notiTargetAddress = HTTP + "://localhost:8081/Noam_EventExposure_Notify";
-        //correlationID = "00987b27-9ec6-4834-a4ff-a777750eeb32";
-
-        // NOTIFICATION URL = spring.AMF_NOTIFICATION.url = http://localhost:8081/Namf_EventExposure_Notify
-        //   out.println("NotificaitonURL " + NOTIFICATION_URL);
-
-        // String notiTargetAddress = "http://localhost:8081/Namf_EventExposure_Notify";
-
         String updated_URL = notiTargetAddress + "/" + correlationId;
-        //  out.println("updated URl - " + updated_URL);
-        URL url = new URL(updated_URL);
 
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
-
-        con.setRequestMethod("POST");
-        con.setRequestProperty("User-Agent", USER_AGENT);
-        con.setRequestProperty("Content-Type", "application/json; utf-8");
-        con.setRequestProperty("Accept", "application/json");
-
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         JSONObject json = new JSONObject();
 
@@ -1320,51 +844,8 @@ public class AMFController extends Functionality {
         json.put("threshold", 20 + random.nextInt(80));
         json.put("thresholdType", random.nextInt(NfThresholdType.values().length));
 
-
-
-        // For POST only - START
-        con.setDoOutput(true);
-
-        try (OutputStream os = con.getOutputStream()) {
-            byte[] input = json.toString().getBytes("utf-8");
-
-            // System.out.println("Sending NotificationTargetAddress to [ Collector -> AMF ] " + notificationString);
-
-            os.write(input, 0, input.length);
-            os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        // For POST only - END
-
-        int responseCode = con.getResponseCode();
-        //String responseMessage = con.getResponseMessage();
-        // System.out.println("POST Response Code :: " + HttpStatus.valueOf(responseCode).toString());
-        //System.out.println("POST Response Message :: " + responseMessage);
-
-        if (responseCode == HttpURLConnection.HTTP_OK) { //success
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in.readLine()) != null) {
-                response.append(inputLine);
-            }
-            in.close();
-
-            // print result
-            // System.out.println("\n\n");
-            //  System.out.println(response);
-        } else {
-            // System.out.println("\n\n");
-            // System.out.println("POST request not worked");
-        }
-        //  return "Data send to " + updated_URL;
-
-        if (con != null) {
-            con.disconnect();
-        }
+        HttpEntity<String> requestEntity = new HttpEntity<>(json.toString(), headers);
+        ResponseEntity<String> responseEntity = restTemplate.exchange(updated_URL, HttpMethod.POST, requestEntity, String.class);
 
         return new ResponseEntity<String>("Sent NF_LOAD data", HttpStatus.OK);
     }
