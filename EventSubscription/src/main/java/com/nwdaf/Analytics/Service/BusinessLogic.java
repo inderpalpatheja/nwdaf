@@ -2256,27 +2256,27 @@ public class BusinessLogic extends ResourceValues {
 
 
 
-    public Object subscribeForEvent(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws JSONException, IOException {
+    public Object subscribeForEvent(EventSubscription eventSubscription, String subscriptionId) throws JSONException, IOException {
 
         NwdafEvent event = eventSubscription.getEvent();
 
         switch(event)
         {
-            case LOAD_LEVEL_INFORMATION: return subscribeLoadLevelInformation(eventSubscription, subscriptionId, notificationURI);
+            case LOAD_LEVEL_INFORMATION: return subscribeLoadLevelInformation(eventSubscription, subscriptionId);
 
-            case QOS_SUSTAINABILITY: return subscribeQosSustainability(eventSubscription, subscriptionId, notificationURI);
+            case QOS_SUSTAINABILITY: return subscribeQosSustainability(eventSubscription, subscriptionId);
 
-            case SERVICE_EXPERIENCE: return subscribeServiceExperience(eventSubscription, subscriptionId, notificationURI);
+            case SERVICE_EXPERIENCE: return subscribeServiceExperience(eventSubscription, subscriptionId);
 
-            case NETWORK_PERFORMANCE: return subscribeNetworkPerformance(eventSubscription, subscriptionId, notificationURI);
+            case NETWORK_PERFORMANCE: return subscribeNetworkPerformance(eventSubscription, subscriptionId);
 
-            case USER_DATA_CONGESTION: return subscribeUserDataCongestion(eventSubscription, subscriptionId, notificationURI);
+            case USER_DATA_CONGESTION: return subscribeUserDataCongestion(eventSubscription, subscriptionId);
 
-            case ABNORMAL_BEHAVIOUR: return subscribeAbnormalBehaviour(eventSubscription, subscriptionId, notificationURI);
+            case ABNORMAL_BEHAVIOUR: return subscribeAbnormalBehaviour(eventSubscription, subscriptionId);
 
-            case UE_COMM: return subscribeUeComm(eventSubscription, subscriptionId, notificationURI);
+            case UE_COMM: return subscribeUeComm(eventSubscription, subscriptionId);
 
-            case NF_LOAD: return subscribeNfLoad(eventSubscription, subscriptionId, notificationURI);
+            case NF_LOAD: return subscribeNfLoad(eventSubscription, subscriptionId);
 
         }
 
@@ -2286,11 +2286,11 @@ public class BusinessLogic extends ResourceValues {
 
 
     // Subscribe for event: LOAD_LEVEL_INFORMATION
-    public Object subscribeLoadLevelInformation(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws JSONException {
+    public Object subscribeLoadLevelInformation(EventSubscription eventSubscription, String subscriptionId) throws JSONException {
 
         // Adding data into NwdafSubscriptionTable   [ Database ]
 
-        SubscriptionTable ldLevelSubTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
+        SubscriptionTable ldLevelSubTable = new SubscriptionTable(eventSubscription, subscriptionId);
         repository.subscribeNF(ldLevelSubTable);
 
         // adding values into subscriptionData
@@ -2312,9 +2312,9 @@ public class BusinessLogic extends ResourceValues {
 
 
     // Subscribe for event: QOS_SUSTAINABILITY
-    public Object subscribeQosSustainability(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws IOException, JSONException {
+    public Object subscribeQosSustainability(EventSubscription eventSubscription, String subscriptionId) throws IOException, JSONException {
 
-        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
+        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId);
         repository.subscribeNF(subscriptionTable);
 
         QosSustainabilitySubscriptionData qosSustainabilitySubscriptionData = new QosSustainabilitySubscriptionData(eventSubscription, subscriptionId);
@@ -2338,9 +2338,9 @@ public class BusinessLogic extends ResourceValues {
 
 
     // Subscribe for event: SERVICE_EXPERIENCE
-    public Object subscribeServiceExperience(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws IOException, JSONException {
+    public Object subscribeServiceExperience(EventSubscription eventSubscription, String subscriptionId) throws IOException, JSONException {
 
-        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
+        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId);
         repository.subscribeNF(subscriptionTable);
 
         ServiceExperienceSubscriptionData serviceExperienceSubscriptionData = new ServiceExperienceSubscriptionData(eventSubscription, subscriptionId);
@@ -2365,9 +2365,9 @@ public class BusinessLogic extends ResourceValues {
 
 
     // Subscribe for event: NETWORK_PERFORMANCE
-    public Object subscribeNetworkPerformance(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws IOException, JSONException {
+    public Object subscribeNetworkPerformance(EventSubscription eventSubscription, String subscriptionId) throws IOException, JSONException {
 
-        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
+        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId);
         repository.subscribeNF(subscriptionTable);
 
         NetworkPerformanceSubscriptionData networkPerformanceSubscriptionData = new NetworkPerformanceSubscriptionData(eventSubscription, subscriptionId);
@@ -2399,9 +2399,9 @@ public class BusinessLogic extends ResourceValues {
 
 
     // Subscribe for event: USER_DATA_CONGESTION
-    public Object subscribeUserDataCongestion(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws IOException, JSONException {
+    public Object subscribeUserDataCongestion(EventSubscription eventSubscription, String subscriptionId) throws IOException, JSONException {
 
-        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
+        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId);
         repository.subscribeNF(subscriptionTable);
 
         UserDataCongestionSubscriptionData userDataCongestionSubscriptionData = new UserDataCongestionSubscriptionData(eventSubscription, subscriptionId);
@@ -2427,9 +2427,9 @@ public class BusinessLogic extends ResourceValues {
 
 
     // Subscribe for event: ABNORMAL_BEHAVIOUR
-    public Object subscribeAbnormalBehaviour(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws IOException, JSONException {
+    public Object subscribeAbnormalBehaviour(EventSubscription eventSubscription, String subscriptionId) throws IOException, JSONException {
 
-        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
+        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId);
         repository.subscribeNF(subscriptionTable);
 
         AbnormalBehaviourSubscriptionData abnormalBehaviourSubscriptionData = new AbnormalBehaviourSubscriptionData(eventSubscription, subscriptionId);
@@ -2451,9 +2451,9 @@ public class BusinessLogic extends ResourceValues {
 
 
     // Subscribe for event: UE_COMM
-    public Object subscribeUeComm(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws IOException, JSONException {
+    public Object subscribeUeComm(EventSubscription eventSubscription, String subscriptionId) throws IOException, JSONException {
 
-        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
+        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId);
         repository.subscribeNF(subscriptionTable);
 
         UeCommSubscriptionData ueCommSubscriptionData = new UeCommSubscriptionData(eventSubscription, subscriptionId);
@@ -2471,9 +2471,9 @@ public class BusinessLogic extends ResourceValues {
 
 
     // Subscribe for event: NF_LOAD
-    public Object subscribeNfLoad(EventSubscription eventSubscription, String subscriptionId, String notificationURI) throws IOException, JSONException {
+    public Object subscribeNfLoad(EventSubscription eventSubscription, String subscriptionId) throws IOException, JSONException {
 
-        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId, notificationURI);
+        SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId);
         repository.subscribeNF(subscriptionTable);
 
         return eventSubscription.getNfTypes() != null ? subsribeNfLoadByNFType(eventSubscription, subscriptionId) : subscribeNfLoadBySupi(eventSubscription, subscriptionId);

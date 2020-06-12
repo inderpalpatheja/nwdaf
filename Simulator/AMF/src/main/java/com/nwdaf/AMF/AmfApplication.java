@@ -282,7 +282,7 @@ public class AmfApplication extends Functionality {
         AmfApplication amfApplication = new AmfApplication();
 
 
-        amfApplication.test(subListInt, eventIDInt, amfController);
+        //amfApplication.test(subListInt, eventIDInt, amfController);
 
     }
 }
