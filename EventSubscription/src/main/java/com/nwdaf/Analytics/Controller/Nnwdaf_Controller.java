@@ -62,7 +62,7 @@ public class Nnwdaf_Controller {
 
 
     /**
-     * @param eventId
+     * @param event
      * @param tgtUe
      * @param eventFilter
      * @return
@@ -76,21 +76,21 @@ public class Nnwdaf_Controller {
     @ApiOperation(value = "Get Analytics Details By snssais or anySlice Details",
             notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
             response = Object.class)
-    public Object nwdaf_analytics(@RequestParam("event-id") Integer eventId, TargetUeInformation tgtUe, EventFilter eventFilter) throws IOException, JSONException {
+    public Object nwdaf_analytics(@RequestParam("event-id") NwdafEvent event, TargetUeInformation tgtUe, EventFilter eventFilter) throws IOException, JSONException {
 
 
-        return nwdaf_service.nwdaf_analytics(eventId, tgtUe, eventFilter);
+        return nwdaf_service.nwdaf_analytics(event, tgtUe, eventFilter);
     }
 
 
 
     // For testing purpose only
     @GetMapping("/testQueryParams")
-    public Object getEventFilterData(@RequestParam("event-id") Integer eventId, TargetUeInformation tgtUe, EventFilter eventFilter)
+    public Object getEventFilterData(@RequestParam("event-id") NwdafEvent eventId, TargetUeInformation tgtUe, EventFilter eventFilter)
     {
         HashMap<Object, Object> map = new HashMap<>();
 
-        map.put("event-id", NwdafEvent.values()[eventId].toString());
+        map.put("event-id", eventId);
         map.put("tgt-Ue", tgtUe);
         map.put("event-filter", eventFilter);
 

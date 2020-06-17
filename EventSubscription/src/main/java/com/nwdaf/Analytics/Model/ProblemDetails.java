@@ -5,17 +5,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @Getter @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class Snssai {
+@NoArgsConstructor
+public class ProblemDetails {
 
-    Integer sst;
-    String sd;
-
-    @Override
-    public String toString() {
-        return sst + "-" + sd;
-    }
+    String title;
+    Integer status;
+    String cause;
 }

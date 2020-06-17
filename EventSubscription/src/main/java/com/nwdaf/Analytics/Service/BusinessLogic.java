@@ -6,9 +6,11 @@ import com.nwdaf.Analytics.Controller.ConnectionCheck.EventConnectionForUEMobili
 import com.nwdaf.Analytics.Model.AMFModel.AMFModel;
 import com.nwdaf.Analytics.Model.AnalyticsInformation.ServiceExperienceInfo;
 import com.nwdaf.Analytics.Model.CustomData.*;
+import com.nwdaf.Analytics.Model.CustomData.AbnormalBehaviour.ExceptionId;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
 import com.nwdaf.Analytics.Model.CustomData.NfLoad.NFType;
 import com.nwdaf.Analytics.Model.CustomData.NfLoad.NfThresholdType;
+import com.nwdaf.Analytics.Model.CustomData.QosSustainability.QosRequirement;
 import com.nwdaf.Analytics.Model.CustomData.QosSustainability.QosThresholdType;
 import com.nwdaf.Analytics.Model.EventSubscription;
 import com.nwdaf.Analytics.Model.MetaData.ErrorCounters;
@@ -95,39 +97,38 @@ public class BusinessLogic extends ResourceValues {
 
 
 
-    protected Object checkForData_LoadLevelInformation(EventSubscription eventSubscription, boolean getAnalytics) throws JSONException {
+    protected Object checkForData_LoadLevelInformation(String snssai, boolean getAnalytics) throws JSONException {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
-        String snssais = eventSubscription.getSnssais().get(0).toString();
 
 
         if (getAnalytics) {
 
-            List<EventConnection> snssaisDataList = repository.checkForData(snssais, getAnalytics);
+            List<EventConnection> snssaisDataList = repository.checkForData(snssai, false);
 
             // if data is not found -> calling collector function to collect data
             if (snssaisDataList == null || snssaisDataList.isEmpty()) {
                 logger.warn("Data not found ");
 
                 // Calling collector function
-                Object obj = collectDataForLoadLevelInformation(eventSubscription, getAnalytics);
+                Object obj = collectDataForLoadLevelInformation(snssai, getAnalytics);
 
                 if (obj instanceof ResponseEntity) {
                     return obj;
                 }
 
                 // Adding snssais into database
-                repository.add_data_into_load_level_table(eventSubscription.getSnssais().get(0).toString());
+                repository.add_data_into_load_level_table(snssai);
 
                 EventConnection eventConnection = new EventConnection();
-                eventConnection.setMessage("Data not Found for " + eventSubscription.getSnssais().get(0).toString());
+                eventConnection.setMessage("Data not Found for " + snssai);
                 eventConnection.setCurrentLoadLevelInfo(0);
-                eventConnection.setSnssai(eventSubscription.getSnssais().get(0).toString());
+                eventConnection.setSnssai(snssai);
                 eventConnection.setDataStatus(false);
 
-                logger.debug("snssais: " + eventSubscription.getSnssais().get(0).toString() + "\n" +
+                logger.debug("snssais: " + snssai + "\n" +
                         " CurrentLoadLevelInfo: " + eventConnection.getCurrentLoadLevelInfo() + "\n" +
                         "DataStatus:  " + eventConnection.getDataStatus());
 
@@ -139,7 +140,7 @@ public class BusinessLogic extends ResourceValues {
             } else {
                 // flag to check if getAnalytics ref count will be updated or not
                 //flag = 1;
-                Object obj = collectDataForLoadLevelInformation(eventSubscription, getAnalytics);
+                Object obj = collectDataForLoadLevelInformation(snssai, getAnalytics);
 
                 if (obj instanceof ResponseEntity) {
                     return obj;
@@ -152,7 +153,7 @@ public class BusinessLogic extends ResourceValues {
 
         } else {
 
-            Object obj = collectDataForLoadLevelInformation(eventSubscription, getAnalytics);
+            Object obj = collectDataForLoadLevelInformation(snssai, getAnalytics);
 
             if (obj instanceof ResponseEntity) {
                 return obj;
@@ -165,15 +166,13 @@ public class BusinessLogic extends ResourceValues {
 
 
 
-    protected Object collectDataForLoadLevelInformation(EventSubscription eventSubscription, boolean getAnalytics) throws JSONException {
+    protected Object collectDataForLoadLevelInformation(String snssai, boolean getAnalytics) throws JSONException {
 
         final String FUNCTION_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + "()";
         logger.debug(FrameWorkFunction.ENTER + FUNCTION_NAME);
 
 
-        String snssais = eventSubscription.getSnssais().get(0).toString();
-
-        if (!repository.snssaisExists_SliceLoadLevelSubscriptionTable(snssais)) {
+        if (!repository.snssaisExists_SliceLoadLevelSubscriptionTable(snssai)) {
 
 
             // Generating CorrelationID
@@ -209,13 +208,13 @@ public class BusinessLogic extends ResourceValues {
                     throw new IOException();
                 }
 
-                responseHandler_LoadLevelInformation(eventSubscription, responseCode, correlationId, con, getAnalytics);
+                responseHandler_LoadLevelInformation(snssai, responseCode, correlationId, con, getAnalytics);
 
                 if (con != null) {
                     con.disconnect();
                 }
 
-                EventCounter[eventSubscription.getEvent().ordinal()].incrementSubscriptionsSent();
+                EventCounter[NwdafEvent.LOAD_LEVEL_INFORMATION.ordinal()].incrementSubscriptionsSent();
 
             } catch (IOException ex) {
 
@@ -230,46 +229,13 @@ public class BusinessLogic extends ResourceValues {
         }
 
         else if(!getAnalytics)
-        { repository.increaseRefCountSliceLoadLevel(eventSubscription.getSnssais().get(0).toString()); }
+        { repository.increaseRefCountSliceLoadLevel(snssai); }
 
         return null;
     }
 
 
-    /**
-     * Function for UEMobility Data;
-     */
-    private Object subscribeAMFfromNWDAF(EventSubscription eventSubscription,
-                                         UUID correlationId, boolean getAnalytics) {
-        try {
 
-            URL obj = new URL(POST_AMF_URL);
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-            con.setRequestMethod("POST");
-            con.setRequestProperty("User-Agent", USER_AGENT);
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
-            con.setRequestProperty("Accept", "application/json");
-
-            // Function To Send CorrelationId to SIMULATOR
-            AMFModel amfModel = new AMFModel();
-            int responseCode = send_data_receieve_response_AMF(amfModel, con);
-
-            if (responseCode != HttpStatus.OK.value()) {
-                throw new Exception();
-            }
-
-            responseHandler_LoadLevelInformation(eventSubscription, responseCode, correlationId, con, getAnalytics);
-
-            if (con != null) {
-                con.disconnect();
-            }
-
-        } catch (Exception ex) {
-            return new ResponseEntity<ConnectionStatus>(new ConnectionStatus(), HttpStatus.NOT_FOUND);
-        }
-        return null;
-    }
 
     // For UE-Mobility
     private int send_data_receieve_response_AMF(AMFModel amfModel, HttpURLConnection con) throws JSONException, IOException {
@@ -307,7 +273,7 @@ public class BusinessLogic extends ResourceValues {
 
 
 
-    protected void responseHandler_LoadLevelInformation(EventSubscription eventSubscription,
+    protected void responseHandler_LoadLevelInformation(String snssai,
                                                         int responseCode, UUID correlationId,
                                                         HttpURLConnection con, boolean getAnalytics) throws IOException {
 
@@ -330,7 +296,7 @@ public class BusinessLogic extends ResourceValues {
                 SliceLoadLevelSubscriptionTable slice = new SliceLoadLevelSubscriptionTable();
                 slice.setCorrelationId(String.valueOf(correlationId));
                 slice.setSubscriptionId(response.toString());
-                slice.setSnssai(eventSubscription.getSnssais().get(0).toString());
+                slice.setSnssai(snssai);
 
                 if (getAnalytics) {
                     if (!repository.snssaisExists_SliceLoadLevelSubscriptionTable(slice.getSnssai())) {
@@ -1552,6 +1518,24 @@ public class BusinessLogic extends ResourceValues {
 
 
 
+    public Object analyticsRequest_QosSustainability(Integer _5Qi, String tai, String snssai) throws IOException, JSONException {
+
+        List<Object> qosSustainInfos = repository.getAnalyticsInfo_QosSustainability(_5Qi, tai, snssai);
+
+        if(qosSustainInfos == null || qosSustainInfos.isEmpty())
+        {
+            collectDataForQosSustainability(snssai, tai, true);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT.toString(), HttpStatus.NO_CONTENT);
+        }
+
+        else
+        {
+            HashMap<Object, Object> analytics = new HashMap<>();
+            analytics.put("qosSustainInfos", qosSustainInfos);
+
+            return analytics;
+        }
+    }
 
 
 
@@ -1579,7 +1563,7 @@ public class BusinessLogic extends ResourceValues {
             repository.addServiceExperienceInformation(supi, snssai);
 
             if(svcExpInfo == null || svcExpInfo.isEmpty())
-            { return new ResponseEntity<String>("Data Not Found", HttpStatus.NOT_FOUND); }
+            { return new ResponseEntity<>(HttpStatus.NO_CONTENT.toString(), HttpStatus.NO_CONTENT); }
 
             else
             { return new ResponseEntity(svcExpInfo, HttpStatus.OK); }
@@ -1650,7 +1634,7 @@ public class BusinessLogic extends ResourceValues {
             repository.addNetworkPerformanceInformation(supi, nwPerfType);
 
             if(nwPerfInfo == null || nwPerfInfo.isEmpty())
-            { return new ResponseEntity<String>("Data Not Found", HttpStatus.NOT_FOUND); }
+            { return new ResponseEntity<>(HttpStatus.NO_CONTENT.toString(), HttpStatus.NO_CONTENT); }
 
             else
             { return new ResponseEntity(nwPerfInfo, HttpStatus.OK); }
@@ -1830,7 +1814,7 @@ public class BusinessLogic extends ResourceValues {
             repository.addAbnormalBehaviourInformation(supi, excepId);
 
             if(abnorBehavrInfo == null || abnorBehavrInfo.isEmpty())
-            { return new ResponseEntity<String>("Data Not Found", HttpStatus.NOT_FOUND); }
+            { return new ResponseEntity<>(HttpStatus.NO_CONTENT.toString(), HttpStatus.NO_CONTENT); }
 
             else
             { return new ResponseEntity(abnorBehavrInfo, HttpStatus.OK); }
@@ -1938,7 +1922,7 @@ public class BusinessLogic extends ResourceValues {
         if(ueAnalyticsSet == null || ueAnalyticsSet.isEmpty())
         {
             collectDataForUeComm(supi, true);
-            return new ResponseEntity<String>("Data Not Found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT.toString(), HttpStatus.NO_CONTENT);
         }
 
         else
@@ -2040,7 +2024,7 @@ public class BusinessLogic extends ResourceValues {
         if(nfLoadSet == null || nfLoadSet.isEmpty())
         {
             collectDataForNfLoad(nfType, nfInstanceId, true);
-            return new ResponseEntity<String>("Data Not Found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT.toString(), HttpStatus.NO_CONTENT);
         }
 
         else
@@ -2300,7 +2284,7 @@ public class BusinessLogic extends ResourceValues {
         // Storing data into loadlevelInformation Table
         repository.add_data_into_load_level_table(eventSubscription.getSnssais().get(0).toString());
 
-        Object obj = checkForData_LoadLevelInformation(eventSubscription, false);
+        Object obj = checkForData_LoadLevelInformation(eventSubscription.getSnssais().get(0).toString(), false);
 
         if (obj instanceof ResponseEntity) {
             return obj;
@@ -2432,19 +2416,38 @@ public class BusinessLogic extends ResourceValues {
         SubscriptionTable subscriptionTable = new SubscriptionTable(eventSubscription, subscriptionId);
         repository.subscribeNF(subscriptionTable);
 
-        AbnormalBehaviourSubscriptionData abnormalBehaviourSubscriptionData = new AbnormalBehaviourSubscriptionData(eventSubscription, subscriptionId);
-        repository.addAbnormalBehaviourSubscriptionData(abnormalBehaviourSubscriptionData);
+        if(eventSubscription.getExptAnaType() != null)
+        {
+            String supi = eventSubscription.getTgtUe().getSupi();
 
-        AbnormalBehaviourInformation abnormalBehaviourInformation = new AbnormalBehaviourInformation(eventSubscription);
-        repository.addAbnormalBehaviourInformation(abnormalBehaviourInformation.getSupi(), abnormalBehaviourInformation.getExcepId());
+            for(ExceptionId excepId: eventSubscription.getExptAnaType().getExceptionIds())
+            {
+                AbnormalBehaviourSubscriptionData abnormalBehaviourSubscriptionData = new AbnormalBehaviourSubscriptionData(supi, excepId.ordinal(), subscriptionId);
 
-        String supi = eventSubscription.getTgtUe().getSupi();
-        Integer excepId = eventSubscription.getExcepRequs().get(0).getExcepId().ordinal();
+                repository.addAbnormalBehaviourSubscriptionData(abnormalBehaviourSubscriptionData);
+                repository.addAbnormalBehaviourInformation(supi, excepId.ordinal());
 
-        Object obj = checkForData_AbnormalBehaviour(supi, excepId, false);
+                checkForData_AbnormalBehaviour(supi, excepId.ordinal(), false);
+            }
+        }
 
-        if(obj instanceof ResponseEntity)
-        { return obj; }
+
+        else
+        {
+            AbnormalBehaviourSubscriptionData abnormalBehaviourSubscriptionData = new AbnormalBehaviourSubscriptionData(eventSubscription, subscriptionId);
+            repository.addAbnormalBehaviourSubscriptionData(abnormalBehaviourSubscriptionData);
+
+            AbnormalBehaviourInformation abnormalBehaviourInformation = new AbnormalBehaviourInformation(eventSubscription);
+            repository.addAbnormalBehaviourInformation(abnormalBehaviourInformation.getSupi(), abnormalBehaviourInformation.getExcepId());
+
+            String supi = eventSubscription.getTgtUe().getSupi();
+            Integer excepId = eventSubscription.getExcepRequs().get(0).getExcepId().ordinal();
+
+            Object obj = checkForData_AbnormalBehaviour(supi, excepId, false);
+
+            if(obj instanceof ResponseEntity)
+            { return obj; }
+        }
 
         return null;
     }
