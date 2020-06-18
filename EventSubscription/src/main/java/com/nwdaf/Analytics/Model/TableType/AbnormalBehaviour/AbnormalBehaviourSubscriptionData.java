@@ -19,12 +19,23 @@ public class AbnormalBehaviourSubscriptionData {
     Integer excepLevelThrd;
 
 
+    //When excepRequs is passed
     public AbnormalBehaviourSubscriptionData(EventSubscription eventSubscription, String subscriptionId)
     {
         this.subscriptionId = subscriptionId;
         this.supi = eventSubscription.getTgtUe().getSupi();
         this.excepId = eventSubscription.getExcepRequs().get(0).getExcepId().ordinal();
         this.excepLevelThrd = eventSubscription.getExcepRequs().get(0).getExcepLevel();
+    }
+
+
+    // When ExpectedAnalyticsType is passed
+    public AbnormalBehaviourSubscriptionData(String supi, Integer excepId, String subscriptionId)
+    {
+        this.subscriptionId = subscriptionId;
+        this.supi = supi;
+        this.excepId = excepId;
+        this.excepLevelThrd = 0;
     }
 
 }

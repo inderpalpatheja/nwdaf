@@ -7,8 +7,10 @@ import com.nwdaf.Analytics.Model.AnalyticsInformation.ServiceExperienceInfo;
 import com.nwdaf.Analytics.Model.CustomData.NetworkPerformance.NetworkPerfThreshold;
 import com.nwdaf.Analytics.Model.CustomData.NfLoad.NfThresholdType;
 import com.nwdaf.Analytics.Model.CustomData.QosSustainability.QosThresholdType;
+import com.nwdaf.Analytics.Model.CustomData.QosSustainability.RetainabilityThreshold;
 import com.nwdaf.Analytics.Model.CustomData.ServiceExperience.SvcExperience;
 import com.nwdaf.Analytics.Model.CustomData.TableType;
+import com.nwdaf.Analytics.Model.EventNotificationType.QosSustainabilityInfo;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.AbnormalBehaviour.AbnormalBehaviourSubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelInformation;
@@ -17,6 +19,7 @@ import com.nwdaf.Analytics.Model.TableType.LoadLevelInformation.SliceLoadLevelSu
 import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadInformation;
 import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.NfLoad.NfLoadSubscriptionTable;
+import com.nwdaf.Analytics.Model.TableType.SubscriptionID;
 import com.nwdaf.Analytics.Model.TableType.SubscriptionTable;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionData;
 import com.nwdaf.Analytics.Model.TableType.NetworkPerformance.NetworkPerformanceSubscriptionTable;
@@ -65,51 +68,79 @@ public class Nnwdaf_Repository {
     Random random = new Random();
 
 
-    public Boolean subscribeNF(SubscriptionTable subscription) throws NullPointerException {
+    public Boolean subscriberRegister(SubscriptionID subscription)
+    {
+        String query = "INSERT INTO nwdafSubscriptionID VALUES (?, ?);";
 
-        String query = "INSERT INTO nwdafSubscriptionTable VALUES (?, ?, ?, ?, ?);";
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
 
-        return jdbcTemplate.execute(query, new PreparedStatementCallback<Boolean>() {
+            preparedStatement.setString(1, subscription.getSubscriptionId());
+            preparedStatement.setString(2, subscription.getNotificationURI());
 
-            @Override
-            public Boolean doInPreparedStatement(PreparedStatement preparedStatement) throws SQLException, DataAccessException {
-
-                preparedStatement.setString(1, subscription.getSubscriptionId());
-                preparedStatement.setInt(2, subscription.getEvent());
-                preparedStatement.setString(3, subscription.getNotificationURI());
-                preparedStatement.setInt(4, subscription.getNotificationMethod());
-
-                if(subscription.getRepetitionPeriod() == null)
-                { preparedStatement.setNull(5, Types.INTEGER); }
-
-                else
-                { preparedStatement.setInt(5, subscription.getRepetitionPeriod()); }
-
-                return preparedStatement.execute();
-            }
+            return preparedStatement.execute();
         });
     }
 
 
+    public Boolean subscribeNF(SubscriptionTable subscription) throws NullPointerException {
+
+        String query = "INSERT INTO nwdafSubscriptionTable (subscriptionId, event, notificationMethod, repetitionPeriod) VALUES (?, ?, ?, ?);";
+
+        return jdbcTemplate.execute(query, (PreparedStatementCallback<Boolean>) preparedStatement -> {
+
+            preparedStatement.setString(1, subscription.getSubscriptionId());
+            preparedStatement.setInt(2, subscription.getEvent());
+            preparedStatement.setInt(3, subscription.getNotificationMethod());
+
+            if(subscription.getRepetitionPeriod() == null)
+            { preparedStatement.setNull(4, Types.INTEGER); }
+
+            else
+            { preparedStatement.setInt(4, subscription.getRepetitionPeriod()); }
+
+            return preparedStatement.execute();
+        });
+    }
 
 
-    public String unsubscribeNF_SliceLoadLevel(SubscriptionTable subscriber)
+    public List<Integer> getAllSubscribedEvents(String subscriptionId)
     {
-        String snssais = getSnssais_SliceLoadLevel(subscriber.getSubscriptionId());
+        String query = "SELECT event FROM nwdafSubscriptionTable WHERE subscriptionId = ?;";
+        return jdbcTemplate.query(query, new Object[]{subscriptionId}, (resultSet, i) -> resultSet.getInt("event"));
+    }
 
-        jdbcTemplate.update("DELETE FROM nwdafSliceLoadLevelSubscriptionData WHERE subscriptionId = ?", subscriber.getSubscriptionId());
-        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?", subscriber.getSubscriptionId());
+
+    public boolean subscriptionExists(String subscriptionId)
+    {
+        String query = "SELECT EXISTS(SELECT 1 FROM nwdafSubscriptionID WHERE subscriptionId = ?) AS subscriptionId;";
+        Integer subscriberExists = jdbcTemplate.queryForObject(query, new Object[]{subscriptionId}, (resultSet, i) -> resultSet.getInt("subscriptionId"));
+
+        return subscriberExists == 1;
+    }
+
+
+    public Integer deleteSubscriberEntry(String subscriptionId)
+    { return jdbcTemplate.update("DELETE FROM nwdafSubscriptionID WHERE subscriptionId = ?;", subscriptionId); }
+
+
+
+    public String unsubscribeNF_SliceLoadLevel(String subscriptionId)
+    {
+        String snssais = getSnssais_SliceLoadLevel(subscriptionId);
+
+        jdbcTemplate.update("DELETE FROM nwdafSliceLoadLevelSubscriptionData WHERE subscriptionId = ?;", subscriptionId);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ? AND event = ?;", subscriptionId, NwdafEvent.LOAD_LEVEL_INFORMATION.ordinal());
 
         return decrementRefCount_SliceLoadLevel(snssais);
     }
 
 
-    public QosSustainabilitySubscriptionData unsubscribeNF_QosSustainability(SubscriptionTable subscriber)
+    public QosSustainabilitySubscriptionData unsubscribeNF_QosSustainability(String subscriptionId)
     {
-        QosSustainabilitySubscriptionData qosData = getTai_Snssais_QosSustainability(subscriber.getSubscriptionId());
+        QosSustainabilitySubscriptionData qosData = getTai_Snssais_QosSustainability(subscriptionId);
 
-        jdbcTemplate.update("DELETE FROM nwdafQosSustainabilitySubscriptionData WHERE subscriptionId = ?", subscriber.getSubscriptionId());
-        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?", subscriber.getSubscriptionId());
+        jdbcTemplate.update("DELETE FROM nwdafQosSustainabilitySubscriptionData WHERE subscriptionId = ?;", subscriptionId);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ? AND event = ?;", subscriptionId, NwdafEvent.QOS_SUSTAINABILITY.ordinal());
 
         return decrementRefCount_QosSustainability(qosData);
     }
@@ -121,7 +152,7 @@ public class Nnwdaf_Repository {
         ServiceExperienceSubscriptionData svcExp = getSupi_Snssais_ServiceExperience(subscriptionId);
 
         jdbcTemplate.update("DELETE FROM nwdafServiceExperienceSubscriptionData WHERE subscriptionId = ?;", subscriptionId);
-        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?;", subscriptionId);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ? AND event = ?;", subscriptionId, NwdafEvent.SERVICE_EXPERIENCE.ordinal());
 
         return decrementRefCount_ServiceExperience(svcExp);
     }
@@ -132,7 +163,7 @@ public class Nnwdaf_Repository {
         NetworkPerformanceSubscriptionData nwPerfSubData = getSupi_nwPerfType_NetworkPerformance(subscriptionId);
 
         jdbcTemplate.update("DELETE FROM nwdafNetworkPerformanceSubscriptionData WHERE subscriptionId = ?;", subscriptionId);
-        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?;", subscriptionId);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ? AND event = ?;", subscriptionId, NwdafEvent.NETWORK_PERFORMANCE.ordinal());
 
         return decrementRefCount_NetworkPerformance(nwPerfSubData);
     }
@@ -143,18 +174,24 @@ public class Nnwdaf_Repository {
         UserDataCongestionSubscriptionData usrDataCongSubData = getSupi_congType_UserDataCongestion(subscriptionId);
 
         jdbcTemplate.update("DELETE FROM nwdafUserDataCongestionSubscriptionData WHERE subscriptionId = ?;", subscriptionId);
-        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?;", subscriptionId);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ? AND event = ?;", subscriptionId, NwdafEvent.USER_DATA_CONGESTION.ordinal());
 
         return decrementRefCount_UserDataCongestion(usrDataCongSubData);
     }
 
 
-    public AbnormalBehaviourSubscriptionData unsubscribeNF_AbnormalBehaviour(String subscriptionId)
+    public void unsubscribeNF_AbnormalBehaviourSubscriptionEntry(String subscriptionId)
     {
-        AbnormalBehaviourSubscriptionData abnorBehavrSubData = getSupi_ExcepId_AbnormalBehaviour(subscriptionId);
-
         jdbcTemplate.update("DELETE FROM nwdafAbnormalBehaviourSubscriptionData WHERE subscriptionId = ?;", subscriptionId);
-        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?;", subscriptionId);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ? AND event = ?;", subscriptionId, NwdafEvent.ABNORMAL_BEHAVIOUR.ordinal());
+    }
+
+    public AbnormalBehaviourSubscriptionData unsubscribeNF_AbnormalBehaviour(String supi, Integer excepId)
+    {
+        AbnormalBehaviourSubscriptionData abnorBehavrSubData = new AbnormalBehaviourSubscriptionData();
+
+        abnorBehavrSubData.setSupi(supi);
+        abnorBehavrSubData.setExcepId(excepId);
 
         return decrementRefCount_AbnormalBehaviour(abnorBehavrSubData);
     }
@@ -165,7 +202,7 @@ public class Nnwdaf_Repository {
         String supi = getSupi_UeCommSubscriptionData(subscriptionId);
 
         jdbcTemplate.update("DELETE FROM nwdafUeCommSubscriptionData WHERE subscriptionId = ?;", subscriptionId);
-        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?;", subscriptionId);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ? AND event = ?;", subscriptionId, NwdafEvent.UE_COMM.ordinal());
 
         return decrementRefCount_UeComm(supi);
     }
@@ -176,7 +213,7 @@ public class Nnwdaf_Repository {
         NfLoadSubscriptionData nfLoadSubscriptionData = getNfType_NfInstanceId_NfLoadSubscriptionData(subscriptionId);
 
         jdbcTemplate.update("DELETE FROM nwdafNfLoadSubscriptionData WHERE subscriptionId = ?;", subscriptionId);
-        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?;", subscriptionId);
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ? AND event = ?;", subscriptionId, NwdafEvent.NF_LOAD.ordinal());
 
         return decrementRefCount_NfLoad(nfLoadSubscriptionData);
     }
@@ -353,11 +390,11 @@ public class Nnwdaf_Repository {
     }
 
 
-    public String getNotificationURI(String subscriptionID) {
+    public String getNotificationURI(String subscriptionId) {
 
-        String query = "SELECT notificationURI FROM nwdafSubscriptionTable WHERE subscriptionId = ?";
+        String query = "SELECT notificationURI FROM nwdafSubscriptionID WHERE subscriptionId = ?";
 
-        return jdbcTemplate.queryForObject(query, new Object[]{subscriptionID}, (resultSet, i) -> resultSet.getString("notificationURI"));
+        return jdbcTemplate.queryForObject(query, new Object[]{subscriptionId}, (resultSet, i) -> resultSet.getString("notificationURI"));
     }
 
 
@@ -861,8 +898,6 @@ public class Nnwdaf_Repository {
 
     public Integer updateQosSustainabilityThresholdLevel(String tai, String snssai, Integer threshold, QosThresholdType qosThresholdType)
     {
-        String query = new String();
-
         switch(qosThresholdType)
         {
             case QOS_FLOW_RETAIN: return jdbcTemplate.update("UPDATE nwdafQosSustainabilityInformation SET qosFlowRet = ? WHERE tai = ? AND snssai = ?;", new Object[] {threshold, tai, snssai});
@@ -904,6 +939,18 @@ public class Nnwdaf_Repository {
 
             return qosSustainabilitySubscriptionTable;
         });
+    }
+
+
+    public List<Object> getAnalyticsInfo_QosSustainability(Integer _5Qi, String tai, String snssai)
+    {
+        String query = "SELECT ranUeThrouThrd, qosFlowRetThrd, relTimeUnit FROM nwdafQosSustainabilitySubscriptionData WHERE 5Qi = ? AND tai = ? AND snssai = ?;";
+
+        try
+        { return jdbcTemplate.query(query, new Object[] {_5Qi, tai, snssai}, new QosSustainabilityInfoMapper(tai)); }
+
+        catch(EmptyResultDataAccessException ex)
+        { return null; }
     }
 
 
@@ -1360,25 +1407,23 @@ public class Nnwdaf_Repository {
 
 
 
-    public String unsubscribeNFForUE(SubscriptionTable subscriber)  {
+    public String unsubscribeNFForUE(String subscriptionId)  {
 
-        String supi = "";
-        Integer event = subscriber.getEvent();
 
-        supi = getSupi_UEmobilitySubscriptionData(subscriber.getSubscriptionId());
-        jdbcTemplate.update("DELETE FROM nwdafUEmobilitySubscriptionData WHERE subscriptionId = ?", subscriber.getSubscriptionId());
+        String supi = getSupi_UEmobilitySubscriptionData(subscriptionId);
+        jdbcTemplate.update("DELETE FROM nwdafUEmobilitySubscriptionData WHERE subscriptionId = ?", subscriptionId);
 
         //  jdbcTemplate.update("DELETE FROM nwdafUEmobility WHERE supi = ?", supi);
 
-        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?", subscriber.getSubscriptionId());
+        jdbcTemplate.update("DELETE FROM nwdafSubscriptionTable WHERE subscriptionId = ?", subscriptionId);
 
         //return decrementRefCount(supi, eventID);
-        return decrementRefCountForUE(supi, event);
+        return decrementRefCountForUE(supi);
     }
 
 
 
-    public String decrementRefCountForUE(String supi, Integer eventID)  {
+    public String decrementRefCountForUE(String supi)  {
 
 
         jdbcTemplate.update("UPDATE nwdafUEmobilitySubscriptionTable SET refCount = refCount - 1 WHERE supi = ?", supi);
@@ -2224,19 +2269,16 @@ public class Nnwdaf_Repository {
 
 
 
-    public AbnormalBehaviourSubscriptionData getSupi_ExcepId_AbnormalBehaviour(String subscriptionId)
+    public String getSupi_AbnormalBehaviour(String subscriptionId)
     {
-        String query = "SELECT supi, excepId FROM nwdafAbnormalBehaviourSubscriptionData WHERE subscriptionId = ?";
+        String query = "SELECT supi FROM nwdafAbnormalBehaviourSubscriptionData WHERE subscriptionId = ? LIMIT 1;";
+        return jdbcTemplate.queryForObject(query, new Object[]{subscriptionId}, (resultSet, i) -> resultSet.getString("supi"));
+    }
 
-        return jdbcTemplate.queryForObject(query, new Object[]{subscriptionId}, (resultSet, i) -> {
-
-            AbnormalBehaviourSubscriptionData abnorBehavrSubData = new AbnormalBehaviourSubscriptionData();
-
-            abnorBehavrSubData.setSupi(resultSet.getString("supi"));
-            abnorBehavrSubData.setExcepId(resultSet.getInt("excepId"));
-
-            return abnorBehavrSubData;
-        });
+    public List<Integer> getExcepIds_AbnormalBehaviour(String subscriptionId)
+    {
+        String query = "SELECT excepId FROM nwdafAbnormalBehaviourSubscriptionData WHERE subscriptionId = ?;";
+        return jdbcTemplate.query(query, new Object[]{subscriptionId}, (resultSet, i) -> resultSet.getInt("excepId"));
     }
 
 

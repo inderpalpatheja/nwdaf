@@ -14,18 +14,17 @@ import lombok.Setter;
 public class SubscriptionTable {
 
 
+    Integer ID;
     String subscriptionId;
     Integer event;
-    String notificationURI;
     Integer notificationMethod;
     Integer repetitionPeriod;
 
 
-    public SubscriptionTable(EventSubscription eventSubscription, String subscriptionId, String notificationURI)
+    public SubscriptionTable(EventSubscription eventSubscription, String subscriptionId)
     {
         this.subscriptionId = subscriptionId;
         this.event = eventSubscription.getEvent().ordinal();
-        this.notificationURI = notificationURI;
         this.notificationMethod = eventSubscription.getNotificationMethod().ordinal();
         this.repetitionPeriod = eventSubscription.getRepetitionPeriod();
     }

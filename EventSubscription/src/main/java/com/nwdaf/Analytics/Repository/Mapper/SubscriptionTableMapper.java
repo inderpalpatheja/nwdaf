@@ -13,9 +13,9 @@ public class SubscriptionTableMapper implements RowMapper {
 
         SubscriptionTable subTable = new SubscriptionTable();
 
+        subTable.setID(resultSet.getInt("ID"));
         subTable.setSubscriptionId(resultSet.getString("subscriptionId"));
         subTable.setEvent(resultSet.getInt("event"));
-        subTable.setNotificationURI(resultSet.getString("notificationURI"));
         subTable.setNotificationMethod(resultSet.getInt("notificationMethod"));
         subTable.setRepetitionPeriod(resultSet.getInt("repetitionPeriod"));
 
