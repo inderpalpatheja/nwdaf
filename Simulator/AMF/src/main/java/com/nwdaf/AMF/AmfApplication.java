@@ -282,6 +282,7 @@ public class AmfApplication extends Functionality {
         AmfApplication amfApplication = new AmfApplication();
 
 
+        /**********Un-comment the line given below to test NWDAF events with the Simulator********/
         //amfApplication.test(subListInt, eventIDInt, amfController);
 
     }

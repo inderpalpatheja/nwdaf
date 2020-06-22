@@ -7,9 +7,7 @@ import com.nwdaf.Analytics.Model.MetaData.Counters;
 import com.nwdaf.Analytics.Model.MetaData.OperationInfo;
 import com.nwdaf.Analytics.Model.NnwdafEventsSubscription;
 import com.nwdaf.Analytics.Model.NwdafEvent;
-import com.nwdaf.Analytics.Model.RawData.AnalyticsRawData;
 import com.nwdaf.Analytics.Model.RawData.SubUpdateRawData;
-import com.nwdaf.Analytics.Model.RawData.SubscriptionRawData;
 import com.nwdaf.Analytics.Service.Nnwdaf_Service;
 import io.swagger.annotations.ApiOperation;
 import org.json.JSONException;
@@ -21,10 +19,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.io.*;
 import java.net.*;
 import java.util.HashMap;
@@ -76,7 +75,7 @@ public class Nnwdaf_Controller {
     @ApiOperation(value = "Get Analytics Details By snssais or anySlice Details",
             notes = "Provide snssais, anySlice and eventID to look up specific Analytics Information from NWDAF API",
             response = Object.class)
-    public Object nwdaf_analytics(@RequestParam("event-id") NwdafEvent event, TargetUeInformation tgtUe, EventFilter eventFilter) throws IOException, JSONException {
+    public Object nwdaf_analytics(@RequestParam("event-id") NwdafEvent event, TargetUeInformation tgtUe, EventFilter eventFilter) {
 
 
         return nwdaf_service.nwdaf_analytics(event, tgtUe, eventFilter);
@@ -84,6 +83,8 @@ public class Nnwdaf_Controller {
 
 
 
+    // Code for testing purpose Only (Un-comment to use it for testing query parameters or restTemplate functionality)
+/*
     // For testing purpose only
     @GetMapping("/testQueryParams")
     public Object getEventFilterData(@RequestParam("event-id") NwdafEvent eventId, TargetUeInformation tgtUe, EventFilter eventFilter)
@@ -97,7 +98,7 @@ public class Nnwdaf_Controller {
         return map;
     }
 
-
+    // For testing purpose only
     @PostMapping("/test/restTemplate")
     public ResponseEntity<?> restTemplateTest(@RequestBody String response) throws JSONException, URISyntaxException {
 
@@ -113,6 +114,7 @@ public class Nnwdaf_Controller {
 
         return new ResponseEntity("Its Done", httpHeaders, HttpStatus.ACCEPTED);
     }
+*/
 
 
 
@@ -127,7 +129,7 @@ public class Nnwdaf_Controller {
      */
     @PostMapping(EVENT_SUB + "/subscriptions")
     @ApiOperation(value = OperationInfo.SUBSCRIBE_INFO, notes = OperationInfo.SUBSCRIBE_NOTES, response = Object.class)
-    public Object nwdaf_subscription(@RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) {
+    public Object nwdaf_subscription(@Valid @RequestBody NnwdafEventsSubscription nnwdafEventsSubscription) {
 
 
         return nwdaf_service.nwdaf_subscription(nnwdafEventsSubscription);

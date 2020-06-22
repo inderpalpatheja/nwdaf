@@ -1,12 +1,25 @@
 DROP SCHEMA IF EXISTS `NWDAF`;
 CREATE SCHEMA `NWDAF` ;
+
+
+CREATE TABLE `NWDAF`.`nwdafSubscriptionID` (
+  `subscriptionId` VARCHAR(128) NOT NULL,
+  `notificationURI` VARCHAR(128) NOT NULL,
+  PRIMARY KEY (`subscriptionId`));
+
+
 CREATE TABLE `NWDAF`.`nwdafSubscriptionTable` (
+  `ID` INT NOT NULL AUTO_INCREMENT,
   `subscriptionId` VARCHAR(128) NOT NULL,
   `event` INT NOT NULL,
-  `notificationURI` VARCHAR(128) NOT NULL,
   `notificationMethod` TINYINT NULL,
   `repetitionPeriod` INT NULL,
-  PRIMARY KEY (`subscriptionID`));
+  PRIMARY KEY (`ID`),
+    FOREIGN KEY (`subscriptionId`)
+    REFERENCES `NWDAF`.`nwdafSubscriptionID` (`subscriptionId`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
 
 CREATE TABLE `NWDAF`.`nwdafSliceLoadLevelSubscriptionData` (
   `ID` INT NOT NULL AUTO_INCREMENT,
@@ -15,7 +28,7 @@ CREATE TABLE `NWDAF`.`nwdafSliceLoadLevelSubscriptionData` (
   `loadLevelThreshold` INT NULL,
   PRIMARY KEY (`ID`),
     FOREIGN KEY (`subscriptionId`)
-    REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionId`)
+    REFERENCES `NWDAF`.`nwdafSubscriptionID` (`subscriptionId`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
     
@@ -89,7 +102,7 @@ CREATE TABLE `NWDAF`.`nwdafQosSustainabilitySubscriptionData` (
 `relTimeUnit` VARCHAR(8) NULL,
 PRIMARY KEY (`ID`),
 FOREIGN KEY (`subscriptionId`)
-REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionId`)
+REFERENCES `NWDAF`.`nwdafSubscriptionID` (`subscriptionId`)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION);
 
@@ -124,7 +137,7 @@ CREATE TABLE `NWDAF`.`nwdafServiceExperienceSubscriptionData` (
 `snssai` VARCHAR(128) NOT NULL,
 PRIMARY KEY (`ID`),
 FOREIGN KEY (`subscriptionId`)
-REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionId`)
+REFERENCES `NWDAF`.`nwdafSubscriptionID` (`subscriptionId`)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION);
   
@@ -164,7 +177,7 @@ CREATE TABLE `NWDAF`.`nwdafNetworkPerformanceSubscriptionData` (
 `absoluteNumThrd` INT NULL,
 PRIMARY KEY (`ID`),
 FOREIGN KEY (`subscriptionId`)
-REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionId`)
+REFERENCES `NWDAF`.`nwdafSubscriptionID` (`subscriptionId`)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION);
 
@@ -202,7 +215,7 @@ CREATE TABLE `NWDAF`.`nwdafUserDataCongestionSubscriptionData` (
 `congThreshold` INT NULL,
 PRIMARY KEY (`ID`),
 FOREIGN KEY (`subscriptionId`)
-REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionId`)
+REFERENCES `NWDAF`.`nwdafSubscriptionID` (`subscriptionId`)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION);
 
@@ -239,7 +252,7 @@ CREATE TABLE `NWDAF`.`nwdafAbnormalBehaviourSubscriptionData` (
 `excepLevelThrd` INT NULL,
 PRIMARY KEY (`ID`),
 FOREIGN KEY (`subscriptionId`)
-REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionId`)
+REFERENCES `NWDAF`.`nwdafSubscriptionID` (`subscriptionId`)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION);
 
@@ -274,7 +287,7 @@ CREATE TABLE `NWDAF`.`nwdafUeCommSubscriptionData` (
 `maxAnaEntry` INT NOT NULL,
 PRIMARY KEY (`ID`),
 FOREIGN KEY (`subscriptionId`)
-REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionId`)
+REFERENCES `NWDAF`.`nwdafSubscriptionID` (`subscriptionId`)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION);
 
@@ -318,7 +331,7 @@ CREATE TABLE `NWDAF`.`nwdafNfLoadSubscriptionData` (
 `nfStorageUsageThrd` INT NULL,
 PRIMARY KEY (`ID`),
 FOREIGN KEY (`subscriptionId`)
-REFERENCES `NWDAF`.`nwdafSubscriptionTable` (`subscriptionId`)
+REFERENCES `NWDAF`.`nwdafSubscriptionID` (`subscriptionId`)
 ON DELETE NO ACTION
 ON UPDATE NO ACTION);
 

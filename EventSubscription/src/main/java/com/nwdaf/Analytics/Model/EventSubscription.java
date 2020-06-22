@@ -10,6 +10,7 @@ import com.nwdaf.Analytics.Model.CustomData.QosSustainability.RetainabilityThres
 import com.nwdaf.Analytics.Model.CustomData.TargetUeInformation;
 import com.nwdaf.Analytics.Model.CustomData.UserDataCongestion.CongestionType;
 import com.nwdaf.Analytics.Model.NetworkArea.NetworkAreaInfo;
+import com.nwdaf.Analytics.Validation.EventValidator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,7 +24,10 @@ public class EventSubscription {
 
 
     Boolean anySlice = Boolean.FALSE;
+
+    @EventValidator
     NwdafEvent event;
+
     NotificationMethod notificationMethod = NotificationMethod.THRESHOLD;
     Integer loadLevelThreshold;
     NetworkAreaInfo networkArea;
